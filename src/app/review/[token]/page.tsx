@@ -64,6 +64,8 @@ export default function ReviewPage() {
   const [selectedConnector, setSelectedConnector] = useState<string>("");
   const [reworkNotes, setReworkNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [showShopifyInput, setShowShopifyInput] = useState(false);
+  const [shopifyStore, setShopifyStore] = useState("");
   const [actionResult, setActionResult] = useState<ActionResult | null>(null);
 
   useEffect(() => {
@@ -266,32 +268,32 @@ export default function ReviewPage() {
                       >
                         {submitting ? "Publishing..." : "Publish"}
                       </button>
+                    ) : showShopifyInput ? (
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <input
+                          type="text"
+                          value={shopifyStore}
+                          onChange={(e) => setShopifyStore(e.target.value)}
+                          placeholder="yourstore.myshopify.com"
+                          style={{ fontSize: 12, padding: "8px 12px", borderRadius: 8, border: "1px solid #ddd", width: 200, outline: "none" }}
+                        />
+                        <button
+                          onClick={() => {
+                            if (!shopifyStore.trim()) return;
+                            const shop = shopifyStore.trim().toLowerCase().replace(/^https?:\/\//, "").split("/")[0];
+                            window.location.href = `/api/shopify/auth?shop=${encodeURIComponent(shop)}&domainId=${article?.domainId}&reviewToken=${token}`;
+                          }}
+                          style={{ fontSize: 12, fontWeight: 700, padding: "8px 16px", borderRadius: 8, background: "#95BF47", color: "#fff", border: "none", cursor: "pointer", whiteSpace: "nowrap" }}
+                        >
+                          Connect
+                        </button>
+                      </div>
                     ) : (
                       <button
-                        onClick={() => {
-                          const storeUrl = prompt("Enter your Shopify store URL\n\nExample: yourstore.myshopify.com");
-                          if (!storeUrl) return;
-                          const apiToken = prompt("Enter your Shopify Admin API access token\n\nGet it from: Shopify Admin → Settings → Apps → Develop apps → Create app → Install → Copy token\n\nStarts with shpat_...");
-                          if (!apiToken) return;
-                          fetch(`/api/domains/${article?.domainId}/connectors`, {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({
-                              platform: "shopify",
-                              siteUrl: storeUrl.includes("http") ? storeUrl : `https://${storeUrl}`,
-                              apiToken,
-                            }),
-                          }).then((res) => {
-                            if (res.ok) {
-                              window.location.reload();
-                            } else {
-                              alert("Failed to connect. Please check your store URL and API token.");
-                            }
-                          });
-                        }}
+                        onClick={() => setShowShopifyInput(true)}
                         style={{ fontSize: 13, fontWeight: 700, padding: "10px 24px", borderRadius: 10, background: "#fff", color: "#95BF47", border: "2px solid #95BF47", cursor: "pointer" }}
                       >
-                        Connect
+                        Connect Shopify
                       </button>
                     )}
                   </div>
