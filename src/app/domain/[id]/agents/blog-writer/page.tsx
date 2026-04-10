@@ -304,17 +304,10 @@ export default function BlogWriterPage() {
                   <p className="text-xs" style={{ color: "var(--text-muted)" }}>Researching keywords...</p>
                 </div>
               ) : gscQueries.length === 0 ? (
-                <div className="py-6 text-center">
-                  <p className="text-sm mb-3" style={{ color: "var(--text-secondary)" }}>
-                    No keyword data found. Run an audit first to crawl the website, then keywords will be generated automatically.
+                <div className="py-4 text-center">
+                  <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                    No keyword data yet. Use the Custom Topic tab below to write about any topic, or <Link href={`/domain/${domainId}/audit`} style={{ color: "var(--accent)", textDecoration: "underline" }}>run an audit</Link> to get AI keyword suggestions.
                   </p>
-                  <Link
-                    href={`/domain/${domainId}/audit`}
-                    className="inline-block px-4 py-2 rounded-lg text-sm font-semibold text-white"
-                    style={{ background: "var(--accent)" }}
-                  >
-                    Run Audit
-                  </Link>
                 </div>
               ) : (
                 <div className="overflow-auto max-h-[300px]">
