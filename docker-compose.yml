@@ -21,11 +21,14 @@ services:
       - FROM_EMAIL=${FROM_EMAIL}
       - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
       - REVIEW_TOKEN_SECRET=${REVIEW_TOKEN_SECRET}
+      - SHOPIFY_CLIENT_ID=${SHOPIFY_CLIENT_ID}
+      - SHOPIFY_CLIENT_SECRET=${SHOPIFY_CLIENT_SECRET}
+      - SHOPIFY_REDIRECT_URI=${SHOPIFY_REDIRECT_URI}
     volumes:
       - ranqapex-data:/app/data
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.ranqapex.rule=Host(`explorefeatures.in`) || Host(`www.explorefeatures.in`)"
+      - "traefik.http.routers.ranqapex.rule=Host(`ranqapex.com`) || Host(`www.ranqapex.com`)"
       - "traefik.http.routers.ranqapex.entrypoints=websecure"
       - "traefik.http.routers.ranqapex.tls.certresolver=letsencrypt"
       - "traefik.http.services.ranqapex.loadbalancer.server.port=3000"
