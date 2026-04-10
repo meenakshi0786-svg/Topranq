@@ -68,7 +68,7 @@ export async function GET(
           startDate: formatDate(startDate),
           endDate: formatDate(endDate),
           dimensions: ["query", "page"],
-          rowLimit: 200,
+          rowLimit: 1000,
         }
       );
 

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db, schema } from "@/lib/db";
 import { eq, desc } from "drizzle-orm";
+import { getGSCInsights } from "@/lib/gsc-intelligence";
+import { runAIKeywordResearch } from "@/lib/ai-keyword-research";
 
 // GET /api/agents/smart-suggest?domainId=xxx
 // Analyzes crawled site data and returns smart blog topic suggestions
@@ -90,16 +92,105 @@ export async function GET(request: NextRequest) {
     classification.siteType
   );
 
+  // ── AI + GSC Powered Suggestions ──
+  const gsc = await getGSCInsights(domainId);
+  const aiSuggestions: TopicSuggestion[] = [];
+
+  if (gsc.connected && gsc.keywords.length > 0) {
+    // GSC content gap suggestions
+    for (const gap of gsc.contentGaps.slice(0, 3)) {
+      const title = gap.query.charAt(0).toUpperCase() + gap.query.slice(1);
+      if (!existingTopics.has(title.toLowerCase())) {
+        aiSuggestions.push({
+          topic: /^(how|what|why|when)/i.test(gap.query)
+            ? `${title} — Complete Guide`
+            : `The Ultimate Guide to ${title}`,
+          keywords: [gap.query, ...siteKeywords.slice(0, 2)],
+          tone: "professional",
+          wordCount: 2000,
+          reason: `GSC Data: "${gap.query}" gets ${gap.impressions} impressions but you have no dedicated page.`,
+          priority: "high",
+        });
+      }
+    }
+
+    for (const qw of gsc.quickWins.slice(0, 2)) {
+      if (!existingTopics.has(qw.query.toLowerCase())) {
+        aiSuggestions.push({
+          topic: `${qw.query.charAt(0).toUpperCase() + qw.query.slice(1)}: Expert Guide & Best Practices`,
+          keywords: [qw.query, ...siteKeywords.slice(0, 2)],
+          tone: "professional",
+          wordCount: 1800,
+          reason: `GSC Quick Win: Ranking at position ${qw.position.toFixed(1)} with ${qw.impressions} impressions.`,
+          priority: "high",
+        });
+      }
+    }
+  }
+
+  // Fallback: AI-powered keyword research when GSC has no data
+  if (aiSuggestions.length === 0) {
+    try {
+      const aiResearch = await runAIKeywordResearch(domainId);
+      for (const idea of aiResearch.blogIdeas.slice(0, 5)) {
+        if (!existingTopics.has(idea.title.toLowerCase())) {
+          aiSuggestions.push({
+            topic: idea.title,
+            keywords: idea.keywords,
+            tone: "professional",
+            wordCount: 1800,
+            reason: `AI Research: ${idea.reason}`,
+            priority: idea.priority as "high" | "medium" | "low",
+          });
+        }
+      }
+
+      // Add content gap suggestions from AI
+      for (const gap of aiResearch.contentGaps.slice(0, 3)) {
+        const title = `${gap.topic.charAt(0).toUpperCase() + gap.topic.slice(1)}: Complete Guide`;
+        if (!existingTopics.has(title.toLowerCase())) {
+          aiSuggestions.push({
+            topic: title,
+            keywords: [gap.topic, ...siteKeywords.slice(0, 2)],
+            tone: "professional",
+            wordCount: 2000,
+            reason: `AI Content Gap: ${gap.reason}`,
+            priority: "high",
+          });
+        }
+      }
+    } catch {
+      // AI research failed — continue with template suggestions
+    }
+  }
+
+  // Merge AI/GSC suggestions at the top
+  const allSuggestions = [...aiSuggestions, ...suggestions];
+
+  // Use AI research keywords for "Your Top Keywords" instead of basic word extraction
+  let topKeywords = siteKeywords.slice(0, 10);
+  let aiContentGaps = 0;
+  try {
+    const aiResearchData = await runAIKeywordResearch(domainId);
+    if (aiResearchData.keywords.length > 0) {
+      topKeywords = aiResearchData.keywords.slice(0, 10).map((k) => k.query);
+      aiContentGaps = aiResearchData.contentGaps.length;
+    }
+  } catch { /* use fallback siteKeywords */ }
+
   return NextResponse.json({
     niche,
     siteType: classification.siteType,
     siteTypeLabel: classification.siteTypeLabel,
     hostname,
-    siteKeywords: siteKeywords.slice(0, 10),
+    siteKeywords: topKeywords,
     pagesAnalyzed: pages.length,
     thinContentPages: thinPages.length,
     issueCount: issues.length,
-    suggestions,
+    contentGaps: aiContentGaps || thinPages.length,
+    gscConnected: gsc.connected,
+    gscKeywordCount: gsc.keywords.length,
+    suggestions: allSuggestions.slice(0, 8),
   });
 }
 

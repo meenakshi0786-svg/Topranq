@@ -64,7 +64,7 @@ export async function fetchSearchAnalytics(
       startDate: options.startDate,
       endDate: options.endDate,
       dimensions: options.dimensions || ["query", "page"],
-      rowLimit: options.rowLimit || 100,
+      rowLimit: options.rowLimit || 1000,
       dataState: "final",
     },
   });

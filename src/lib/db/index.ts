@@ -3,7 +3,9 @@ import { drizzle } from "drizzle-orm/better-sqlite3";
 import * as schema from "./schema";
 import path from "path";
 
-const DB_PATH = path.join(process.cwd(), "seo-analyzer.db");
+const dataDir = path.join(process.cwd(), "data");
+try { require("fs").mkdirSync(dataDir, { recursive: true }); } catch { /* exists */ }
+const DB_PATH = path.join(dataDir, "seo-analyzer.db");
 
 const sqlite = new Database(DB_PATH);
 sqlite.pragma("journal_mode = WAL");

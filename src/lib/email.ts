@@ -4,7 +4,7 @@ const SMTP_HOST = process.env.SMTP_HOST || "smtp.gmail.com";
 const SMTP_PORT = Number(process.env.SMTP_PORT || "587");
 const SMTP_USER = process.env.SMTP_USER || "";
 const SMTP_PASS = process.env.SMTP_PASS || ""; // Gmail App Password
-const FROM_EMAIL = process.env.FROM_EMAIL || "noreply@topranq.com";
+const FROM_EMAIL = process.env.FROM_EMAIL || "noreply@ranqapex.com";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
 
 function getTransport() {
@@ -34,7 +34,7 @@ export interface ReviewEmailData {
 export async function sendReviewEmail(data: ReviewEmailData): Promise<boolean> {
   const reviewUrl = `${APP_URL}/review/${data.reviewToken}`;
 
-  const subject = `TopRanq draft ready: ${data.articleTitle}`;
+  const subject = `Ranqapex draft ready: ${data.articleTitle}`;
 
   const html = `
 <!DOCTYPE html>
@@ -88,13 +88,13 @@ export async function sendReviewEmail(data: ReviewEmailData): Promise<boolean> {
 
     <!-- Footer -->
     <div style="padding:16px 32px;background:#f8f9fc;text-align:center;">
-      <p style="margin:0;font-size:11px;color:#999;">This link expires in 72 hours. Sent by TopRanq.</p>
+      <p style="margin:0;font-size:11px;color:#999;">This link expires in 72 hours. Sent by Ranqapex.</p>
     </div>
   </div>
 </body>
 </html>`;
 
-  const text = `TopRanq Draft Ready: ${data.articleTitle}
+  const text = `Ranqapex Draft Ready: ${data.articleTitle}
 
 Keyword: ${data.targetKeyword}
 Intent: ${data.intent}
@@ -117,7 +117,7 @@ This link expires in 72 hours.`;
 
   try {
     await transport.sendMail({
-      from: `"TopRanq" <${FROM_EMAIL}>`,
+      from: `"Ranqapex" <${FROM_EMAIL}>`,
       to: data.to,
       subject,
       text,
@@ -132,7 +132,7 @@ This link expires in 72 hours.`;
 
 export async function sendPublishErrorEmail(to: string, articleTitle: string, error: string): Promise<boolean> {
   const transport = getTransport();
-  const subject = `TopRanq publish failed: ${articleTitle}`;
+  const subject = `Ranqapex publish failed: ${articleTitle}`;
   const text = `Publishing failed for "${articleTitle}".\n\nError: ${error}\n\nPlease check your connector settings and try again from the dashboard.`;
 
   if (!transport) {
@@ -142,7 +142,7 @@ export async function sendPublishErrorEmail(to: string, articleTitle: string, er
 
   try {
     await transport.sendMail({
-      from: `"TopRanq" <${FROM_EMAIL}>`,
+      from: `"Ranqapex" <${FROM_EMAIL}>`,
       to,
       subject,
       text,

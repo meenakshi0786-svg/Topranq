@@ -1,0 +1,12 @@
+node_modules
+.next
+*.db
+*.db-wal
+*.db-shm
+*.db-journal
+*.db.bak
+.git
+.env
+postcss.config.mjs
+postcss.config.cjs
+globals-source.css

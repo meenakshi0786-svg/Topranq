@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "TopRanq — SEO Autopilot",
+  title: "Ranqapex — SEO Autopilot",
   description: "AI agents that crawl, audit, strategize, write, and publish SEO content",
 };
 

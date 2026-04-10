@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 
 interface ArticleData {
   id: string;
+  domainId: string;
   title: string;
   metaTitle: string;
   metaDescription: string;
@@ -34,6 +35,13 @@ interface ReviewData {
   expiresAt: string;
 }
 
+interface ConnectorData {
+  id: string;
+  platform: string;
+  siteUrl: string;
+  status: string;
+}
+
 type ActionResult = {
   status: string;
   message: string;
@@ -50,7 +58,10 @@ export default function ReviewPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"preview" | "seo" | "raw">("preview");
+  const [connectors, setConnectors] = useState<ConnectorData[]>([]);
   const [showReworkForm, setShowReworkForm] = useState(false);
+  const [showPublishPicker, setShowPublishPicker] = useState(false);
+  const [selectedConnector, setSelectedConnector] = useState<string>("");
   const [reworkNotes, setReworkNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [actionResult, setActionResult] = useState<ActionResult | null>(null);
@@ -66,6 +77,7 @@ export default function ReviewPage() {
         }
         setArticle(data.article);
         setReview(data.review);
+        if (data.connectors) setConnectors(data.connectors);
       } catch {
         setError("Failed to connect");
       } finally {
@@ -75,7 +87,7 @@ export default function ReviewPage() {
     load();
   }, [token]);
 
-  async function handleAction(action: "accept" | "rework") {
+  async function handleAction(action: "accept" | "rework", connectorId?: string) {
     setSubmitting(true);
     try {
       const res = await fetch(`/api/review/${token}`, {
@@ -84,6 +96,7 @@ export default function ReviewPage() {
         body: JSON.stringify({
           action,
           reworkNotes: action === "rework" ? reworkNotes : undefined,
+          publishTo: action === "accept" ? (connectorId || selectedConnector || undefined) : undefined,
         }),
       });
       const data = await res.json();
@@ -123,7 +136,7 @@ export default function ReviewPage() {
 
   if (actionResult) {
     const isSuccess = actionResult.status === "published" || actionResult.status === "approved";
-    const isRework = actionResult.status === "rework_requested";
+    const isRework = actionResult.status === "rework_requested" || actionResult.status === "rework_regenerated";
 
     return (
       <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f5f5f7" }}>
@@ -157,7 +170,7 @@ export default function ReviewPage() {
       {/* Header */}
       <header style={{ background: "linear-gradient(135deg, #4F6EF7, #7C5CFC)", padding: "24px 32px" }}>
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
-          <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>TopRanq Article Review</p>
+          <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Ranqapex Article Review</p>
           <h1 style={{ color: "#fff", fontSize: 22, fontWeight: 700, margin: 0 }}>{article.title}</h1>
           <div style={{ display: "flex", gap: 16, marginTop: 12, flexWrap: "wrap" }}>
             {[
@@ -181,14 +194,21 @@ export default function ReviewPage() {
         {/* Action Bar */}
         <div style={{ display: "flex", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
           <button
-            onClick={() => handleAction("accept")}
+            onClick={() => {
+              const connected = connectors.find((c) => c.status === "connected");
+              if (connected) {
+                handleAction("accept", connected.id);
+              } else {
+                setShowPublishPicker(true);
+              }
+            }}
             disabled={submitting}
             style={{ background: "#22c55e", color: "#fff", border: "none", padding: "14px 36px", borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: "pointer", opacity: submitting ? 0.5 : 1 }}
           >
-            {submitting ? "Processing..." : "Accept & Publish"}
+            {submitting ? "Publishing..." : "Accept & Publish"}
           </button>
           <button
-            onClick={() => setShowReworkForm(!showReworkForm)}
+            onClick={() => { setShowReworkForm(!showReworkForm); setShowPublishPicker(false); }}
             disabled={submitting}
             style={{ background: "#f59e0b", color: "#fff", border: "none", padding: "14px 36px", borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: "pointer", opacity: submitting ? 0.5 : 1 }}
           >
@@ -198,6 +218,104 @@ export default function ReviewPage() {
             Expires: {new Date(review.expiresAt).toLocaleString()}
           </span>
         </div>
+
+        {/* Publish Destination Picker */}
+        {showPublishPicker && (
+          <div style={{ background: "#fff", borderRadius: 12, padding: 24, marginBottom: 24, border: "2px solid #22c55e" }}>
+            <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 4, color: "#1a1a2e" }}>Publish Your Article</h3>
+            <p style={{ fontSize: 12, color: "#666", marginBottom: 20 }}>Choose where to publish this article. If already connected, it will publish directly.</p>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
+              {(() => {
+                const shopifyConnector = connectors.find((c) => c.platform === "shopify" && c.status === "connected");
+                return (
+                  <div
+                    style={{
+                      display: "flex", alignItems: "center", gap: 14, padding: "16px 18px",
+                      borderRadius: 12, border: `2px solid ${shopifyConnector ? "#a7f3d0" : "#e5e5e5"}`,
+                      background: shopifyConnector ? "#f0fdf4" : "#fff",
+                    }}
+                  >
+                    <div style={{ width: 46, height: 46, borderRadius: 10, background: "#95BF4715", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M20.5 6.5l-1.5-.5-.5-1.5s-1-1-2-1l-1 7.5 4-1.5s1-.5 1-1.5-.5-1.5-.5-1.5z" fill="#95BF47"/>
+                        <path d="M15.5 3.5l-1 7.5-3-1V3l2-.5 2 1z" fill="#5E8E3E"/>
+                        <path d="M12.5 3l-1 .5v7L7 9l1-6 4.5.5z" fill="#95BF47"/>
+                        <path d="M8 3l-1 6-2.5-1S4 7.5 4 6.5 5 4 5 4l3-1z" fill="#5E8E3E"/>
+                        <path d="M14.5 11l-1 9.5-4-1.5-3-1L8 9l3 1.5 3.5.5z" fill="#95BF47"/>
+                        <path d="M11.5 11.5L7.5 18l-1-9 5 2.5z" fill="#5E8E3E"/>
+                      </svg>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <p style={{ fontSize: 15, fontWeight: 700, margin: 0 }}>Shopify</p>
+                        {shopifyConnector && (
+                          <span style={{ fontSize: 10, fontWeight: 600, padding: "2px 8px", borderRadius: 6, background: "#dcfce7", color: "#166534" }}>Connected</span>
+                        )}
+                      </div>
+                      <p style={{ fontSize: 11, color: "#999", margin: "2px 0 0" }}>
+                        {shopifyConnector ? shopifyConnector.siteUrl : "Connect your Shopify store to publish articles"}
+                      </p>
+                    </div>
+
+                    {shopifyConnector ? (
+                      <button
+                        onClick={() => handleAction("accept", shopifyConnector.id)}
+                        disabled={submitting}
+                        style={{ fontSize: 13, fontWeight: 700, padding: "10px 24px", borderRadius: 10, background: "#95BF47", color: "#fff", border: "none", cursor: "pointer", opacity: submitting ? 0.5 : 1 }}
+                      >
+                        {submitting ? "Publishing..." : "Publish"}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          const storeUrl = prompt("Enter your Shopify store URL\n\nExample: yourstore.myshopify.com");
+                          if (!storeUrl) return;
+                          const apiToken = prompt("Enter your Shopify Admin API access token\n\nGet it from: Shopify Admin → Settings → Apps → Develop apps → Create app → Install → Copy token\n\nStarts with shpat_...");
+                          if (!apiToken) return;
+                          fetch(`/api/domains/${article?.domainId}/connectors`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              platform: "shopify",
+                              siteUrl: storeUrl.includes("http") ? storeUrl : `https://${storeUrl}`,
+                              apiToken,
+                            }),
+                          }).then((res) => {
+                            if (res.ok) {
+                              window.location.reload();
+                            } else {
+                              alert("Failed to connect. Please check your store URL and API token.");
+                            }
+                          });
+                        }}
+                        style={{ fontSize: 13, fontWeight: 700, padding: "10px 24px", borderRadius: 10, background: "#fff", color: "#95BF47", border: "2px solid #95BF47", cursor: "pointer" }}
+                      >
+                        Connect
+                      </button>
+                    )}
+                  </div>
+                );
+              })()}
+            </div>
+
+            <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+              <button
+                onClick={() => { setSelectedConnector(""); handleAction("accept"); }}
+                disabled={submitting}
+                style={{ background: "transparent", color: "#666", border: "1px solid #e5e5e5", padding: "12px 24px", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer", opacity: submitting ? 0.5 : 1 }}
+              >
+                {submitting ? "Processing..." : "Approve Without Publishing"}
+              </button>
+              <button
+                onClick={() => setShowPublishPicker(false)}
+                style={{ background: "transparent", color: "#999", border: "none", padding: "12px 16px", borderRadius: 10, fontSize: 13, cursor: "pointer" }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Rework Form */}
         {showReworkForm && (

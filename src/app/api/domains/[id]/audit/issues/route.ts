@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db, schema } from "@/lib/db";
 import { eq, and, desc } from "drizzle-orm";
+import { getRecommendation } from "@/lib/recommender";
 
 // GET /api/domains/:id/audit/issues — issue list, severity filter, fix status
 export async function GET(
@@ -42,9 +43,38 @@ export async function GET(
     .all();
 
   return NextResponse.json(
-    issues.map((issue) => ({
-      ...issue,
-      affectedUrls: issue.affectedUrls ? JSON.parse(issue.affectedUrls) : [],
-    }))
+    issues.map((issue) => {
+      const rec = getRecommendation(issue.issueType || "");
+      return {
+        ...issue,
+        affectedUrls: issue.affectedUrls ? JSON.parse(issue.affectedUrls) : [],
+        whyItMatters: rec?.whyItMatters || null,
+        howToFixDetailed: rec?.howToFix || null,
+        learnMoreUrl: rec?.learnMoreUrl || null,
+      };
+    })
   );
+}
+
+// PATCH /api/domains/:id/audit/issues — Update issue status
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  await params; // consume params
+  const { issueId, status } = await request.json();
+
+  if (!issueId || !status || !["open", "fixed", "ignored"].includes(status)) {
+    return NextResponse.json({ error: "issueId and valid status (open/fixed/ignored) required" }, { status: 400 });
+  }
+
+  db.update(schema.auditIssues)
+    .set({
+      status,
+      resolvedAt: status === "fixed" ? new Date().toISOString() : null,
+    })
+    .where(eq(schema.auditIssues.id, issueId))
+    .run();
+
+  return NextResponse.json({ success: true, issueId, status });
 }

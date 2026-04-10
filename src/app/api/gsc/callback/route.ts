@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getTokensFromCode, fetchSiteList } from "@/lib/gsc";
 import { db, schema } from "@/lib/db";
-import { eq, and } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
+
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
 
 // GET /api/gsc/callback?code=xxx&state=domainId — Handle Google OAuth callback
 export async function GET(request: NextRequest) {
@@ -10,46 +12,28 @@ export async function GET(request: NextRequest) {
   const error = request.nextUrl.searchParams.get("error");
 
   if (error) {
-    // User denied access — redirect back to search console page
     return NextResponse.redirect(
-      new URL(`/domain/${domainId}/search-console?error=denied`, request.url)
+      `${APP_URL}/domain/${domainId}/search-console?error=denied`
     );
   }
 
   if (!code || !domainId) {
     return NextResponse.redirect(
-      new URL(`/domain/${domainId || ""}/search-console?error=missing_params`, request.url)
+      `${APP_URL}/domain/${domainId || ""}/search-console?error=missing_params`
     );
   }
 
   try {
-    // Exchange code for tokens
     const tokens = await getTokensFromCode(code);
 
     if (!tokens.refresh_token) {
       return NextResponse.redirect(
-        new URL(`/domain/${domainId}/search-console?error=no_refresh_token`, request.url)
+        `${APP_URL}/domain/${domainId}/search-console?error=no_refresh_token`
       );
     }
 
-    // Get list of verified sites
     const sites = await fetchSiteList(tokens.refresh_token);
 
-    // Store the GSC connection
-    // Check if connector already exists
-    const existing = db
-      .select()
-      .from(schema.connectors)
-      .where(
-        and(
-          eq(schema.connectors.domainId, domainId),
-          eq(schema.connectors.platform, "wordpress") // Reuse field — we'll check for gsc type below
-        )
-      )
-      .get();
-
-    // Store as a special connector entry
-    // We'll use a domain learning to store the refresh token securely
     db.insert(schema.domainLearnings)
       .values({
         domainId,
@@ -64,14 +48,13 @@ export async function GET(request: NextRequest) {
       })
       .run();
 
-    // Redirect back to search console page
     return NextResponse.redirect(
-      new URL(`/domain/${domainId}/search-console?connected=true`, request.url)
+      `${APP_URL}/domain/${domainId}/search-console?connected=true`
     );
   } catch (err) {
     console.error("GSC callback error:", err);
     return NextResponse.redirect(
-      new URL(`/domain/${domainId}/search-console?error=auth_failed`, request.url)
+      `${APP_URL}/domain/${domainId}/search-console?error=auth_failed`
     );
   }
 }

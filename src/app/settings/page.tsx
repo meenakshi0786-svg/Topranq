@@ -54,7 +54,7 @@ export default function SettingsPage() {
                 <div className="flex items-center justify-between py-2" style={{ borderBottom: "1px solid var(--border-light)" }}>
                   <div>
                     <p className="text-sm font-medium">Email</p>
-                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>demo@topranq.com</p>
+                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>demo@ranqapex.com</p>
                   </div>
                 </div>
                 <div className="flex items-center justify-between py-2">

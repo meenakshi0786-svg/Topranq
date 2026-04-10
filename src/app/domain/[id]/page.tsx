@@ -207,21 +207,11 @@ export default function DomainOverview() {
         )}
 
         {/* Navigation */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-          <NavCard href={`/domain/${domainId}/audit`} icon="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" title="Audit" desc={`${stats.issues.total} issues`} />
-          <NavCard href={`/domain/${domainId}/agents`} icon="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" title="AI Agents" desc="Deploy agents" />
-          <NavCard href={`/domain/${domainId}/strategy`} icon="M13 10V3L4 14h7v7l9-11h-7z" title="Strategy" desc={`${stats.keywordClusters} clusters`} />
-          <NavCard href={`/domain/${domainId}/articles`} icon="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" title="Articles" desc={`${stats.articles} articles`} />
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-          <NavCard href={`/domain/${domainId}/technical`} icon="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" title="Technical" desc="Code fixes" />
-          <NavCard href={`/domain/${domainId}/analytics`} icon="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" title="Analytics" desc="ROI & traffic" />
-          <NavCard href={`/domain/${domainId}/connectors`} icon="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101M10.172 13.828a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" title="Connectors" desc="Publish to CMS" />
-          <NavCard href={`/domain/${domainId}/search-console`} icon="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" title="Search Console" desc="GSC data" />
-        </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <NavCard href={`/domain/${domainId}/history`} icon="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" title="History" desc={`${recentActions.length} actions`} />
-          <ExportCard domainId={domainId} hasAudit={latestAudit?.status === "complete"} />
+          <NavCard href={`/domain/${domainId}/audit`} icon="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" title="Audit" desc={`${stats.issues.total} issues`} />
+          <NavCard href={`/domain/${domainId}/search-console`} icon="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" title="Search Console" desc="GSC data" />
+          <NavCard href={`/domain/${domainId}/agents`} icon="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" title="Strategy AI Agents" desc="Deploy agents" />
+          <NavCard href={`/domain/${domainId}/connectors`} icon="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101M10.172 13.828a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" title="Connectors" desc="Publish to CMS" />
         </div>
 
         {/* Recent activity */}

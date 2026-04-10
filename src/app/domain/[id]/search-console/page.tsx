@@ -269,6 +269,26 @@ export default function SearchConsolePage() {
               </div>
             )}
 
+            {/* SEO Intelligence CTA */}
+            {gscData.summary && (
+              <Link
+                href={`/domain/${domainId}/search-console/intelligence`}
+                className="w-full flex items-center gap-4 p-4 mb-6 rounded-xl cursor-pointer transition-all fade-in"
+                style={{ background: "linear-gradient(135deg, #4F6EF708, #7C5CFC08)", border: "2px solid #7C5CFC30" }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#7C5CFC"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#7C5CFC30"; }}
+              >
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: "linear-gradient(135deg, #4F6EF7, #7C5CFC)" }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-bold">SEO Intelligence Engine</p>
+                  <p className="text-xs" style={{ color: "var(--text-muted)" }}>Get AI-powered insights: content gaps, quick wins, linking plan, monetization opportunities</p>
+                </div>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><path d="M9 18l6-6-6-6" /></svg>
+              </Link>
+            )}
+
             {/* Data tabs */}
             {gscData.topQueries && (
               <>

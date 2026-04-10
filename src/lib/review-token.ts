@@ -1,7 +1,7 @@
 import crypto from "crypto";
 
 const TOKEN_EXPIRY_HOURS = 72; // 3 days
-const SECRET = process.env.REVIEW_TOKEN_SECRET || "topranq-review-secret-change-in-prod";
+const SECRET = process.env.REVIEW_TOKEN_SECRET || "ranqapex-review-secret-change-in-prod";
 
 export interface ReviewTokenPayload {
   articleId: string;

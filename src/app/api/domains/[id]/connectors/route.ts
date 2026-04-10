@@ -31,7 +31,7 @@ export async function POST(
 ) {
   const { id } = await params;
   const body = await request.json();
-  const { platform, siteUrl } = body as { platform: string; siteUrl: string };
+  const { platform, siteUrl, apiToken } = body as { platform: string; siteUrl: string; apiToken?: string };
 
   if (!platform || !siteUrl) {
     return NextResponse.json({ error: "Missing platform or siteUrl" }, { status: 400 });
@@ -61,6 +61,7 @@ export async function POST(
         siteUrl,
         status: "connected",
         connectedAt: new Date().toISOString(),
+        authCredentialsEncrypted: apiToken || existing.authCredentialsEncrypted,
       })
       .where(eq(schema.connectors.id, existing.id))
       .run();
@@ -76,6 +77,7 @@ export async function POST(
       siteUrl,
       status: "connected",
       connectedAt: new Date().toISOString(),
+      authCredentialsEncrypted: apiToken || null,
     })
     .returning()
     .get();

@@ -5,7 +5,7 @@ import { eq } from "drizzle-orm";
 // Creates a default user on first request, returns their ID.
 // In production, replace with Clerk middleware.
 
-const DEFAULT_USER_EMAIL = "demo@topranq.com";
+const DEFAULT_USER_EMAIL = "demo@ranqapex.com";
 
 export async function getOrCreateUser(): Promise<typeof schema.users.$inferSelect> {
   let user = await db.query.users.findFirst({

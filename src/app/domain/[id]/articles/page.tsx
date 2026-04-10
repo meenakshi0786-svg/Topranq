@@ -116,7 +116,7 @@ export default function ArticlesPage() {
                 href={`/domain/${domainId}/agents`}
                 className="btn-primary inline-block px-5 py-2 text-sm"
               >
-                Go to AI Agents
+                Go to Strategy AI Agents
               </Link>
             )}
           </div>

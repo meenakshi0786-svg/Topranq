@@ -1,5 +1,6 @@
 import { db, schema } from "../db";
 import { eq } from "drizzle-orm";
+import { getGSCInsights } from "../gsc-intelligence";
 
 // ── Types ─────────────────────────────────────────────────────────────
 
@@ -22,6 +23,13 @@ export interface SkippedOpportunity {
   reason: string;
 }
 
+export interface LinkReportEntry {
+  url: string;
+  anchorText: string;
+  section: string;
+  justification: string;
+}
+
 export interface InternalLinkerOutput {
   // Original suggestion-only fields (for domain-wide analysis)
   suggestions: LinkSuggestion[];
@@ -39,6 +47,17 @@ export interface InternalLinkerOutput {
     linksAdded: LinkInserted[];
     skippedOpportunities: SkippedOpportunity[];
     counts: { totalLinks: number; uniqueTargets: number };
+    linkReport: {
+      totalLinksAdded: number;
+      entries: LinkReportEntry[];
+      qualityChecks: {
+        allRelevant: boolean;
+        noGenericAnchors: boolean;
+        noKeywordStuffing: boolean;
+        evenDistribution: boolean;
+        passed: boolean;
+      };
+    };
   };
 }
 
@@ -65,8 +84,17 @@ export async function runInternalLinker(
   const allPages = db.select().from(schema.pages).where(eq(schema.pages.domainId, domainId)).all();
   const existingLinks = db.select().from(schema.internalLinks).where(eq(schema.internalLinks.domainId, domainId)).all();
 
-  // Domain-wide analysis
-  const domainResult = analyzeDomain(allPages, existingLinks, maxSuggestions);
+  // ── GSC Intelligence: boost priority for pages close to page 1 ──
+  const gsc = await getGSCInsights(domainId);
+  const gscPagePositions = new Map<string, { position: number; impressions: number }>();
+  if (gsc.connected) {
+    for (const p of gsc.pages) {
+      gscPagePositions.set(p.page, { position: p.position, impressions: p.impressions });
+    }
+  }
+
+  // Domain-wide analysis (enhanced with GSC data)
+  const domainResult = analyzeDomain(allPages, existingLinks, maxSuggestions, gscPagePositions);
 
   // Article-level linking
   let articleLinking: InternalLinkerOutput["articleLinking"];
@@ -123,8 +151,9 @@ function insertLinksIntoArticle(
   const lines = markdown.split("\n");
   const totalWords = markdown.split(/\s+/).length;
 
-  // Max links: 1 per 150–200 words, capped at 10
-  const maxLinks = Math.min(10, Math.floor(totalWords / 150));
+  // 3–8 links per 1000 words — industry best practice
+  const linksPerThousand = Math.max(3, Math.min(8, Math.round(totalWords / 200)));
+  const maxLinks = Math.min(linksPerThousand, Math.ceil((totalWords / 1000) * 8));
 
   // Build candidate targets ranked by relevance
   const candidates = rankCandidatePages(allPages, targetKeyword, markdown);
@@ -162,9 +191,10 @@ function insertLinksIntoArticle(
         const anchor = findNaturalAnchor(line, candidate, targetKeyword);
         if (!anchor) continue;
 
-        // Validate anchor length (2–6 words)
+        // Validate anchor: length (2–6 words) + no generic anchors
         const anchorWords = anchor.split(/\s+/).length;
         if (anchorWords < 2 || anchorWords > 6) continue;
+        if (isGenericAnchor(anchor)) continue;
 
         // Insert the link
         const linkedLine = line.replace(anchor, `[${anchor}](${candidate.url})`);
@@ -238,6 +268,26 @@ function insertLinksIntoArticle(
     }
   }
 
+  // ── Quality validation pass ──
+  const hasGenericAnchors = linksAdded.some((l) => isGenericAnchor(l.fromAnchor));
+  const anchorFreq = new Map<string, number>();
+  for (const l of linksAdded) {
+    const key = l.fromAnchor.toLowerCase();
+    anchorFreq.set(key, (anchorFreq.get(key) || 0) + 1);
+  }
+  const hasKeywordStuffing = [...anchorFreq.values()].some((count) => count > 2);
+  const zonesUsed = new Set(linksAdded.map((l) => l.section));
+  const evenDistribution = linksAdded.length <= 2 || zonesUsed.size >= 2;
+  const allRelevant = linksAdded.every((l) => l.confidence >= 0.1);
+
+  // Build link report entries
+  const reportEntries: LinkReportEntry[] = linksAdded.map((l) => ({
+    url: l.toUrl,
+    anchorText: l.fromAnchor,
+    section: l.section,
+    justification: l.reason,
+  }));
+
   return {
     updatedMarkdown: lines.join("\n"),
     linksAdded,
@@ -245,6 +295,17 @@ function insertLinksIntoArticle(
     counts: {
       totalLinks: linksAdded.length,
       uniqueTargets: usedUrls.size,
+    },
+    linkReport: {
+      totalLinksAdded: linksAdded.length,
+      entries: reportEntries,
+      qualityChecks: {
+        allRelevant,
+        noGenericAnchors: !hasGenericAnchors,
+        noKeywordStuffing: !hasKeywordStuffing,
+        evenDistribution,
+        passed: allRelevant && !hasGenericAnchors && !hasKeywordStuffing && evenDistribution,
+      },
     },
   };
 }
@@ -304,6 +365,16 @@ function rankCandidatePages(
 }
 
 // ── Anchor finding ────────────────────────────────────────────────────
+
+const GENERIC_ANCHORS = new Set([
+  "click here", "read more", "learn more", "check it out", "see more",
+  "this article", "this page", "this link", "here", "more info",
+  "find out more", "go here", "visit", "link", "see here",
+]);
+
+function isGenericAnchor(anchor: string): boolean {
+  return GENERIC_ANCHORS.has(anchor.toLowerCase().trim());
+}
 
 function findNaturalAnchor(line: string, candidate: RankedCandidate, targetKeyword: string): string | null {
   // Don't use the exact target keyword as anchor (avoids keyword stuffing)
@@ -421,6 +492,7 @@ function analyzeDomain(
   allPages: Array<{ id: string; url: string; title: string | null; h1: string | null }>,
   existingLinks: Array<{ fromPageId: string | null; toPageId: string | null; anchorText: string | null }>,
   maxSuggestions: number,
+  gscPositions?: Map<string, { position: number; impressions: number }>,
 ): Omit<InternalLinkerOutput, "articleLinking"> {
   if (allPages.length === 0) {
     return {
@@ -469,11 +541,24 @@ function analyzeDomain(
       if (overlap.length >= 2) {
         const targetInbound = inboundCount.get(target.page.id) || 0;
 
-        const priority: "high" | "medium" | "low" =
-          targetInbound === 0 ? "high" : targetInbound <= 2 ? "medium" : "low";
+        // GSC boost: pages ranking 5-15 get higher priority
+        const gscData = gscPositions?.get(target.page.url);
+        const isAlmostRanking = gscData && gscData.position >= 5 && gscData.position <= 15;
+        const hasHighImpressions = gscData && gscData.impressions >= 50;
+
+        let priority: "high" | "medium" | "low";
+        if (targetInbound === 0 || isAlmostRanking) {
+          priority = "high";
+        } else if (targetInbound <= 2 || hasHighImpressions) {
+          priority = "medium";
+        } else {
+          priority = "low";
+        }
 
         let reason: string;
-        if (targetInbound === 0) {
+        if (isAlmostRanking && gscData) {
+          reason = `GSC: Ranking at position ${gscData.position.toFixed(1)} with ${gscData.impressions} impressions — internal links can push to page 1. Keywords: ${overlap.slice(0, 3).join(", ")}`;
+        } else if (targetInbound === 0) {
           reason = `Orphan page — "${target.page.title}" has no inbound links. Overlap: ${overlap.slice(0, 3).join(", ")}`;
         } else if (targetInbound <= 2) {
           reason = `Low link equity — ${targetInbound} inbound. Keywords: ${overlap.slice(0, 3).join(", ")}`;
