@@ -1,13 +1,22 @@
 import { db, schema } from "./db";
 import { eq } from "drizzle-orm";
-
-// Simple auth for MVP — no Clerk yet.
-// Creates a default user on first request, returns their ID.
-// In production, replace with Clerk middleware.
+import { cookies } from "next/headers";
 
 const DEFAULT_USER_EMAIL = "demo@ranqapex.com";
 
 export async function getOrCreateUser(): Promise<typeof schema.users.$inferSelect> {
+  // Check for logged-in user via cookie
+  const cookieStore = await cookies();
+  const userId = cookieStore.get("user_id")?.value;
+
+  if (userId) {
+    const user = await db.query.users.findFirst({
+      where: eq(schema.users.id, userId),
+    });
+    if (user) return user;
+  }
+
+  // Fallback: default demo user
   let user = await db.query.users.findFirst({
     where: eq(schema.users.email, DEFAULT_USER_EMAIL),
   });

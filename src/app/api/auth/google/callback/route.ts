@@ -58,11 +58,19 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Redirect to domain dashboard and auto-start audit
-    if (domainId) {
-      return NextResponse.redirect(`${APP_URL}/domain/${domainId}?autoaudit=true`);
-    }
-    return NextResponse.redirect(`${APP_URL}/dashboard`);
+    // Set auth cookie with user ID
+    const redirectUrl = domainId
+      ? `${APP_URL}/domain/${domainId}?autoaudit=true`
+      : `${APP_URL}/dashboard`;
+    const response = NextResponse.redirect(redirectUrl);
+    response.cookies.set("user_id", user.id, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 30, // 30 days
+      path: "/",
+    });
+    return response;
   } catch (error) {
     console.error("Google auth error:", error);
     return NextResponse.redirect(`${APP_URL}?error=google_auth_failed`);
