@@ -45,8 +45,6 @@ export async function GET(request: NextRequest) {
           email,
           name,
           plan: "free",
-          creditsTotal: 10,
-          creditsUsed: 0,
         })
         .returning()
         .get();
