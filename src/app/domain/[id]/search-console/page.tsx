@@ -74,21 +74,9 @@ export default function SearchConsolePage() {
 
   useEffect(() => { checkConnection(); }, [checkConnection]);
 
-  const connectGSC = async () => {
+  const connectGSC = () => {
     setConnecting(true);
-    try {
-      const res = await fetch(`/api/gsc/auth?domainId=${domainId}`);
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        alert(data.error || "Failed to start OAuth flow");
-        setConnecting(false);
-      }
-    } catch {
-      alert("Failed to connect. Make sure GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are set in .env");
-      setConnecting(false);
-    }
+    window.location.href = `/api/gsc/auth?domainId=${domainId}`;
   };
 
   const fetchData = async () => {
