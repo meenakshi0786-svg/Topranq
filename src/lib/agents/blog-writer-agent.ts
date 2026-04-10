@@ -3,33 +3,29 @@ import { eq } from "drizzle-orm";
 import { getGSCInsights } from "../gsc-intelligence";
 import { analyzeCompetitors } from "../competitor-research";
 async function askClaude(prompt: string, maxTokens = 4000): Promise<string> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error("GEMINI_API_KEY is not set");
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  if (!apiKey) throw new Error("OPENROUTER_API_KEY is not set");
 
-  for (let attempt = 0; attempt < 3; attempt++) {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { maxOutputTokens: maxTokens },
-      }),
-    });
+  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "anthropic/claude-3.5-haiku",
+      max_tokens: maxTokens,
+      messages: [{ role: "user", content: prompt }],
+    }),
+  });
 
-    if (res.status === 429) {
-      await new Promise((r) => setTimeout(r, (attempt + 1) * 5000));
-      continue;
-    }
-
-    if (!res.ok) {
-      const err = await res.text();
-      throw new Error(`Gemini API error: ${res.status} ${err}`);
-    }
-
-    const data = await res.json();
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`OpenRouter API error: ${res.status} ${err}`);
   }
-  throw new Error("Gemini API rate limited after 3 retries");
+
+  const data = await res.json();
+  return data.choices?.[0]?.message?.content || "";
 }
 
 export interface BlogWriterConfig {

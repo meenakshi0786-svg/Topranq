@@ -6,33 +6,26 @@
 import { db, schema } from "./db";
 import { eq } from "drizzle-orm";
 
-const GEMINI_KEY = process.env.GEMINI_API_KEY || "";
+const OPENROUTER_KEY = process.env.OPENROUTER_API_KEY || "";
 const SEARCH_API_KEY = process.env.GOOGLE_SEARCH_API_KEY || "";
 const SEARCH_CX = process.env.GOOGLE_SEARCH_CX || "";
 
 async function askAI(prompt: string, maxTokens = 2000): Promise<string> {
-  if (!GEMINI_KEY) throw new Error("GEMINI_API_KEY not set");
+  if (!OPENROUTER_KEY) throw new Error("OPENROUTER_API_KEY not set");
 
-  for (let attempt = 0; attempt < 3; attempt++) {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { maxOutputTokens: maxTokens },
-      }),
-    });
+  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: { "Authorization": `Bearer ${OPENROUTER_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "anthropic/claude-3.5-haiku",
+      max_tokens: maxTokens,
+      messages: [{ role: "user", content: prompt }],
+    }),
+  });
 
-    if (res.status === 429) {
-      await new Promise((r) => setTimeout(r, (attempt + 1) * 5000));
-      continue;
-    }
-
-    if (!res.ok) throw new Error(`Gemini API error: ${res.status}`);
-    const data = await res.json();
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-  }
-  throw new Error("Gemini API rate limited after 3 retries");
+  if (!res.ok) throw new Error(`OpenRouter API error: ${res.status}`);
+  const data = await res.json();
+  return data.choices?.[0]?.message?.content || "";
 }
 
 async function googleSearch(query: string): Promise<Array<{ title: string; link: string; snippet: string }>> {
