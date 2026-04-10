@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const url = getAuthUrl(domainId);
-    return NextResponse.json({ url });
+    return NextResponse.redirect(url);
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Failed to create auth URL" },
