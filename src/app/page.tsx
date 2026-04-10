@@ -49,6 +49,10 @@ export default function LandingPage() {
     window.location.href = `/api/gsc/auth?domainId=${domainId}`;
   }
 
+  function signInWithGoogle() {
+    window.location.href = `/api/auth/google?domainId=${domainId}`;
+  }
+
   function skipSignIn() {
     router.push(`/domain/${domainId}`);
   }
@@ -261,7 +265,7 @@ export default function LandingPage() {
 
               {/* Google Sign In Button */}
               <button
-                onClick={skipSignIn}
+                onClick={signInWithGoogle}
                 className="w-full flex items-center justify-center gap-3 py-3.5 rounded-xl text-sm font-semibold cursor-pointer transition-all mb-3"
                 style={{ background: "var(--bg-white)", border: "2px solid var(--border)", color: "var(--text-primary)" }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#4285F4"; e.currentTarget.style.background = "#4285F408"; }}
