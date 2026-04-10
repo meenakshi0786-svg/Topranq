@@ -58,9 +58,9 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Redirect to domain dashboard
+    // Redirect to domain dashboard and auto-start audit
     if (domainId) {
-      return NextResponse.redirect(`${APP_URL}/domain/${domainId}`);
+      return NextResponse.redirect(`${APP_URL}/domain/${domainId}?autoaudit=true`);
     }
     return NextResponse.redirect(`${APP_URL}/dashboard`);
   } catch (error) {

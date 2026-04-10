@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { useParams } from "next/navigation";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 
@@ -33,9 +33,11 @@ interface DomainData {
 
 export default function DomainOverview() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const domainId = params.id as string;
   const [data, setData] = useState<DomainData | null>(null);
   const [plan, setPlan] = useState<string | null>(null);
+  const autoAuditTriggered = useRef(false);
 
   const fetchData = useCallback(async () => {
     const res = await fetch(`/api/domains/${domainId}`);
@@ -68,6 +70,22 @@ export default function DomainOverview() {
   useEffect(() => {
     fetch("/api/credits").then((r) => r.json()).then((c) => setPlan(c.plan)).catch(() => {});
   }, []);
+
+  // Auto-start audit when redirected from Google sign-in
+  useEffect(() => {
+    if (
+      searchParams.get("autoaudit") === "true" &&
+      data &&
+      !data.latestAudit &&
+      !autoAuditTriggered.current
+    ) {
+      autoAuditTriggered.current = true;
+      fetch(`/api/domains/${domainId}/crawl`, { method: "POST" }).then(() => {
+        window.history.replaceState({}, "", `/domain/${domainId}`);
+        window.location.reload();
+      });
+    }
+  }, [searchParams, data, domainId]);
 
   if (!data) {
     return (
