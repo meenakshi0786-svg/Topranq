@@ -6,26 +6,30 @@
 import { db, schema } from "./db";
 import { eq } from "drizzle-orm";
 
-const OPENROUTER_KEY = process.env.OPENROUTER_API_KEY || "";
+const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY || "";
 const SEARCH_API_KEY = process.env.GOOGLE_SEARCH_API_KEY || "";
 const SEARCH_CX = process.env.GOOGLE_SEARCH_CX || "";
 
 async function askAI(prompt: string, maxTokens = 2000): Promise<string> {
-  if (!OPENROUTER_KEY) throw new Error("OPENROUTER_API_KEY not set");
+  if (!ANTHROPIC_KEY) throw new Error("ANTHROPIC_API_KEY not set");
 
-  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
-    headers: { "Authorization": `Bearer ${OPENROUTER_KEY}`, "Content-Type": "application/json" },
+    headers: {
+      "x-api-key": ANTHROPIC_KEY,
+      "content-type": "application/json",
+      "anthropic-version": "2023-06-01",
+    },
     body: JSON.stringify({
-      model: "anthropic/claude-3.5-haiku",
+      model: "claude-haiku-4-5-20251001",
       max_tokens: maxTokens,
       messages: [{ role: "user", content: prompt }],
     }),
   });
 
-  if (!res.ok) throw new Error(`AI API error: ${res.status}`);
+  if (!res.ok) throw new Error(`Anthropic API error: ${res.status}`);
   const data = await res.json();
-  return data.choices?.[0]?.message?.content || "";
+  return data.content?.[0]?.text || "";
 }
 
 async function googleSearch(query: string): Promise<Array<{ title: string; link: string; snippet: string }>> {

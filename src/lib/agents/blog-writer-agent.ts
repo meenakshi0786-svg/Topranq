@@ -3,17 +3,18 @@ import { eq } from "drizzle-orm";
 import { getGSCInsights } from "../gsc-intelligence";
 import { analyzeCompetitors } from "../competitor-research";
 async function askClaude(prompt: string, maxTokens = 4000): Promise<string> {
-  const apiKey = process.env.OPENROUTER_API_KEY;
-  if (!apiKey) throw new Error("OPENROUTER_API_KEY is not set");
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) throw new Error("ANTHROPIC_API_KEY is not set");
 
-  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
+      "x-api-key": apiKey,
+      "content-type": "application/json",
+      "anthropic-version": "2023-06-01",
     },
     body: JSON.stringify({
-      model: "anthropic/claude-3.5-haiku",
+      model: "claude-haiku-4-5-20251001",
       max_tokens: maxTokens,
       messages: [{ role: "user", content: prompt }],
     }),
@@ -21,11 +22,11 @@ async function askClaude(prompt: string, maxTokens = 4000): Promise<string> {
 
   if (!res.ok) {
     const err = await res.text();
-    throw new Error(`OpenRouter API error: ${res.status} ${err}`);
+    throw new Error(`Anthropic API error: ${res.status} ${err}`);
   }
 
   const data = await res.json();
-  return data.choices?.[0]?.message?.content || "";
+  return data.content?.[0]?.text || "";
 }
 
 export interface BlogWriterConfig {
