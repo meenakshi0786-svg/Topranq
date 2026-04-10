@@ -6,22 +6,30 @@ async function askClaude(prompt: string, maxTokens = 4000): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error("GEMINI_API_KEY is not set");
 
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { maxOutputTokens: maxTokens },
-    }),
-  });
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { maxOutputTokens: maxTokens },
+      }),
+    });
 
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Gemini API error: ${res.status} ${err}`);
+    if (res.status === 429) {
+      await new Promise((r) => setTimeout(r, (attempt + 1) * 5000));
+      continue;
+    }
+
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`Gemini API error: ${res.status} ${err}`);
+    }
+
+    const data = await res.json();
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
   }
-
-  const data = await res.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+  throw new Error("Gemini API rate limited after 3 retries");
 }
 
 export interface BlogWriterConfig {
