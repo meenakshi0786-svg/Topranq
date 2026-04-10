@@ -6,30 +6,25 @@
 import { db, schema } from "./db";
 import { eq } from "drizzle-orm";
 
-const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY || "";
+const GEMINI_KEY = process.env.GEMINI_API_KEY || "";
 const SEARCH_API_KEY = process.env.GOOGLE_SEARCH_API_KEY || "";
 const SEARCH_CX = process.env.GOOGLE_SEARCH_CX || "";
 
 async function askAI(prompt: string, maxTokens = 2000): Promise<string> {
-  if (!ANTHROPIC_KEY) throw new Error("ANTHROPIC_API_KEY not set");
+  if (!GEMINI_KEY) throw new Error("GEMINI_API_KEY not set");
 
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`, {
     method: "POST",
-    headers: {
-      "x-api-key": ANTHROPIC_KEY,
-      "content-type": "application/json",
-      "anthropic-version": "2023-06-01",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: maxTokens,
-      messages: [{ role: "user", content: prompt }],
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { maxOutputTokens: maxTokens },
     }),
   });
 
-  if (!res.ok) throw new Error(`Anthropic API error: ${res.status}`);
+  if (!res.ok) throw new Error(`Gemini API error: ${res.status}`);
   const data = await res.json();
-  return data.content?.[0]?.text || "";
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
 }
 
 async function googleSearch(query: string): Promise<Array<{ title: string; link: string; snippet: string }>> {

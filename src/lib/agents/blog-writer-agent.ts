@@ -3,30 +3,25 @@ import { eq } from "drizzle-orm";
 import { getGSCInsights } from "../gsc-intelligence";
 import { analyzeCompetitors } from "../competitor-research";
 async function askClaude(prompt: string, maxTokens = 4000): Promise<string> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) throw new Error("ANTHROPIC_API_KEY is not set");
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error("GEMINI_API_KEY is not set");
 
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
     method: "POST",
-    headers: {
-      "x-api-key": apiKey,
-      "content-type": "application/json",
-      "anthropic-version": "2023-06-01",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: maxTokens,
-      messages: [{ role: "user", content: prompt }],
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { maxOutputTokens: maxTokens },
     }),
   });
 
   if (!res.ok) {
     const err = await res.text();
-    throw new Error(`Anthropic API error: ${res.status} ${err}`);
+    throw new Error(`Gemini API error: ${res.status} ${err}`);
   }
 
   const data = await res.json();
-  return data.content?.[0]?.text || "";
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
 }
 
 export interface BlogWriterConfig {
