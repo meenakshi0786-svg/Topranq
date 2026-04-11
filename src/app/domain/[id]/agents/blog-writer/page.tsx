@@ -64,6 +64,7 @@ interface GeneratedArticle {
   reviewUrl?: string;
   bodyMarkdown?: string;
   bodyHtml?: string;
+  status?: string;
 }
 
 interface CreditInfo {
@@ -609,17 +610,24 @@ export default function BlogWriterPage() {
                 <div className="p-5 flex items-center justify-between" style={{ borderBottom: "1px solid var(--border-light)" }}>
                   <h2 className="text-sm font-bold" style={{ color: "#4F6EF7" }}>Generated Article</h2>
                   <div className="flex items-center gap-2">
-                    {article.reviewUrl && (
+                    {article.status === "published" || article.status === "approved" ? (
+                      <span
+                        className="text-xs font-semibold px-3 py-1.5 rounded-md text-white"
+                        style={{ background: "#22c55e" }}
+                      >
+                        Published
+                      </span>
+                    ) : article.reviewUrl ? (
                       <a
                         href={article.reviewUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-xs font-semibold px-3 py-1.5 rounded-md text-white"
-                        style={{ background: "#22c55e" }}
+                        style={{ background: "#4F6EF7" }}
                       >
                         Review & Publish
                       </a>
-                    )}
+                    ) : null}
                     <button onClick={() => setArticle(null)} className="text-xs cursor-pointer" style={{ color: "var(--text-muted)" }}>Close</button>
                   </div>
                 </div>
@@ -839,7 +847,7 @@ export default function BlogWriterPage() {
                           const res = await fetch(`/api/articles/${o.articleId}`);
                           if (res.ok) {
                             const data = await res.json();
-                            setArticle({ ...o, bodyMarkdown: data.bodyMarkdown, bodyHtml: data.bodyHtml });
+                            setArticle({ ...o, bodyMarkdown: data.bodyMarkdown, bodyHtml: data.bodyHtml, status: data.status });
                           } else {
                             setArticle(o);
                           }
