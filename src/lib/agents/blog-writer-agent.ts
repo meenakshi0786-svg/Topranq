@@ -62,6 +62,8 @@ export interface BlogWriterOutput {
   suggestedInternalLinks: Array<{ anchorText: string; targetUrl: string }>;
   faqItems: Array<{ question: string; answer: string }>;
   imageSuggestions: ImageSuggestion[];
+  featuredImageUrl: string;
+  featuredImagePrompt: string;
   schemaJsonLd: Record<string, unknown>;
   qualityChecks: QualityChecks;
   estimatedWordCount: number;
