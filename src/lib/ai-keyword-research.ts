@@ -80,9 +80,11 @@ export async function runAIKeywordResearch(domainId: string): Promise<AIKeywordR
   let hostname = "";
   try { hostname = new URL(domainUrl).hostname; } catch { hostname = domainUrl; }
 
-  // ── Step 1: Search Google for what this site ranks for ──
-  const siteResults = await googleSearch(`site:${hostname}`);
-  const brandResults = await googleSearch(hostname.replace("www.", "").split(".")[0]);
+  // ── Step 1: Search Google for what this site ranks for (parallel) ──
+  const [siteResults, brandResults] = await Promise.all([
+    googleSearch(`site:${hostname}`),
+    googleSearch(hostname.replace("www.", "").split(".")[0]),
+  ]);
 
   // ── Step 2: Detect language from crawled pages ──
   const allPageText = pages.slice(0, 5).map((p) =>

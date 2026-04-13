@@ -128,10 +128,11 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // Fallback: AI-powered keyword research when GSC has no data
+  // AI keyword research — run ONCE, use for both suggestions and top keywords
+  let aiResearch: Awaited<ReturnType<typeof runAIKeywordResearch>> | null = null;
   if (aiSuggestions.length === 0) {
     try {
-      const aiResearch = await runAIKeywordResearch(domainId);
+      aiResearch = await runAIKeywordResearch(domainId);
       for (const idea of aiResearch.blogIdeas.slice(0, 5)) {
         if (!existingTopics.has(idea.title.toLowerCase())) {
           aiSuggestions.push({
@@ -145,7 +146,6 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      // Add content gap suggestions from AI
       for (const gap of aiResearch.contentGaps.slice(0, 3)) {
         const title = `${gap.topic.charAt(0).toUpperCase() + gap.topic.slice(1)}: Complete Guide`;
         if (!existingTopics.has(title.toLowerCase())) {
@@ -167,16 +167,13 @@ export async function GET(request: NextRequest) {
   // Merge AI/GSC suggestions at the top
   const allSuggestions = [...aiSuggestions, ...suggestions];
 
-  // Use AI research keywords for "Your Top Keywords" instead of basic word extraction
+  // Reuse AI research for top keywords (no second call)
   let topKeywords = siteKeywords.slice(0, 10);
   let aiContentGaps = 0;
-  try {
-    const aiResearchData = await runAIKeywordResearch(domainId);
-    if (aiResearchData.keywords.length > 0) {
-      topKeywords = aiResearchData.keywords.slice(0, 10).map((k) => k.query);
-      aiContentGaps = aiResearchData.contentGaps.length;
-    }
-  } catch { /* use fallback siteKeywords */ }
+  if (aiResearch && aiResearch.keywords.length > 0) {
+    topKeywords = aiResearch.keywords.slice(0, 10).map((k) => k.query);
+    aiContentGaps = aiResearch.contentGaps.length;
+  }
 
   return NextResponse.json({
     niche,
