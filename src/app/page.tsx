@@ -66,6 +66,9 @@ export default function LandingPage() {
           <a href="#features" className="text-sm font-medium px-4 py-2 rounded-lg hidden md:inline-block" style={{ color: "var(--text-secondary)" }}>
             Features
           </a>
+          <a href="#geo" className="text-sm font-medium px-4 py-2 rounded-lg hidden md:inline-block" style={{ color: "var(--text-secondary)" }}>
+            GEO
+          </a>
           <a href="#how-it-works" className="text-sm font-medium px-4 py-2 rounded-lg hidden md:inline-block" style={{ color: "var(--text-secondary)" }}>
             How it works
           </a>
@@ -238,6 +241,77 @@ export default function LandingPage() {
               desc="Review via email, accept, and we push directly to Shopify — no copy-paste, no formatting fixes."
               tag="Publish"
             />
+          </div>
+        </div>
+      </section>
+
+      {/* Generative Engine Optimization (GEO) */}
+      <section id="geo" style={{ background: "linear-gradient(180deg, var(--bg) 0%, #0f172a 100%)", color: "#fff" }}>
+        <div className="max-w-[1200px] mx-auto px-6 py-24">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            {/* Left: copy + bullets */}
+            <div className="fade-in">
+              <div
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-6"
+                style={{ background: "rgba(124, 92, 252, 0.15)", color: "#A8B5FF", border: "1px solid rgba(168, 181, 255, 0.3)" }}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                  <path d="M2 17l10 5 10-5M2 12l10 5 10-5" />
+                </svg>
+                GEO · The new search landscape
+              </div>
+
+              <h2 className="text-3xl md:text-[42px] font-bold tracking-tight mb-5 leading-[1.1]">
+                Get cited by{" "}
+                <span style={{ background: "linear-gradient(135deg, #A8B5FF, #C4B5FD)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                  ChatGPT, Perplexity
+                </span>{" "}
+                & Google AI Overviews
+              </h2>
+              <p className="text-base md:text-lg mb-8 leading-relaxed" style={{ color: "rgba(255,255,255,0.7)" }}>
+                40% of searches now happen on AI engines — and they don&rsquo;t just rank pages, they cite them. Generative Engine Optimization makes your content quotable, citable, and visible inside AI answers.
+              </p>
+
+              <div className="space-y-3 mb-8">
+                {[
+                  { title: "AI Readiness Score", desc: "Per-page score for how easily AI engines can extract and cite your content." },
+                  { title: "Auto-generated schema & FAQ markup", desc: "Structured data that AI crawlers actually understand and quote." },
+                  { title: "llms.txt + AI crawler directives", desc: "Tell GPTBot, ClaudeBot, PerplexityBot what they can index." },
+                  { title: "Entity & citation optimization", desc: "Stats, lists, definitions formatted for direct quoting." },
+                  { title: "AI search visibility tracking", desc: "Monitor when your brand shows up in AI-generated answers." },
+                ].map((item) => (
+                  <div key={item.title} className="flex items-start gap-3">
+                    <div className="shrink-0 mt-0.5 w-5 h-5 rounded-full flex items-center justify-center" style={{ background: "rgba(124, 92, 252, 0.25)" }}>
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#A8B5FF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-white">{item.title}</p>
+                      <p className="text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.6)" }}>{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <a
+                href="#features"
+                className="inline-flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-lg transition-all"
+                style={{ background: "rgba(255,255,255,0.1)", color: "#fff", border: "1px solid rgba(255,255,255,0.2)" }}
+              >
+                Run free AI Readiness audit
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                  <polyline points="12 5 19 12 12 19" />
+                </svg>
+              </a>
+            </div>
+
+            {/* Right: GEO visual */}
+            <div className="fade-in">
+              <GeoMockup />
+            </div>
           </div>
         </div>
       </section>
@@ -552,6 +626,109 @@ function Stat({ value, label }: { value: string; label: string }) {
     <div className="text-white">
       <p className="text-3xl md:text-4xl font-bold tracking-tight mb-1">{value}</p>
       <p className="text-xs md:text-sm opacity-80">{label}</p>
+    </div>
+  );
+}
+
+function GeoMockup() {
+  const engines = [
+    { name: "ChatGPT", color: "#10A37F", initial: "G" },
+    { name: "Perplexity", color: "#20808D", initial: "P" },
+    { name: "Google AI", color: "#4285F4", initial: "G" },
+    { name: "Claude", color: "#D97757", initial: "C" },
+  ];
+  return (
+    <div className="relative">
+      {/* Main card: AI search result */}
+      <div
+        className="rounded-2xl p-6"
+        style={{
+          background: "rgba(255,255,255,0.06)",
+          border: "1px solid rgba(255,255,255,0.12)",
+          backdropFilter: "blur(20px)",
+          boxShadow: "0 30px 60px -15px rgba(0,0,0,0.5)",
+        }}
+      >
+        {/* AI engine avatar */}
+        <div className="flex items-center gap-2.5 mb-4">
+          <div className="w-9 h-9 rounded-lg flex items-center justify-center text-white font-bold text-sm" style={{ background: "linear-gradient(135deg, #10A37F, #1A7F64)" }}>
+            G
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-white">ChatGPT</p>
+            <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>Answering &ldquo;best organic skincare brands&rdquo;</p>
+          </div>
+        </div>
+
+        {/* AI answer with citation */}
+        <div className="text-sm leading-relaxed mb-4" style={{ color: "rgba(255,255,255,0.85)" }}>
+          For organic skincare, top brands focus on certified ingredients and transparent sourcing.{" "}
+          <span
+            className="px-1.5 py-0.5 rounded text-xs font-semibold"
+            style={{ background: "rgba(124, 92, 252, 0.25)", color: "#C4B5FD", border: "1px solid rgba(168, 181, 255, 0.4)" }}
+          >
+            yourstore.com
+            <sup className="ml-0.5">[1]</sup>
+          </span>{" "}
+          recommends checking for USDA Organic and ECOCERT certifications, and prioritizing brands with full ingredient transparency.
+        </div>
+
+        {/* Sources */}
+        <div className="pt-4" style={{ borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+          <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: "rgba(255,255,255,0.5)" }}>
+            Sources
+          </p>
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2 text-xs">
+              <span className="w-4 h-4 rounded flex items-center justify-center text-[9px] font-bold" style={{ background: "#7C5CFC", color: "#fff" }}>1</span>
+              <span style={{ color: "rgba(255,255,255,0.7)" }}>yourstore.com/guides/organic-skincare</span>
+            </div>
+            <div className="flex items-center gap-2 text-xs opacity-60">
+              <span className="w-4 h-4 rounded flex items-center justify-center text-[9px] font-bold" style={{ background: "rgba(255,255,255,0.15)", color: "#fff" }}>2</span>
+              <span style={{ color: "rgba(255,255,255,0.5)" }}>healthline.com/nutrition/organic-skin...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Floating: AI Readiness Score */}
+      <div
+        className="absolute -top-5 -right-5 rounded-xl px-4 py-3 hidden md:block"
+        style={{
+          background: "rgba(255,255,255,0.95)",
+          boxShadow: "0 20px 40px -10px rgba(0,0,0,0.4)",
+        }}
+      >
+        <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: "#64748b" }}>AI Readiness</p>
+        <div className="flex items-baseline gap-1">
+          <span className="text-2xl font-bold" style={{ color: "#22c55e" }}>92</span>
+          <span className="text-xs" style={{ color: "#94a3b8" }}>/100</span>
+        </div>
+      </div>
+
+      {/* Floating: cited by row */}
+      <div
+        className="absolute -bottom-6 left-6 right-6 rounded-xl px-4 py-3 hidden md:flex items-center gap-3"
+        style={{
+          background: "rgba(255,255,255,0.95)",
+          boxShadow: "0 20px 40px -10px rgba(0,0,0,0.4)",
+        }}
+      >
+        <span className="text-[10px] font-bold uppercase tracking-wider shrink-0" style={{ color: "#64748b" }}>Cited by</span>
+        <div className="flex items-center -space-x-1.5">
+          {engines.map((e) => (
+            <div
+              key={e.name}
+              title={e.name}
+              className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold"
+              style={{ background: e.color, border: "2px solid #fff" }}
+            >
+              {e.initial}
+            </div>
+          ))}
+        </div>
+        <span className="text-xs ml-auto font-semibold" style={{ color: "#22c55e" }}>+247 mentions</span>
+      </div>
     </div>
   );
 }
