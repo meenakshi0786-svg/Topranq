@@ -71,6 +71,12 @@ export default function ReviewPage() {
   const [scheduleDate, setScheduleDate] = useState("");
   const [scheduleConnectorId, setScheduleConnectorId] = useState("");
   const [scheduling, setScheduling] = useState(false);
+  const [showWpInput, setShowWpInput] = useState(false);
+  const [wpSiteUrl, setWpSiteUrl] = useState("");
+  const [wpUsername, setWpUsername] = useState("");
+  const [wpPassword, setWpPassword] = useState("");
+  const [wpConnecting, setWpConnecting] = useState(false);
+  const [wpError, setWpError] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -92,6 +98,55 @@ export default function ReviewPage() {
     }
     load();
   }, [token]);
+
+  async function connectWordPress() {
+    if (!article) return;
+    if (!wpSiteUrl.trim() || !wpUsername.trim() || !wpPassword.trim()) {
+      setWpError("Please fill in all fields");
+      return;
+    }
+    setWpConnecting(true);
+    setWpError(null);
+    try {
+      // Test first
+      const testRes = await fetch("/api/connectors/test-wordpress", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          siteUrl: wpSiteUrl.trim(),
+          username: wpUsername.trim(),
+          password: wpPassword.trim(),
+        }),
+      });
+      const testData = await testRes.json();
+      if (!testRes.ok) {
+        setWpError(testData.error || "Connection failed");
+        return;
+      }
+
+      // Save
+      const saveRes = await fetch(`/api/domains/${article.domainId}/connectors`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          platform: "wordpress",
+          siteUrl: testData.baseUrl,
+          username: wpUsername.trim(),
+          password: wpPassword.trim(),
+        }),
+      });
+      if (!saveRes.ok) {
+        const err = await saveRes.json();
+        setWpError(err.error || "Failed to save connector");
+        return;
+      }
+      window.location.reload();
+    } catch (e) {
+      setWpError(e instanceof Error ? e.message : "Connection failed");
+    } finally {
+      setWpConnecting(false);
+    }
+  }
 
   async function handleSchedule() {
     if (!article || !scheduleDate || !scheduleConnectorId) return;
@@ -237,12 +292,9 @@ export default function ReviewPage() {
         <div style={{ display: "flex", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
           <button
             onClick={() => {
-              const connected = connectors.find((c) => c.status === "connected");
-              if (connected) {
-                handleAction("accept", connected.id);
-              } else {
-                setShowPublishPicker(true);
-              }
+              setShowPublishPicker(true);
+              setShowScheduler(false);
+              setShowReworkForm(false);
             }}
             disabled={submitting}
             style={{ background: "#22c55e", color: "#fff", border: "none", padding: "14px 36px", borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: "pointer", opacity: submitting ? 0.5 : 1 }}
@@ -342,6 +394,109 @@ export default function ReviewPage() {
                       >
                         Connect Shopify
                       </button>
+                    )}
+                  </div>
+                );
+              })()}
+
+              {/* WordPress card */}
+              {(() => {
+                const wpConnector = connectors.find((c) => c.platform === "wordpress" && c.status === "connected");
+                return (
+                  <div
+                    style={{
+                      padding: "16px 18px",
+                      borderRadius: 12,
+                      border: `2px solid ${wpConnector ? "#bfdbfe" : "#e5e5e5"}`,
+                      background: wpConnector ? "#eff6ff" : "#fff",
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                      <div style={{ width: 46, height: 46, borderRadius: 10, background: "#21759B15", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#21759B" strokeWidth="1.8">
+                          <circle cx="12" cy="12" r="10" />
+                          <path d="M3.5 9L9 21M15 3.5L9 21M21 12h-7M3 12c0-4.97 4.03-9 9-9s9 4.03 9 9-4.03 9-9 9" />
+                        </svg>
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <p style={{ fontSize: 15, fontWeight: 700, margin: 0 }}>WordPress</p>
+                          {wpConnector && (
+                            <span style={{ fontSize: 10, fontWeight: 600, padding: "2px 8px", borderRadius: 6, background: "#dbeafe", color: "#1e40af" }}>Connected</span>
+                          )}
+                        </div>
+                        <p style={{ fontSize: 11, color: "#999", margin: "2px 0 0" }}>
+                          {wpConnector ? wpConnector.siteUrl : "Self-hosted WordPress · uses Application Passwords"}
+                        </p>
+                      </div>
+
+                      {wpConnector ? (
+                        <button
+                          onClick={() => handleAction("accept", wpConnector.id)}
+                          disabled={submitting}
+                          style={{ fontSize: 13, fontWeight: 700, padding: "10px 24px", borderRadius: 10, background: "#21759B", color: "#fff", border: "none", cursor: "pointer", opacity: submitting ? 0.5 : 1 }}
+                        >
+                          {submitting ? "Publishing..." : "Publish"}
+                        </button>
+                      ) : !showWpInput ? (
+                        <button
+                          onClick={() => setShowWpInput(true)}
+                          style={{ fontSize: 13, fontWeight: 700, padding: "10px 24px", borderRadius: 10, background: "#fff", color: "#21759B", border: "2px solid #21759B", cursor: "pointer" }}
+                        >
+                          Connect WordPress
+                        </button>
+                      ) : null}
+                    </div>
+
+                    {!wpConnector && showWpInput && (
+                      <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid #e5e5e5" }}>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 8, marginBottom: 10 }}>
+                          <input
+                            type="text"
+                            value={wpSiteUrl}
+                            onChange={(e) => setWpSiteUrl(e.target.value)}
+                            placeholder="Site URL (e.g. https://yourblog.com)"
+                            style={{ fontSize: 12, padding: "10px 12px", borderRadius: 8, border: "1px solid #ddd", outline: "none" }}
+                          />
+                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                            <input
+                              type="text"
+                              value={wpUsername}
+                              onChange={(e) => setWpUsername(e.target.value)}
+                              placeholder="WP username"
+                              style={{ fontSize: 12, padding: "10px 12px", borderRadius: 8, border: "1px solid #ddd", outline: "none" }}
+                            />
+                            <input
+                              type="password"
+                              value={wpPassword}
+                              onChange={(e) => setWpPassword(e.target.value)}
+                              placeholder="Application Password"
+                              style={{ fontSize: 12, padding: "10px 12px", borderRadius: 8, border: "1px solid #ddd", outline: "none" }}
+                            />
+                          </div>
+                        </div>
+                        <p style={{ fontSize: 11, color: "#666", margin: "0 0 10px" }}>
+                          Get your Application Password from WordPress: Users → Profile → Application Passwords. Do <strong>not</strong> use your login password.
+                        </p>
+                        {wpError && (
+                          <p style={{ fontSize: 12, color: "#dc2626", marginBottom: 10 }}>{wpError}</p>
+                        )}
+                        <div style={{ display: "flex", gap: 8 }}>
+                          <button
+                            onClick={connectWordPress}
+                            disabled={wpConnecting}
+                            style={{ fontSize: 12, fontWeight: 700, padding: "8px 16px", borderRadius: 8, background: "#21759B", color: "#fff", border: "none", cursor: "pointer", opacity: wpConnecting ? 0.5 : 1 }}
+                          >
+                            {wpConnecting ? "Testing..." : "Test & Save"}
+                          </button>
+                          <button
+                            onClick={() => { setShowWpInput(false); setWpError(null); }}
+                            style={{ fontSize: 12, padding: "8px 16px", borderRadius: 8, background: "transparent", color: "#999", border: "none", cursor: "pointer" }}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
                     )}
                   </div>
                 );

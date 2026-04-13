@@ -31,7 +31,13 @@ export async function POST(
 ) {
   const { id } = await params;
   const body = await request.json();
-  const { platform, siteUrl, apiToken } = body as { platform: string; siteUrl: string; apiToken?: string };
+  const { platform, siteUrl, apiToken, username, password } = body as {
+    platform: string;
+    siteUrl: string;
+    apiToken?: string;
+    username?: string;
+    password?: string;
+  };
 
   if (!platform || !siteUrl) {
     return NextResponse.json({ error: "Missing platform or siteUrl" }, { status: 400 });
@@ -40,6 +46,18 @@ export async function POST(
   const validPlatforms = ["wordpress", "shopify", "webflow", "webhook"];
   if (!validPlatforms.includes(platform)) {
     return NextResponse.json({ error: "Invalid platform" }, { status: 400 });
+  }
+
+  // Build auth payload — WordPress uses username + app password, others use token
+  let authPayload: string | null = apiToken || null;
+  if (platform === "wordpress") {
+    if (!username || !password) {
+      return NextResponse.json(
+        { error: "WordPress requires username and application password" },
+        { status: 400 }
+      );
+    }
+    authPayload = JSON.stringify({ username, password });
   }
 
   // Check if connector already exists for this platform
@@ -55,20 +73,18 @@ export async function POST(
     .get();
 
   if (existing) {
-    // Update existing
     db.update(schema.connectors)
       .set({
         siteUrl,
         status: "connected",
         connectedAt: new Date().toISOString(),
-        authCredentialsEncrypted: apiToken || existing.authCredentialsEncrypted,
+        authCredentialsEncrypted: authPayload || existing.authCredentialsEncrypted,
       })
       .where(eq(schema.connectors.id, existing.id))
       .run();
     return NextResponse.json({ ...existing, siteUrl, status: "connected" });
   }
 
-  // Create new
   const connector = db
     .insert(schema.connectors)
     .values({
@@ -77,7 +93,7 @@ export async function POST(
       siteUrl,
       status: "connected",
       connectedAt: new Date().toISOString(),
-      authCredentialsEncrypted: apiToken || null,
+      authCredentialsEncrypted: authPayload,
     })
     .returning()
     .get();

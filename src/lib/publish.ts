@@ -80,23 +80,80 @@ export async function publishToCMS(
     }
 
     case "wordpress": {
-      const wpApiUrl = `${siteUrl}/wp-json/wp/v2/posts`;
-      const res = await fetch(wpApiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: article.metaTitle || "Untitled",
-          content: article.bodyHtml || article.bodyMarkdown || "",
-          slug,
-          status: "publish",
-          excerpt: article.metaDescription || "",
-        }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        return { url: data.link || `${siteUrl}/${slug}`, id: String(data.id) };
+      if (!connector.authCredentialsEncrypted) {
+        throw new Error("WordPress credentials not configured.");
       }
-      return { url: `${siteUrl}/${slug}` };
+      let creds: { username: string; password: string };
+      try {
+        creds = JSON.parse(connector.authCredentialsEncrypted);
+      } catch {
+        throw new Error("WordPress credentials are malformed. Reconnect the site.");
+      }
+      if (!creds.username || !creds.password) {
+        throw new Error("WordPress username/password missing.");
+      }
+
+      const basicAuth = "Basic " + Buffer.from(`${creds.username}:${creds.password}`).toString("base64");
+      const baseUrl = siteUrl.replace(/\/$/, "");
+
+      // 1. Upload featured image (if we have one) — WP needs media ID to link via featured_media
+      let featuredMediaId: number | undefined;
+      if (article.featuredImageUrl) {
+        try {
+          const imgRes = await fetch(article.featuredImageUrl);
+          if (imgRes.ok) {
+            const imgBuf = await imgRes.arrayBuffer();
+            const fileName = `${slug}.png`;
+            const mediaRes = await fetch(`${baseUrl}/wp-json/wp/v2/media`, {
+              method: "POST",
+              headers: {
+                "Authorization": basicAuth,
+                "Content-Type": "image/png",
+                "Content-Disposition": `attachment; filename="${fileName}"`,
+              },
+              body: imgBuf,
+            });
+            if (mediaRes.ok) {
+              const mediaData = await mediaRes.json();
+              featuredMediaId = mediaData.id;
+            }
+          }
+        } catch {
+          // Image upload is non-fatal — continue without
+        }
+      }
+
+      // 2. Create the post
+      const postBody: Record<string, unknown> = {
+        title: article.metaTitle || "Untitled",
+        content: article.bodyHtml || article.bodyMarkdown || "",
+        slug,
+        status: "publish",
+        excerpt: article.metaDescription || "",
+      };
+      if (featuredMediaId) postBody.featured_media = featuredMediaId;
+      if (article.targetKeyword) {
+        postBody.tags_input = article.targetKeyword
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean);
+      }
+
+      const res = await fetch(`${baseUrl}/wp-json/wp/v2/posts`, {
+        method: "POST",
+        headers: {
+          "Authorization": basicAuth,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(postBody),
+      });
+
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(`WordPress publish failed: ${res.status} ${err.slice(0, 200)}`);
+      }
+      const data = await res.json();
+      return { url: data.link || `${baseUrl}/${slug}`, id: String(data.id) };
     }
 
     case "webhook": {
