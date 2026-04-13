@@ -194,6 +194,25 @@ export default function BlogWriterPage() {
     fetchBlogJobs();
   }, [fetchGscData, fetchSmartSuggestions, fetchBlogJobs]);
 
+  // Refresh article status when user returns to this tab (e.g., after publishing in review tab)
+  useEffect(() => {
+    function onFocus() {
+      if (article?.articleId) {
+        fetch(`/api/articles/${article.articleId}`)
+          .then((r) => (r.ok ? r.json() : null))
+          .then((data) => {
+            if (data?.status) {
+              setArticle((prev) => (prev ? { ...prev, status: data.status } : prev));
+            }
+          })
+          .catch(() => {});
+      }
+      fetchBlogJobs();
+    }
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, [article?.articleId, fetchBlogJobs]);
+
   // Generate article
   async function generateArticle(topic: string, keywords: string[], tone: string, wordCount: number) {
     setGenerating(true);
