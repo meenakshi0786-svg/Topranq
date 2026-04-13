@@ -244,72 +244,147 @@ export default function LandingPage() {
       </section>
 
       {/* Generative Engine Optimization (GEO) */}
-      <section id="geo" style={{ background: "linear-gradient(180deg, var(--bg) 0%, #0f172a 100%)", color: "#fff" }}>
-        <div className="max-w-[1200px] mx-auto px-6 py-24">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            {/* Left: copy + bullets */}
-            <div className="fade-in">
+      <section
+        id="geo"
+        style={{
+          background: "linear-gradient(180deg, #0b1228 0%, #0f172a 60%, #1a1f3a 100%)",
+          color: "#fff",
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
+        {/* Glow accent */}
+        <div
+          style={{
+            position: "absolute",
+            top: "10%",
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: 600,
+            height: 400,
+            background: "radial-gradient(ellipse, rgba(124,92,252,0.25), transparent 70%)",
+            filter: "blur(80px)",
+            pointerEvents: "none",
+          }}
+        />
+
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "96px 24px", position: "relative" }}>
+          {/* Centered heading */}
+          <div style={{ textAlign: "center", maxWidth: 720, margin: "0 auto 64px" }}>
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "6px 14px",
+                borderRadius: 999,
+                fontSize: 12,
+                fontWeight: 600,
+                marginBottom: 24,
+                background: "rgba(124, 92, 252, 0.15)",
+                color: "#A8B5FF",
+                border: "1px solid rgba(168, 181, 255, 0.3)",
+              }}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                <path d="M2 17l10 5 10-5M2 12l10 5 10-5" />
+              </svg>
+              GEO · The new search landscape
+            </div>
+
+            <h2 style={{ fontSize: "clamp(28px, 4vw, 44px)", fontWeight: 700, letterSpacing: "-0.02em", marginBottom: 20, lineHeight: 1.1 }}>
+              Get cited by{" "}
+              <span style={{ background: "linear-gradient(135deg, #A8B5FF, #C4B5FD)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                ChatGPT, Perplexity
+              </span>{" "}
+              &amp; Google AI Overviews
+            </h2>
+            <p style={{ fontSize: 17, lineHeight: 1.6, color: "rgba(255,255,255,0.7)", maxWidth: 600, margin: "0 auto" }}>
+              40% of searches now happen on AI engines — and they don&rsquo;t just rank pages, they cite them. Generative Engine Optimization makes your content quotable, citable, and visible inside AI answers.
+            </p>
+          </div>
+
+          {/* Mockup centered */}
+          <div style={{ maxWidth: 640, margin: "0 auto 72px" }}>
+            <GeoMockup />
+          </div>
+
+          {/* Capabilities grid */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+              gap: 16,
+              marginBottom: 48,
+            }}
+          >
+            {[
+              { title: "AI Readiness Score", desc: "Per-page score for how easily AI engines can extract and cite your content.", icon: "M9 12l2 2 4-4M21 12a9 9 0 11-18 0 9 9 0 0118 0z" },
+              { title: "Schema & FAQ markup", desc: "Auto-generated structured data that AI crawlers actually understand and quote.", icon: "M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" },
+              { title: "llms.txt directives", desc: "Tell GPTBot, ClaudeBot, PerplexityBot exactly what they can index.", icon: "M9 17v-2a4 4 0 014-4h4M9 17H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-4" },
+              { title: "Entity & citations", desc: "Stats, lists, and definitions formatted for direct quoting in AI answers.", icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" },
+              { title: "AI visibility tracking", desc: "Monitor when your brand and pages show up in AI-generated answers.", icon: "M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" },
+              { title: "Brand mention monitoring", desc: "Track how often your domain is referenced across AI engines and forums.", icon: "M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" },
+            ].map((item) => (
               <div
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-6"
-                style={{ background: "rgba(124, 92, 252, 0.15)", color: "#A8B5FF", border: "1px solid rgba(168, 181, 255, 0.3)" }}
+                key={item.title}
+                style={{
+                  padding: 20,
+                  borderRadius: 12,
+                  background: "rgba(255,255,255,0.04)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  backdropFilter: "blur(8px)",
+                }}
               >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                  <path d="M2 17l10 5 10-5M2 12l10 5 10-5" />
-                </svg>
-                GEO · The new search landscape
+                <div
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 8,
+                    background: "rgba(124, 92, 252, 0.2)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginBottom: 12,
+                  }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A8B5FF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d={item.icon} />
+                  </svg>
+                </div>
+                <p style={{ fontSize: 14, fontWeight: 600, color: "#fff", marginBottom: 6 }}>{item.title}</p>
+                <p style={{ fontSize: 12.5, lineHeight: 1.55, color: "rgba(255,255,255,0.6)" }}>{item.desc}</p>
               </div>
+            ))}
+          </div>
 
-              <h2 className="text-3xl md:text-[42px] font-bold tracking-tight mb-5 leading-[1.1]">
-                Get cited by{" "}
-                <span style={{ background: "linear-gradient(135deg, #A8B5FF, #C4B5FD)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-                  ChatGPT, Perplexity
-                </span>{" "}
-                & Google AI Overviews
-              </h2>
-              <p className="text-base md:text-lg mb-8 leading-relaxed" style={{ color: "rgba(255,255,255,0.7)" }}>
-                40% of searches now happen on AI engines — and they don&rsquo;t just rank pages, they cite them. Generative Engine Optimization makes your content quotable, citable, and visible inside AI answers.
-              </p>
-
-              <div className="space-y-3 mb-8">
-                {[
-                  { title: "AI Readiness Score", desc: "Per-page score for how easily AI engines can extract and cite your content." },
-                  { title: "Auto-generated schema & FAQ markup", desc: "Structured data that AI crawlers actually understand and quote." },
-                  { title: "llms.txt + AI crawler directives", desc: "Tell GPTBot, ClaudeBot, PerplexityBot what they can index." },
-                  { title: "Entity & citation optimization", desc: "Stats, lists, definitions formatted for direct quoting." },
-                  { title: "AI search visibility tracking", desc: "Monitor when your brand shows up in AI-generated answers." },
-                ].map((item) => (
-                  <div key={item.title} className="flex items-start gap-3">
-                    <div className="shrink-0 mt-0.5 w-5 h-5 rounded-full flex items-center justify-center" style={{ background: "rgba(124, 92, 252, 0.25)" }}>
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#A8B5FF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-white">{item.title}</p>
-                      <p className="text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.6)" }}>{item.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <a
-                href="#features"
-                className="inline-flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-lg transition-all"
-                style={{ background: "rgba(255,255,255,0.1)", color: "#fff", border: "1px solid rgba(255,255,255,0.2)" }}
-              >
-                Run free AI Readiness audit
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                  <polyline points="12 5 19 12 12 19" />
-                </svg>
-              </a>
-            </div>
-
-            {/* Right: GEO visual */}
-            <div className="fade-in">
-              <GeoMockup />
-            </div>
+          {/* CTA centered */}
+          <div style={{ textAlign: "center" }}>
+            <a
+              href="#"
+              onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                fontSize: 14,
+                fontWeight: 600,
+                padding: "12px 24px",
+                borderRadius: 10,
+                background: "rgba(255,255,255,0.1)",
+                color: "#fff",
+                border: "1px solid rgba(255,255,255,0.2)",
+                textDecoration: "none",
+                transition: "all 0.2s",
+              }}
+            >
+              Run free AI Readiness audit
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="12 5 19 12 12 19" />
+              </svg>
+            </a>
           </div>
         </div>
       </section>
@@ -635,60 +710,83 @@ function Stat({ value, label }: { value: string; label: string }) {
 
 function GeoMockup() {
   const engines = [
-    { name: "ChatGPT", color: "#10A37F", initial: "G" },
+    { name: "ChatGPT", color: "#10A37F", initial: "C" },
     { name: "Perplexity", color: "#20808D", initial: "P" },
     { name: "Google AI", color: "#4285F4", initial: "G" },
-    { name: "Claude", color: "#D97757", initial: "C" },
+    { name: "Claude", color: "#D97757", initial: "A" },
   ];
   return (
-    <div className="relative">
+    <div style={{ position: "relative", paddingTop: 28, paddingBottom: 32 }}>
       {/* Main card: AI search result */}
       <div
-        className="rounded-2xl p-6"
         style={{
+          padding: 24,
+          borderRadius: 16,
           background: "rgba(255,255,255,0.06)",
           border: "1px solid rgba(255,255,255,0.12)",
           backdropFilter: "blur(20px)",
           boxShadow: "0 30px 60px -15px rgba(0,0,0,0.5)",
         }}
       >
-        {/* AI engine avatar */}
-        <div className="flex items-center gap-2.5 mb-4">
-          <div className="w-9 h-9 rounded-lg flex items-center justify-center text-white font-bold text-sm" style={{ background: "linear-gradient(135deg, #10A37F, #1A7F64)" }}>
-            G
+        {/* AI engine avatar row */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+          <div
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 10,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#fff",
+              fontWeight: 700,
+              fontSize: 13,
+              background: "linear-gradient(135deg, #10A37F, #1A7F64)",
+            }}
+          >
+            C
           </div>
           <div>
-            <p className="text-sm font-semibold text-white">ChatGPT</p>
-            <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>Answering &ldquo;best organic skincare brands&rdquo;</p>
+            <p style={{ fontSize: 14, fontWeight: 600, color: "#fff", margin: 0 }}>ChatGPT</p>
+            <p style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", margin: 0 }}>
+              Answering &ldquo;best organic skincare brands&rdquo;
+            </p>
           </div>
         </div>
 
         {/* AI answer with citation */}
-        <div className="text-sm leading-relaxed mb-4" style={{ color: "rgba(255,255,255,0.85)" }}>
+        <div style={{ fontSize: 14, lineHeight: 1.65, color: "rgba(255,255,255,0.85)", marginBottom: 16 }}>
           For organic skincare, top brands focus on certified ingredients and transparent sourcing.{" "}
           <span
-            className="px-1.5 py-0.5 rounded text-xs font-semibold"
-            style={{ background: "rgba(124, 92, 252, 0.25)", color: "#C4B5FD", border: "1px solid rgba(168, 181, 255, 0.4)" }}
+            style={{
+              padding: "2px 8px",
+              borderRadius: 4,
+              fontSize: 12,
+              fontWeight: 600,
+              background: "rgba(124, 92, 252, 0.25)",
+              color: "#C4B5FD",
+              border: "1px solid rgba(168, 181, 255, 0.4)",
+              whiteSpace: "nowrap",
+            }}
           >
-            yourstore.com
-            <sup className="ml-0.5">[1]</sup>
+            yourstore.com<sup style={{ marginLeft: 2 }}>[1]</sup>
           </span>{" "}
-          recommends checking for USDA Organic and ECOCERT certifications, and prioritizing brands with full ingredient transparency.
+          recommends checking for USDA Organic certifications and prioritizing brands with full ingredient transparency.
         </div>
 
         {/* Sources */}
-        <div className="pt-4" style={{ borderTop: "1px solid rgba(255,255,255,0.1)" }}>
-          <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: "rgba(255,255,255,0.5)" }}>
+        <div style={{ paddingTop: 16, borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+          <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(255,255,255,0.5)", margin: "0 0 10px" }}>
             Sources
           </p>
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2 text-xs">
-              <span className="w-4 h-4 rounded flex items-center justify-center text-[9px] font-bold" style={{ background: "#7C5CFC", color: "#fff" }}>1</span>
-              <span style={{ color: "rgba(255,255,255,0.7)" }}>yourstore.com/guides/organic-skincare</span>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12 }}>
+              <span style={{ width: 16, height: 16, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, background: "#7C5CFC", color: "#fff" }}>1</span>
+              <span style={{ color: "rgba(255,255,255,0.75)" }}>yourstore.com/guides/organic-skincare</span>
             </div>
-            <div className="flex items-center gap-2 text-xs opacity-60">
-              <span className="w-4 h-4 rounded flex items-center justify-center text-[9px] font-bold" style={{ background: "rgba(255,255,255,0.15)", color: "#fff" }}>2</span>
-              <span style={{ color: "rgba(255,255,255,0.5)" }}>healthline.com/nutrition/organic-skin...</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, opacity: 0.55 }}>
+              <span style={{ width: 16, height: 16, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, background: "rgba(255,255,255,0.15)", color: "#fff" }}>2</span>
+              <span style={{ color: "rgba(255,255,255,0.55)" }}>healthline.com/nutrition/organic-skin...</span>
             </div>
           </div>
         </div>
@@ -696,41 +794,71 @@ function GeoMockup() {
 
       {/* Floating: AI Readiness Score */}
       <div
-        className="absolute -top-5 -right-5 rounded-xl px-4 py-3 hidden md:block"
         style={{
-          background: "rgba(255,255,255,0.95)",
+          position: "absolute",
+          top: 0,
+          right: -12,
+          padding: "12px 16px",
+          borderRadius: 12,
+          background: "rgba(255,255,255,0.97)",
           boxShadow: "0 20px 40px -10px rgba(0,0,0,0.4)",
         }}
       >
-        <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: "#64748b" }}>AI Readiness</p>
-        <div className="flex items-baseline gap-1">
-          <span className="text-2xl font-bold" style={{ color: "#22c55e" }}>92</span>
-          <span className="text-xs" style={{ color: "#94a3b8" }}>/100</span>
+        <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#64748b", margin: "0 0 4px" }}>
+          AI Readiness
+        </p>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
+          <span style={{ fontSize: 26, fontWeight: 700, color: "#22c55e" }}>92</span>
+          <span style={{ fontSize: 12, color: "#94a3b8" }}>/100</span>
         </div>
       </div>
 
       {/* Floating: cited by row */}
       <div
-        className="absolute -bottom-6 left-6 right-6 rounded-xl px-4 py-3 hidden md:flex items-center gap-3"
         style={{
-          background: "rgba(255,255,255,0.95)",
+          position: "absolute",
+          bottom: 0,
+          left: 24,
+          right: 24,
+          padding: "12px 16px",
+          borderRadius: 12,
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          background: "rgba(255,255,255,0.97)",
           boxShadow: "0 20px 40px -10px rgba(0,0,0,0.4)",
         }}
       >
-        <span className="text-[10px] font-bold uppercase tracking-wider shrink-0" style={{ color: "#64748b" }}>Cited by</span>
-        <div className="flex items-center -space-x-1.5">
-          {engines.map((e) => (
+        <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#64748b", flexShrink: 0 }}>
+          Cited by
+        </span>
+        <div style={{ display: "flex", alignItems: "center" }}>
+          {engines.map((e, i) => (
             <div
               key={e.name}
               title={e.name}
-              className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold"
-              style={{ background: e.color, border: "2px solid #fff" }}
+              style={{
+                width: 26,
+                height: 26,
+                borderRadius: 999,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#fff",
+                fontSize: 11,
+                fontWeight: 700,
+                background: e.color,
+                border: "2px solid #fff",
+                marginLeft: i === 0 ? 0 : -8,
+              }}
             >
               {e.initial}
             </div>
           ))}
         </div>
-        <span className="text-xs ml-auto font-semibold" style={{ color: "#22c55e" }}>+247 mentions</span>
+        <span style={{ fontSize: 12, marginLeft: "auto", fontWeight: 600, color: "#22c55e", flexShrink: 0 }}>
+          +247 mentions
+        </span>
       </div>
     </div>
   );
