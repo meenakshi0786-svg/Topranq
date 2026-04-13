@@ -186,7 +186,7 @@ export default function LandingPage() {
             </div>
 
             {/* Right: dashboard mockup */}
-            <div className="hidden lg:block fade-in">
+            <div className="fade-in">
               <DashboardMockup />
             </div>
           </div>
@@ -199,7 +199,7 @@ export default function LandingPage() {
           <p className="text-center text-xs font-semibold uppercase tracking-widest mb-6" style={{ color: "var(--text-muted)" }}>
             Publishes directly to
           </p>
-          <div className="flex items-center justify-center gap-10 md:gap-16 flex-wrap opacity-70">
+          <div className="flex items-center justify-center flex-wrap opacity-70" style={{ gap: "8px 16px" }}>
             <PlatformLogo name="Shopify" />
             <PlatformLogo name="WordPress" />
             <PlatformLogo name="Webflow" />
@@ -614,7 +614,12 @@ function PlatformLogo({ name }: { name: string }) {
   return (
     <span
       className="text-base md:text-xl font-bold tracking-tight"
-      style={{ color: "var(--text-secondary)", fontFamily: "system-ui, -apple-system, sans-serif" }}
+      style={{
+        color: "var(--text-secondary)",
+        fontFamily: "system-ui, -apple-system, sans-serif",
+        padding: "0 24px",
+        whiteSpace: "nowrap",
+      }}
     >
       {name}
     </span>
