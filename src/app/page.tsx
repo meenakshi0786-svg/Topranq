@@ -91,104 +91,102 @@ export default function LandingPage() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] rounded-full opacity-30 pointer-events-none" style={{ background: "radial-gradient(ellipse, #4F6EF7, transparent 70%)", filter: "blur(80px)" }} />
 
         <div className="max-w-[1200px] mx-auto px-6 pt-10 pb-20 relative">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Left: copy + form */}
-            <div className="fade-in">
+          {/* Centered hero copy */}
+          <div className="text-center fade-in max-w-3xl mx-auto">
+            <div
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium mb-6"
+              style={{ background: "var(--accent-light)", color: "var(--accent)" }}
+            >
+              <span className="relative flex w-2 h-2">
+                <span className="absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping" style={{ background: "var(--accent)" }} />
+                <span className="relative inline-flex rounded-full h-2 w-2" style={{ background: "var(--accent)" }} />
+              </span>
+              Now with AI blog writer + Shopify publishing
+            </div>
+
+            <h1
+              className="text-4xl md:text-[52px] font-bold mb-5 leading-[1.08] tracking-tight"
+              style={{ color: "var(--text-primary)" }}
+            >
+              Audit, fix, and publish<br />
+              <span style={{ background: "linear-gradient(135deg, #4F6EF7, #7C5CFC)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>SEO content</span> — on autopilot
+            </h1>
+            <p className="text-base md:text-lg mb-8 max-w-xl mx-auto leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+              Enter your URL, sign in with Google, and we&rsquo;ll crawl your site, find content gaps, and draft blog articles ready to publish to Shopify.
+            </p>
+
+            <form onSubmit={addDomain} className="relative max-w-xl mx-auto">
               <div
-                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium mb-6"
-                style={{ background: "var(--accent-light)", color: "var(--accent)" }}
+                className="flex items-center rounded-xl overflow-hidden"
+                style={{
+                  background: "var(--bg-white)",
+                  boxShadow: "var(--shadow-lg)",
+                  border: "1px solid var(--border)",
+                }}
               >
-                <span className="relative flex w-2 h-2">
-                  <span className="absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping" style={{ background: "var(--accent)" }} />
-                  <span className="relative inline-flex rounded-full h-2 w-2" style={{ background: "var(--accent)" }} />
-                </span>
-                Now with AI blog writer + Shopify publishing
+                <div className="pl-4 pr-2" style={{ color: "var(--text-muted)" }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="2" y1="12" x2="22" y2="12" />
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  placeholder="yourstore.com"
+                  className="flex-1 px-3 py-4 text-sm outline-none bg-transparent"
+                  style={{ color: "var(--text-primary)" }}
+                  disabled={loading}
+                />
+                <div className="pr-2">
+                  <button
+                    type="submit"
+                    disabled={loading || !url.trim()}
+                    className="btn-primary px-6 py-2.5 text-sm cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    {loading ? "Analyzing..." : "Free Audit →"}
+                  </button>
+                </div>
               </div>
+            </form>
 
-              <h1
-                className="text-4xl md:text-[52px] font-bold mb-5 leading-[1.08] tracking-tight"
-                style={{ color: "var(--text-primary)" }}
+            {error && (
+              <p
+                className="text-sm mt-4 inline-block px-4 py-2 rounded-lg"
+                style={{ background: "var(--critical-bg)", color: "var(--critical)" }}
               >
-                Audit, fix, and publish<br />
-                <span style={{ background: "linear-gradient(135deg, #4F6EF7, #7C5CFC)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>SEO content</span> — on autopilot
-              </h1>
-              <p className="text-base md:text-lg mb-8 max-w-lg leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                Enter your URL, sign in with Google, and we&rsquo;ll crawl your site, find content gaps, and draft blog articles ready to publish to Shopify.
+                {error}
               </p>
+            )}
 
-              <form onSubmit={addDomain} className="relative max-w-xl">
-                <div
-                  className="flex items-center rounded-xl overflow-hidden"
-                  style={{
-                    background: "var(--bg-white)",
-                    boxShadow: "var(--shadow-lg)",
-                    border: "1px solid var(--border)",
-                  }}
-                >
-                  <div className="pl-4 pr-2" style={{ color: "var(--text-muted)" }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="10" />
-                      <line x1="2" y1="12" x2="22" y2="12" />
-                      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-                    </svg>
-                  </div>
-                  <input
-                    type="text"
-                    value={url}
-                    onChange={(e) => setUrl(e.target.value)}
-                    placeholder="yourstore.com"
-                    className="flex-1 px-3 py-4 text-sm outline-none bg-transparent"
-                    style={{ color: "var(--text-primary)" }}
-                    disabled={loading}
-                  />
-                  <div className="pr-2">
-                    <button
-                      type="submit"
-                      disabled={loading || !url.trim()}
-                      className="btn-primary px-6 py-2.5 text-sm cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                    >
-                      {loading ? "Analyzing..." : "Free Audit →"}
-                    </button>
-                  </div>
-                </div>
-              </form>
-
-              {error && (
-                <p
-                  className="text-sm mt-4 inline-block px-4 py-2 rounded-lg"
-                  style={{ background: "var(--critical-bg)", color: "var(--critical)" }}
-                >
-                  {error}
-                </p>
-              )}
-
-              {/* Trust microtext */}
-              <div className="flex items-center gap-5 mt-6 text-xs" style={{ color: "var(--text-muted)" }}>
-                <div className="flex items-center gap-1.5">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  No credit card
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  47 checks, 8 categories
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  Results in 60s
-                </div>
+            {/* Trust microtext */}
+            <div className="flex items-center justify-center flex-wrap gap-x-5 gap-y-2 mt-6 text-xs" style={{ color: "var(--text-muted)" }}>
+              <div className="flex items-center gap-1.5">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                No credit card
+              </div>
+              <div className="flex items-center gap-1.5">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                47 checks, 8 categories
+              </div>
+              <div className="flex items-center gap-1.5">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                Results in 60s
               </div>
             </div>
+          </div>
 
-            {/* Right: dashboard mockup */}
-            <div className="fade-in">
-              <DashboardMockup />
-            </div>
+          {/* Dashboard mockup centered below */}
+          <div className="mt-16 max-w-3xl mx-auto fade-in">
+            <DashboardMockup />
           </div>
         </div>
       </section>
