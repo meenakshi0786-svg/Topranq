@@ -2,6 +2,7 @@ import { db, schema } from "../db";
 import { eq } from "drizzle-orm";
 import { getGSCInsights } from "../gsc-intelligence";
 import { analyzeCompetitors } from "../competitor-research";
+import { generateFeaturedImageUrl, buildImagePrompt } from "../image-gen";
 async function askClaude(prompt: string, maxTokens = 4000): Promise<string> {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new Error("OPENROUTER_API_KEY is not set");
@@ -33,6 +34,7 @@ export interface BlogWriterConfig {
   keywords: string[];
   tone: "professional" | "casual" | "technical";
   wordCount: number;
+  language?: string; // ISO language code or display name (defaults to English)
   intent?: string; // informational, commercial, transactional
   audience?: string;
   competitorUrls?: string[];
@@ -182,7 +184,7 @@ export async function runBlogWriter(
   const { outline, bodyMarkdown, faqItems } = await generateFullArticle(
     topic, keywords, tone, targetWordCount, intent, primaryKeyword,
     gscContext + (competitorBrief ? `\n\n${competitorBrief}` : ""),
-    config.productContext, config.reworkNotes,
+    config.productContext, config.reworkNotes, config.language,
   );
 
   const suggestedInternalLinks = findInternalLinks(existingPages, keywords, topic);
@@ -204,6 +206,10 @@ export async function runBlogWriter(
     primaryKeyword, suggestedInternalLinks, faqItems, imageSuggestions
   );
 
+  // Generate featured image (via Pollinations, no API cost)
+  const featuredImagePrompt = buildImagePrompt(metaTitle || title, config.topic, tone);
+  const featuredImageUrl = generateFeaturedImageUrl(featuredImagePrompt);
+
   // Store in articles table
   const articleId = crypto.randomUUID();
   db.insert(schema.articles)
@@ -220,6 +226,8 @@ export async function runBlogWriter(
       schemaJsonLd: JSON.stringify(schemaJsonLd),
       internalLinksJson: JSON.stringify(suggestedInternalLinks),
       imageSuggestionsJson: JSON.stringify(imageSuggestions),
+      featuredImageUrl,
+      featuredImagePrompt,
       targetKeyword: primaryKeyword,
       intent,
       audience,
@@ -245,6 +253,8 @@ export async function runBlogWriter(
     suggestedInternalLinks,
     faqItems,
     imageSuggestions,
+    featuredImageUrl,
+    featuredImagePrompt,
     schemaJsonLd,
     qualityChecks,
     estimatedWordCount,
@@ -323,6 +333,7 @@ async function generateFullArticle(
   gscContext: string,
   productContext?: string,
   reworkNotes?: string,
+  language?: string,
 ): Promise<{
   outline: Array<{ heading: string; summary: string; keyPoints: string[] }>;
   bodyMarkdown: string;
@@ -332,10 +343,14 @@ async function generateFullArticle(
   const currentYear = currentDate.getFullYear();
   const currentMonth = currentDate.toLocaleString("en-US", { month: "long" });
 
+  const languageInstruction = language && language !== "English" && language !== "en"
+    ? `\nLANGUAGE: Write the ENTIRE article (title, headings, body, FAQ, everything) in ${language}. Do NOT use English. All output must be native ${language}.\n`
+    : "";
+
   const prompt = `You are an expert SEO content writer. Write a complete, high-quality blog article.
 
 IMPORTANT: Today's date is ${currentMonth} ${currentDate.getDate()}, ${currentYear}. Use ${currentYear} as the current year throughout the article. NEVER reference 2024 or any past year as the current year.
-
+${languageInstruction}
 TOPIC: ${topic}
 PRIMARY KEYWORD: ${primaryKeyword}
 SECONDARY KEYWORDS: ${keywords.slice(1).join(", ")}

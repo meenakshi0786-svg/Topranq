@@ -66,6 +66,8 @@ interface GeneratedArticle {
   bodyMarkdown?: string;
   bodyHtml?: string;
   status?: string;
+  featuredImageUrl?: string;
+  featuredImagePrompt?: string;
 }
 
 interface CreditInfo {
@@ -94,6 +96,7 @@ export default function BlogWriterPage() {
     keywords: "",
     tone: "professional" as "professional" | "casual" | "technical",
     wordCount: 1500,
+    language: "English",
   });
 
   const [generating, setGenerating] = useState(false);
@@ -214,7 +217,7 @@ export default function BlogWriterPage() {
   }, [article?.articleId, fetchBlogJobs]);
 
   // Generate article
-  async function generateArticle(topic: string, keywords: string[], tone: string, wordCount: number) {
+  async function generateArticle(topic: string, keywords: string[], tone: string, wordCount: number, language?: string) {
     setGenerating(true);
     setArticle(null);
     try {
@@ -224,7 +227,7 @@ export default function BlogWriterPage() {
         body: JSON.stringify({
           domainId,
           agentType: "blog_writer",
-          config: { topic, keywords, tone, wordCount },
+          config: { topic, keywords, tone, wordCount, language: language || "English" },
         }),
       });
       const data = await res.json();
@@ -257,13 +260,13 @@ export default function BlogWriterPage() {
   function handleSmartGenerate() {
     if (selectedSuggestion === null || !smartAnalysis) return;
     const s = smartAnalysis.suggestions[selectedSuggestion];
-    generateArticle(s.topic, s.keywords, s.tone, s.wordCount);
+    generateArticle(s.topic, s.keywords, s.tone, s.wordCount, blogConfig.language);
   }
 
   function handleCustomGenerate() {
     if (!blogConfig.topic) return;
     const keywords = blogConfig.keywords.split(",").map((k) => k.trim()).filter(Boolean);
-    generateArticle(blogConfig.topic, keywords, blogConfig.tone, blogConfig.wordCount);
+    generateArticle(blogConfig.topic, keywords, blogConfig.tone, blogConfig.wordCount, blogConfig.language);
   }
 
   const priorityColors: Record<string, string> = { high: "#ef4444", medium: "#f59e0b", low: "#22c55e" };
@@ -595,6 +598,19 @@ export default function BlogWriterPage() {
                       </select>
                     </div>
                   </div>
+                  <div>
+                    <label className="text-xs font-semibold mb-1.5 block" style={{ color: "var(--text-secondary)" }}>Language</label>
+                    <select
+                      value={blogConfig.language}
+                      onChange={(e) => setBlogConfig({ ...blogConfig, language: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-lg text-sm cursor-pointer outline-none"
+                      style={{ border: "1px solid var(--border)", background: "var(--bg)" }}
+                    >
+                      {["English","Spanish","French","German","Italian","Portuguese","Dutch","Polish","Swedish","Norwegian","Danish","Finnish","Greek","Turkish","Russian","Ukrainian","Czech","Hungarian","Romanian","Arabic","Hebrew","Hindi","Bengali","Urdu","Tamil","Telugu","Marathi","Gujarati","Punjabi","Thai","Vietnamese","Indonesian","Malay","Filipino","Japanese","Korean","Chinese (Simplified)","Chinese (Traditional)"].map((l) => (
+                        <option key={l} value={l}>{l}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
                 <button
                   onClick={handleCustomGenerate}
@@ -683,6 +699,26 @@ export default function BlogWriterPage() {
                         <div className="p-3 rounded-lg flex items-center gap-2" style={{ background: "#dcfce7" }}>
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><path d="M22 2L11 13" /><path d="M22 2L15 22L11 13L2 9L22 2Z" /></svg>
                           <span className="text-xs font-medium" style={{ color: "#166534" }}>Review email sent to your inbox</span>
+                        </div>
+                      )}
+
+                      {/* Featured Image */}
+                      {article.featuredImageUrl && (
+                        <div>
+                          <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: "var(--text-muted)" }}>Featured Image</p>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={article.featuredImageUrl}
+                            alt={article.featuredImagePrompt || article.title || ""}
+                            className="w-full rounded-lg"
+                            style={{ aspectRatio: "16/9", objectFit: "cover", background: "var(--bg)" }}
+                            loading="lazy"
+                          />
+                          {article.featuredImagePrompt && (
+                            <p className="text-[11px] mt-1.5 italic" style={{ color: "var(--text-muted)" }}>
+                              Prompt: {article.featuredImagePrompt}
+                            </p>
+                          )}
                         </div>
                       )}
 

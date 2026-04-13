@@ -17,6 +17,7 @@ export interface PublishArticle {
   metaDescription: string | null;
   faqSchemaJson: string | null;
   targetKeyword: string | null;
+  featuredImageUrl?: string | null;
 }
 
 export async function publishToCMS(
@@ -44,20 +45,25 @@ export async function publishToCMS(
       const blogId = blogsData.blogs?.[0]?.id;
       if (!blogId) throw new Error("No blog found in your Shopify store.");
 
+      const shopifyArticle: Record<string, unknown> = {
+        title: article.metaTitle || "Untitled",
+        body_html: article.bodyHtml || article.bodyMarkdown || "",
+        author: "Ranqapex",
+        tags: article.targetKeyword || "seo",
+        published: true,
+        summary_html: article.metaDescription || "",
+        handle: slug,
+      };
+      if (article.featuredImageUrl) {
+        shopifyArticle.image = {
+          src: article.featuredImageUrl,
+          alt: article.metaTitle || "Featured image",
+        };
+      }
       const articleRes = await fetch(`https://${storeDomain}/admin/api/2024-01/blogs/${blogId}/articles.json`, {
         method: "POST",
         headers: { "X-Shopify-Access-Token": token, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          article: {
-            title: article.metaTitle || "Untitled",
-            body_html: article.bodyHtml || article.bodyMarkdown || "",
-            author: "Ranqapex",
-            tags: article.targetKeyword || "seo",
-            published: true,
-            summary_html: article.metaDescription || "",
-            handle: slug,
-          },
-        }),
+        body: JSON.stringify({ article: shopifyArticle }),
       });
       if (!articleRes.ok) {
         const errData = await articleRes.text();

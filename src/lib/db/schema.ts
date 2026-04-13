@@ -169,6 +169,8 @@ export const articles = sqliteTable("articles", {
   audience: text("audience"),
   tone: text("tone"),
   imageSuggestionsJson: text("image_suggestions_json"), // JSON
+  featuredImageUrl: text("featured_image_url"),
+  featuredImagePrompt: text("featured_image_prompt"),
   qualityScore: real("quality_score"),
   readabilityScore: real("readability_score"),
   plagiarismScore: real("plagiarism_score"),
@@ -181,6 +183,27 @@ export const articles = sqliteTable("articles", {
   publishConnectorId: text("publish_connector_id"),
   createdAt: text("created_at").default(sql`(datetime('now'))`),
   updatedAt: text("updated_at").default(sql`(datetime('now'))`),
+});
+
+// ── Pillars & Clusters (topic strategy) ──────────────────────────────
+export const pillars = sqliteTable("pillars", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  domainId: text("domain_id").notNull().references(() => domains.id, { onDelete: "cascade" }),
+  topic: text("topic").notNull(),
+  description: text("description"),
+  pillarArticleId: text("pillar_article_id"), // generated pillar article
+  createdAt: text("created_at").default(sql`(datetime('now'))`),
+});
+
+export const pillarClusters = sqliteTable("pillar_clusters", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  pillarId: text("pillar_id").notNull().references(() => pillars.id, { onDelete: "cascade" }),
+  clusterTopic: text("cluster_topic").notNull(),
+  clusterKeywords: text("cluster_keywords"), // JSON array
+  reason: text("reason"),
+  orderIndex: integer("order_index").default(0),
+  articleId: text("article_id"), // filled once generated
+  createdAt: text("created_at").default(sql`(datetime('now'))`),
 });
 
 // ── Article Reviews (review workflow) ────────────────────────────────
