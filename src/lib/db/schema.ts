@@ -172,11 +172,13 @@ export const articles = sqliteTable("articles", {
   qualityScore: real("quality_score"),
   readabilityScore: real("readability_score"),
   plagiarismScore: real("plagiarism_score"),
-  status: text("status", { enum: ["draft", "review", "approved", "rejected", "published"] })
+  status: text("status", { enum: ["draft", "review", "approved", "rejected", "published", "scheduled"] })
     .notNull().default("draft"),
   revisionCount: integer("revision_count").default(0),
   publishedUrl: text("published_url"),
   publishedAt: text("published_at"),
+  scheduledFor: text("scheduled_for"),
+  publishConnectorId: text("publish_connector_id"),
   createdAt: text("created_at").default(sql`(datetime('now'))`),
   updatedAt: text("updated_at").default(sql`(datetime('now'))`),
 });

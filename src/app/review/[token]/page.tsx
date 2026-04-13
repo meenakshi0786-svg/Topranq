@@ -67,6 +67,10 @@ export default function ReviewPage() {
   const [showShopifyInput, setShowShopifyInput] = useState(false);
   const [shopifyStore, setShopifyStore] = useState("");
   const [actionResult, setActionResult] = useState<ActionResult | null>(null);
+  const [showScheduler, setShowScheduler] = useState(false);
+  const [scheduleDate, setScheduleDate] = useState("");
+  const [scheduleConnectorId, setScheduleConnectorId] = useState("");
+  const [scheduling, setScheduling] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -88,6 +92,41 @@ export default function ReviewPage() {
     }
     load();
   }, [token]);
+
+  async function handleSchedule() {
+    if (!article || !scheduleDate || !scheduleConnectorId) return;
+    setScheduling(true);
+    try {
+      // First accept the article (without publishing) to approve it
+      await fetch(`/api/review/${token}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "accept" }),
+      });
+      // Then schedule it
+      const res = await fetch(`/api/articles/${article.id}/schedule`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          scheduledFor: new Date(scheduleDate).toISOString(),
+          connectorId: scheduleConnectorId,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setActionResult({ status: "error", message: data.error || "Failed to schedule" });
+      } else {
+        setActionResult({
+          status: "scheduled",
+          message: `Scheduled for ${new Date(scheduleDate).toLocaleString()}. We'll publish it automatically.`,
+        });
+      }
+    } catch {
+      setActionResult({ status: "error", message: "Failed to schedule." });
+    } finally {
+      setScheduling(false);
+    }
+  }
 
   async function handleAction(action: "accept" | "rework", connectorId?: string) {
     setSubmitting(true);
@@ -137,17 +176,18 @@ export default function ReviewPage() {
   }
 
   if (actionResult) {
-    const isSuccess = actionResult.status === "published" || actionResult.status === "approved";
+    const isScheduled = actionResult.status === "scheduled";
+    const isSuccess = actionResult.status === "published" || actionResult.status === "approved" || isScheduled;
     const isRework = actionResult.status === "rework_requested" || actionResult.status === "rework_regenerated";
 
     return (
       <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f5f5f7" }}>
         <div style={{ background: "#fff", borderRadius: 16, padding: "40px 48px", textAlign: "center", maxWidth: 480, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>
-            {isSuccess ? "\u2705" : isRework ? "\u270F\uFE0F" : "\u26A0\uFE0F"}
+            {isScheduled ? "\u23F0" : isSuccess ? "\u2705" : isRework ? "\u270F\uFE0F" : "\u26A0\uFE0F"}
           </div>
           <h1 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8, color: "#1a1a2e" }}>
-            {isSuccess ? "Article Accepted" : isRework ? "Rework Requested" : "Action Complete"}
+            {isScheduled ? "Article Scheduled" : isSuccess ? "Article Accepted" : isRework ? "Rework Requested" : "Action Complete"}
           </h1>
           <p style={{ fontSize: 14, color: "#666", lineHeight: 1.6, marginBottom: 16 }}>{actionResult.message}</p>
           {actionResult.publishedUrl && (
@@ -210,9 +250,16 @@ export default function ReviewPage() {
             {submitting ? "Publishing..." : "Accept & Publish"}
           </button>
           <button
-            onClick={() => { setShowReworkForm(!showReworkForm); setShowPublishPicker(false); }}
+            onClick={() => { setShowScheduler(!showScheduler); setShowPublishPicker(false); setShowReworkForm(false); }}
             disabled={submitting}
-            style={{ background: "#f59e0b", color: "#fff", border: "none", padding: "14px 36px", borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: "pointer", opacity: submitting ? 0.5 : 1 }}
+            style={{ background: "#4F6EF7", color: "#fff", border: "none", padding: "14px 28px", borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: "pointer", opacity: submitting ? 0.5 : 1 }}
+          >
+            Schedule for Later
+          </button>
+          <button
+            onClick={() => { setShowReworkForm(!showReworkForm); setShowPublishPicker(false); setShowScheduler(false); }}
+            disabled={submitting}
+            style={{ background: "#f59e0b", color: "#fff", border: "none", padding: "14px 28px", borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: "pointer", opacity: submitting ? 0.5 : 1 }}
           >
             Request Rework
           </button>
@@ -316,6 +363,69 @@ export default function ReviewPage() {
                 Cancel
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Scheduler Form */}
+        {showScheduler && (
+          <div style={{ background: "#fff", borderRadius: 12, padding: 24, marginBottom: 24, border: "2px solid #4F6EF7" }}>
+            <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 12, color: "#1a1a2e" }}>
+              Schedule this article
+            </h3>
+            <p style={{ fontSize: 13, color: "#666", marginBottom: 16 }}>
+              Pick a date/time and we&apos;ll auto-publish to the selected platform.
+            </p>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, display: "block", marginBottom: 6, color: "#333" }}>
+                  Publish at
+                </label>
+                <input
+                  type="datetime-local"
+                  value={scheduleDate}
+                  onChange={(e) => setScheduleDate(e.target.value)}
+                  min={new Date(Date.now() + 5 * 60 * 1000).toISOString().slice(0, 16)}
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid #e5e5e5", fontSize: 13, fontFamily: "inherit", boxSizing: "border-box" }}
+                />
+              </div>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, display: "block", marginBottom: 6, color: "#333" }}>
+                  Platform
+                </label>
+                <select
+                  value={scheduleConnectorId}
+                  onChange={(e) => setScheduleConnectorId(e.target.value)}
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid #e5e5e5", fontSize: 13, fontFamily: "inherit", boxSizing: "border-box", background: "#fff" }}
+                >
+                  <option value="">Select connector...</option>
+                  {connectors.filter((c) => c.status === "connected").map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.platform} · {c.siteUrl}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button
+                onClick={handleSchedule}
+                disabled={!scheduleDate || !scheduleConnectorId || scheduling}
+                style={{ background: "#4F6EF7", color: "#fff", border: "none", padding: "10px 24px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", opacity: !scheduleDate || !scheduleConnectorId || scheduling ? 0.5 : 1 }}
+              >
+                {scheduling ? "Scheduling..." : "Schedule Article"}
+              </button>
+              <button
+                onClick={() => setShowScheduler(false)}
+                style={{ background: "transparent", color: "#999", border: "none", padding: "10px 16px", borderRadius: 8, fontSize: 13, cursor: "pointer" }}
+              >
+                Cancel
+              </button>
+            </div>
+            {connectors.filter((c) => c.status === "connected").length === 0 && (
+              <p style={{ fontSize: 12, color: "#f59e0b", marginTop: 12 }}>
+                No connected CMS. Connect Shopify first to enable scheduling.
+              </p>
+            )}
           </div>
         )}
 
