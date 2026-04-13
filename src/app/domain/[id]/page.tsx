@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
+import { CubeLoader } from "@/components/cube-loader";
 
 interface DomainData {
   domain: { id: string; domainUrl: string; status: string };
@@ -130,18 +131,16 @@ export default function DomainOverview() {
 
         {/* Progress */}
         {isRunning && (
-          <div className="card-static p-12 mb-8 text-center fade-in">
-            <div className="animate-pulse mb-4" style={{ color: "var(--accent)" }}>
-              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="mx-auto"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
-            </div>
-            <p className="text-lg font-semibold mb-2">
-              {latestAudit.status === "queued" ? "Preparing audit..." :
-               latestAudit.status === "crawling" ? "Crawling pages..." : "Analyzing issues..."}
-            </p>
-            <p className="text-sm mb-6" style={{ color: "var(--text-muted)" }}>
-              {latestAudit.pagesCrawled} of {latestAudit.pagesFound || "?"} pages processed
-            </p>
-            <div className="w-full max-w-xs mx-auto h-1.5 rounded-full overflow-hidden" style={{ background: "var(--border-light)" }}>
+          <div className="card-static p-12 mb-8 fade-in">
+            <CubeLoader
+              label={
+                latestAudit.status === "queued" ? "Preparing audit..." :
+                latestAudit.status === "crawling" ? "Crawling your website..." :
+                "Analyzing issues..."
+              }
+              sublabel={`${latestAudit.pagesCrawled} of ${latestAudit.pagesFound || "?"} pages processed`}
+            />
+            <div className="w-full max-w-xs mx-auto h-1.5 rounded-full overflow-hidden mt-6" style={{ background: "var(--border-light)" }}>
               <div
                 className="h-full rounded-full transition-all duration-700"
                 style={{
