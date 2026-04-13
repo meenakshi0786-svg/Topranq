@@ -60,42 +60,259 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "var(--bg)" }}>
       {/* Nav */}
-      <nav className="px-6 py-5 flex items-center justify-between max-w-[1100px] mx-auto w-full">
+      <nav className="px-6 py-5 flex items-center justify-between max-w-[1200px] mx-auto w-full">
         <Logo size={28} />
-        <a
-          href="/dashboard"
-          className="text-sm font-medium px-5 py-2 rounded-lg"
-          style={{ color: "var(--accent)", background: "var(--accent-light)" }}
-        >
-          Dashboard
-        </a>
+        <div className="flex items-center gap-2">
+          <a href="#features" className="text-sm font-medium px-4 py-2 rounded-lg hidden md:inline-block" style={{ color: "var(--text-secondary)" }}>
+            Features
+          </a>
+          <a href="#how-it-works" className="text-sm font-medium px-4 py-2 rounded-lg hidden md:inline-block" style={{ color: "var(--text-secondary)" }}>
+            How it works
+          </a>
+          <a href="/pricing" className="text-sm font-medium px-4 py-2 rounded-lg hidden md:inline-block" style={{ color: "var(--text-secondary)" }}>
+            Pricing
+          </a>
+          <a
+            href="/dashboard"
+            className="text-sm font-medium px-5 py-2 rounded-lg"
+            style={{ color: "var(--accent)", background: "var(--accent-light)" }}
+          >
+            Dashboard
+          </a>
+        </div>
       </nav>
 
-      {/* Hero */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 pb-16">
-        <div className="max-w-xl mx-auto text-center fade-in">
-          {/* Subtle accent badge */}
-          <div
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium mb-8"
-            style={{ background: "var(--accent-light)", color: "var(--accent)" }}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-            </svg>
-            47 SEO checks across 8 categories
+      {/* Hero — two-column with mockup */}
+      <section className="relative overflow-hidden">
+        {/* Background gradient blobs */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] rounded-full opacity-30 pointer-events-none" style={{ background: "radial-gradient(ellipse, #4F6EF7, transparent 70%)", filter: "blur(80px)" }} />
+
+        <div className="max-w-[1200px] mx-auto px-6 pt-10 pb-20 relative">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left: copy + form */}
+            <div className="fade-in">
+              <div
+                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium mb-6"
+                style={{ background: "var(--accent-light)", color: "var(--accent)" }}
+              >
+                <span className="relative flex w-2 h-2">
+                  <span className="absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping" style={{ background: "var(--accent)" }} />
+                  <span className="relative inline-flex rounded-full h-2 w-2" style={{ background: "var(--accent)" }} />
+                </span>
+                Now with AI blog writer + Shopify publishing
+              </div>
+
+              <h1
+                className="text-4xl md:text-[52px] font-bold mb-5 leading-[1.08] tracking-tight"
+                style={{ color: "var(--text-primary)" }}
+              >
+                Audit, fix, and publish<br />
+                <span style={{ background: "linear-gradient(135deg, #4F6EF7, #7C5CFC)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>SEO content</span> — on autopilot
+              </h1>
+              <p className="text-base md:text-lg mb-8 max-w-lg leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                Enter your URL, sign in with Google, and we&rsquo;ll crawl your site, find content gaps, and draft blog articles ready to publish to Shopify.
+              </p>
+
+              <form onSubmit={addDomain} className="relative max-w-xl">
+                <div
+                  className="flex items-center rounded-xl overflow-hidden"
+                  style={{
+                    background: "var(--bg-white)",
+                    boxShadow: "var(--shadow-lg)",
+                    border: "1px solid var(--border)",
+                  }}
+                >
+                  <div className="pl-4 pr-2" style={{ color: "var(--text-muted)" }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="2" y1="12" x2="22" y2="12" />
+                      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                    </svg>
+                  </div>
+                  <input
+                    type="text"
+                    value={url}
+                    onChange={(e) => setUrl(e.target.value)}
+                    placeholder="yourstore.com"
+                    className="flex-1 px-3 py-4 text-sm outline-none bg-transparent"
+                    style={{ color: "var(--text-primary)" }}
+                    disabled={loading}
+                  />
+                  <div className="pr-2">
+                    <button
+                      type="submit"
+                      disabled={loading || !url.trim()}
+                      className="btn-primary px-6 py-2.5 text-sm cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      {loading ? "Analyzing..." : "Free Audit →"}
+                    </button>
+                  </div>
+                </div>
+              </form>
+
+              {error && (
+                <p
+                  className="text-sm mt-4 inline-block px-4 py-2 rounded-lg"
+                  style={{ background: "var(--critical-bg)", color: "var(--critical)" }}
+                >
+                  {error}
+                </p>
+              )}
+
+              {/* Trust microtext */}
+              <div className="flex items-center gap-5 mt-6 text-xs" style={{ color: "var(--text-muted)" }}>
+                <div className="flex items-center gap-1.5">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  No credit card
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  47 checks, 8 categories
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  Results in 60s
+                </div>
+              </div>
+            </div>
+
+            {/* Right: dashboard mockup */}
+            <div className="hidden lg:block fade-in">
+              <DashboardMockup />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Trust bar */}
+      <section style={{ background: "var(--bg-white)", borderTop: "1px solid var(--border-light)", borderBottom: "1px solid var(--border-light)" }}>
+        <div className="max-w-[1200px] mx-auto px-6 py-10">
+          <p className="text-center text-xs font-semibold uppercase tracking-widest mb-6" style={{ color: "var(--text-muted)" }}>
+            Publishes directly to
+          </p>
+          <div className="flex items-center justify-center gap-10 md:gap-16 flex-wrap opacity-70">
+            <PlatformLogo name="Shopify" />
+            <PlatformLogo name="WordPress" />
+            <PlatformLogo name="Webflow" />
+            <PlatformLogo name="Ghost" />
+            <PlatformLogo name="Custom" />
+          </div>
+        </div>
+      </section>
+
+      {/* Features with images */}
+      <section id="features" style={{ background: "var(--bg)" }}>
+        <div className="max-w-[1200px] mx-auto px-6 py-20">
+          <div className="text-center mb-14 max-w-2xl mx-auto">
+            <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--accent)" }}>Everything you need</p>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4" style={{ color: "var(--text-primary)" }}>
+              From audit to published article, in one flow
+            </h2>
+            <p className="text-base" style={{ color: "var(--text-secondary)" }}>
+              No more juggling tools. Ranqapex crawls, analyzes, drafts, and publishes.
+            </p>
           </div>
 
-          <h1
-            className="text-4xl md:text-5xl font-bold mb-4 leading-[1.15] tracking-tight"
-            style={{ color: "var(--text-primary)" }}
-          >
-            Audit, fix, and publish<br />SEO content — on autopilot
-          </h1>
-          <p className="text-base mb-10 max-w-md mx-auto leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-            Enter your URL, sign in with Google, and we&rsquo;ll crawl your site, find content gaps, and draft blog articles ready to publish to Shopify.
-          </p>
+          <div className="grid md:grid-cols-3 gap-6">
+            <BigFeatureCard
+              imageUrl="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80"
+              title="Deep Technical Audit"
+              desc="47 checks covering technical SEO, on-page, content, performance, schema, E-E-A-T, and AI readiness."
+              tag="Audit"
+            />
+            <BigFeatureCard
+              imageUrl="https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=800&q=80"
+              title="AI Blog Writer"
+              desc="Smart topic suggestions from your content gaps. Draft SEO-optimized articles with schema, FAQs, and internal links."
+              tag="Content"
+            />
+            <BigFeatureCard
+              imageUrl="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80"
+              title="One-Click Publishing"
+              desc="Review via email, accept, and we push directly to Shopify — no copy-paste, no formatting fixes."
+              tag="Publish"
+            />
+          </div>
+        </div>
+      </section>
 
-          <form onSubmit={addDomain} className="relative max-w-lg mx-auto">
+      {/* How it works */}
+      <section id="how-it-works" style={{ background: "var(--bg-white)", borderTop: "1px solid var(--border-light)" }}>
+        <div className="max-w-[1200px] mx-auto px-6 py-20">
+          <div className="text-center mb-14 max-w-2xl mx-auto">
+            <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--accent)" }}>How it works</p>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4" style={{ color: "var(--text-primary)" }}>
+              Four steps to a healthier website
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-4 gap-5">
+            {[
+              { step: "01", title: "Enter your URL", desc: "Paste any website address and sign in with Google.", icon: "M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" },
+              { step: "02", title: "We crawl", desc: "Our bots scan up to 25 pages of your site in seconds.", icon: "M22 12h-4l-3 9L9 3l-3 9H2" },
+              { step: "03", title: "Get insights", desc: "47 checks, prioritized fixes, and AI-suggested blog topics.", icon: "M9 11H1l8-8 8 8h-8v10" },
+              { step: "04", title: "Publish", desc: "Review articles via email and publish to Shopify with one click.", icon: "M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" },
+            ].map((item, i) => (
+              <div key={item.step} className="relative fade-in" style={{ animationDelay: `${i * 0.08}s` }}>
+                <div
+                  className="p-6 rounded-2xl h-full"
+                  style={{
+                    background: "var(--bg)",
+                    border: "1px solid var(--border-light)",
+                  }}
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div
+                      className="w-10 h-10 rounded-lg flex items-center justify-center"
+                      style={{ background: "var(--accent-light)", color: "var(--accent)" }}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <path d={item.icon} />
+                      </svg>
+                    </div>
+                    <span className="text-xs font-bold tracking-wider" style={{ color: "var(--text-muted)" }}>
+                      {item.step}
+                    </span>
+                  </div>
+                  <h3 className="font-semibold text-base mb-2" style={{ color: "var(--text-primary)" }}>{item.title}</h3>
+                  <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                    {item.desc}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Stats strip */}
+      <section style={{ background: "linear-gradient(135deg, #4F6EF7, #7C5CFC)" }}>
+        <div className="max-w-[1200px] mx-auto px-6 py-14">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <Stat value="47" label="SEO checks per page" />
+            <Stat value="60s" label="Average audit time" />
+            <Stat value="8" label="Ranking categories" />
+            <Stat value="1-click" label="Publish to Shopify" />
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section style={{ background: "var(--bg)" }}>
+        <div className="max-w-[800px] mx-auto px-6 py-20 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4" style={{ color: "var(--text-primary)" }}>
+            Ready to rank higher?
+          </h2>
+          <p className="text-base mb-8" style={{ color: "var(--text-secondary)" }}>
+            Start with a free audit. No credit card. See results in 60 seconds.
+          </p>
+          <form onSubmit={addDomain} className="relative max-w-xl mx-auto">
             <div
               className="flex items-center rounded-xl overflow-hidden"
               style={{
@@ -115,7 +332,7 @@ export default function LandingPage() {
                 type="text"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                placeholder="Enter your website URL..."
+                placeholder="yourstore.com"
                 className="flex-1 px-3 py-4 text-sm outline-none bg-transparent"
                 style={{ color: "var(--text-primary)" }}
                 disabled={loading}
@@ -126,98 +343,30 @@ export default function LandingPage() {
                   disabled={loading || !url.trim()}
                   className="btn-primary px-6 py-2.5 text-sm cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  {loading ? "Analyzing..." : "Analyze"}
+                  {loading ? "Analyzing..." : "Free Audit →"}
                 </button>
               </div>
             </div>
           </form>
-
-          {error && (
-            <p
-              className="text-sm mt-4 inline-block px-4 py-2 rounded-lg"
-              style={{ background: "var(--critical-bg)", color: "var(--critical)" }}
-            >
-              {error}
-            </p>
-          )}
         </div>
-      </div>
-
-      {/* Features */}
-      <div style={{ background: "var(--bg-white)", borderTop: "1px solid var(--border-light)" }}>
-        <div className="max-w-[1100px] mx-auto px-6 py-20">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <FeatureCard
-              icon={
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
-                  <rect x="9" y="3" width="6" height="4" rx="1" />
-                  <path d="M9 14l2 2 4-4" />
-                </svg>
-              }
-              title="Deep Technical Audit"
-              desc="47 checks covering technical SEO, on-page, content, performance, schema, E-E-A-T, and AI readiness."
-            />
-            <FeatureCard
-              icon={
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 20V10" />
-                  <path d="M18 20V4" />
-                  <path d="M6 20v-4" />
-                </svg>
-              }
-              title="Priority Scoring"
-              desc="Issues ranked by severity and real-world impact so you fix what moves the needle first."
-            />
-            <FeatureCard
-              icon={
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10" />
-                  <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-                  <line x1="12" y1="17" x2="12.01" y2="17" />
-                </svg>
-              }
-              title="Actionable Fixes"
-              desc="Every issue includes clear guidance on why it matters and step-by-step instructions to fix it."
-            />
-          </div>
-
-          {/* How it works */}
-          <div className="mt-20 text-center">
-            <h2 className="text-2xl font-bold mb-3 tracking-tight" style={{ color: "var(--text-primary)" }}>
-              How It Works
-            </h2>
-            <p className="text-sm mb-12" style={{ color: "var(--text-secondary)" }}>
-              Four steps to a healthier website.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              {[
-                { step: "1", title: "Enter URL", desc: "Paste any website address" },
-                { step: "2", title: "Crawl", desc: "We scan up to 25 pages" },
-                { step: "3", title: "Analyze", desc: "47 checks across 8 categories" },
-                { step: "4", title: "Fix", desc: "Get prioritized recommendations" },
-              ].map((item, i) => (
-                <div key={item.step} className="flex flex-col items-center fade-in" style={{ animationDelay: `${i * 0.08}s` }}>
-                  <div
-                    className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm mb-3"
-                    style={{ background: "var(--accent-light)", color: "var(--accent)" }}
-                  >
-                    {item.step}
-                  </div>
-                  <h3 className="font-semibold text-sm mb-1">{item.title}</h3>
-                  <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                    {item.desc}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
+      </section>
 
       {/* Footer */}
-      <footer className="py-8 text-center text-xs" style={{ color: "var(--text-muted)" }}>
-        Ranqapex SEO Autopilot
+      <footer style={{ background: "var(--bg-white)", borderTop: "1px solid var(--border-light)" }}>
+        <div className="max-w-[1200px] mx-auto px-6 py-10 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <Logo size={22} />
+            <span className="text-xs" style={{ color: "var(--text-muted)" }}>
+              © {new Date().getFullYear()} Ranqapex — SEO Autopilot
+            </span>
+          </div>
+          <div className="flex items-center gap-5 text-xs" style={{ color: "var(--text-muted)" }}>
+            <a href="#features">Features</a>
+            <a href="#how-it-works">How it works</a>
+            <a href="/pricing">Pricing</a>
+            <a href="/dashboard">Dashboard</a>
+          </div>
+        </div>
       </footer>
 
       {/* Sign In Popup */}
@@ -336,6 +485,211 @@ function FeatureCard({
       <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
         {desc}
       </p>
+    </div>
+  );
+}
+
+function BigFeatureCard({
+  imageUrl,
+  title,
+  desc,
+  tag,
+}: {
+  imageUrl: string;
+  title: string;
+  desc: string;
+  tag: string;
+}) {
+  return (
+    <div
+      className="rounded-2xl overflow-hidden transition-all fade-in"
+      style={{
+        background: "var(--bg-white)",
+        border: "1px solid var(--border-light)",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+      }}
+    >
+      <div className="relative h-44 overflow-hidden" style={{ background: "linear-gradient(135deg, #4F6EF710, #7C5CFC10)" }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={imageUrl}
+          alt={title}
+          className="w-full h-full object-cover"
+          loading="lazy"
+        />
+        <span
+          className="absolute top-3 left-3 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md"
+          style={{ background: "rgba(255,255,255,0.95)", color: "var(--accent)", backdropFilter: "blur(8px)" }}
+        >
+          {tag}
+        </span>
+      </div>
+      <div className="p-6">
+        <h3 className="font-semibold text-lg mb-2 tracking-tight" style={{ color: "var(--text-primary)" }}>
+          {title}
+        </h3>
+        <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+          {desc}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function PlatformLogo({ name }: { name: string }) {
+  return (
+    <span
+      className="text-base md:text-xl font-bold tracking-tight"
+      style={{ color: "var(--text-secondary)", fontFamily: "system-ui, -apple-system, sans-serif" }}
+    >
+      {name}
+    </span>
+  );
+}
+
+function Stat({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="text-white">
+      <p className="text-3xl md:text-4xl font-bold tracking-tight mb-1">{value}</p>
+      <p className="text-xs md:text-sm opacity-80">{label}</p>
+    </div>
+  );
+}
+
+function DashboardMockup() {
+  return (
+    <div className="relative">
+      {/* Outer shadow card */}
+      <div
+        className="rounded-2xl overflow-hidden"
+        style={{
+          background: "var(--bg-white)",
+          border: "1px solid var(--border)",
+          boxShadow: "0 30px 60px -15px rgba(79, 110, 247, 0.25), 0 10px 25px -5px rgba(0,0,0,0.08)",
+        }}
+      >
+        {/* Window chrome */}
+        <div className="px-4 py-3 flex items-center gap-2" style={{ borderBottom: "1px solid var(--border-light)", background: "var(--bg)" }}>
+          <div className="flex gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full" style={{ background: "#ff5f57" }} />
+            <span className="w-2.5 h-2.5 rounded-full" style={{ background: "#febc2e" }} />
+            <span className="w-2.5 h-2.5 rounded-full" style={{ background: "#28c840" }} />
+          </div>
+          <div className="flex-1 mx-4">
+            <div className="mx-auto max-w-[220px] text-[10px] px-2 py-1 rounded text-center" style={{ background: "var(--bg-white)", color: "var(--text-muted)", border: "1px solid var(--border-light)" }}>
+              ranqapex.com/dashboard
+            </div>
+          </div>
+        </div>
+
+        {/* Dashboard content */}
+        <div className="p-5">
+          {/* Score row */}
+          <div className="flex items-center gap-4 mb-5">
+            <div className="relative w-20 h-20 shrink-0">
+              <svg width="80" height="80" viewBox="0 0 80 80">
+                <circle cx="40" cy="40" r="32" fill="none" stroke="var(--border-light)" strokeWidth="6" />
+                <circle
+                  cx="40"
+                  cy="40"
+                  r="32"
+                  fill="none"
+                  stroke="#22c55e"
+                  strokeWidth="6"
+                  strokeLinecap="round"
+                  strokeDasharray={`${(87 / 100) * 201} 201`}
+                  transform="rotate(-90 40 40)"
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>87</span>
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>Overall SEO Score</p>
+              <p className="text-base font-bold" style={{ color: "var(--text-primary)" }}>yourstore.com</p>
+              <p className="text-[11px] mt-1" style={{ color: "#22c55e" }}>+12 since last audit</p>
+            </div>
+          </div>
+
+          {/* Issues grid */}
+          <div className="grid grid-cols-4 gap-2 mb-5">
+            {[
+              { label: "Critical", count: 2, color: "#ef4444", bg: "#fef2f2" },
+              { label: "High", count: 5, color: "#f97316", bg: "#fff7ed" },
+              { label: "Medium", count: 8, color: "#eab308", bg: "#fefce8" },
+              { label: "Low", count: 12, color: "#22c55e", bg: "#f0fdf4" },
+            ].map((s) => (
+              <div key={s.label} className="p-3 rounded-lg text-center" style={{ background: s.bg }}>
+                <p className="text-lg font-bold tabular-nums" style={{ color: s.color }}>{s.count}</p>
+                <p className="text-[10px] font-medium" style={{ color: s.color }}>{s.label}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Category bars */}
+          <div className="space-y-2.5">
+            {[
+              { label: "Technical SEO", score: 92, color: "#22c55e" },
+              { label: "Content Quality", score: 78, color: "#eab308" },
+              { label: "Performance", score: 85, color: "#22c55e" },
+              { label: "Schema", score: 64, color: "#f97316" },
+            ].map((c) => (
+              <div key={c.label} className="flex items-center gap-2">
+                <span className="text-[11px] w-28 shrink-0" style={{ color: "var(--text-secondary)" }}>
+                  {c.label}
+                </span>
+                <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "var(--border-light)" }}>
+                  <div className="h-full rounded-full" style={{ width: `${c.score}%`, background: c.color }} />
+                </div>
+                <span className="text-[11px] font-bold w-8 text-right tabular-nums" style={{ color: c.color }}>
+                  {c.score}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Floating blog card */}
+      <div
+        className="absolute -bottom-8 -left-8 rounded-xl p-4 w-60 hidden md:block"
+        style={{
+          background: "var(--bg-white)",
+          border: "1px solid var(--border)",
+          boxShadow: "0 20px 40px -10px rgba(0,0,0,0.15)",
+        }}
+      >
+        <div className="flex items-center gap-2 mb-2">
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "#4F6EF715" }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4F6EF7" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[11px] font-bold truncate" style={{ color: "var(--text-primary)" }}>Blog Writer</p>
+            <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>Just now</p>
+          </div>
+          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ background: "#dcfce7", color: "#166534" }}>DONE</span>
+        </div>
+        <p className="text-xs leading-snug" style={{ color: "var(--text-secondary)" }}>
+          &ldquo;The Ultimate Guide to Organic Skincare&rdquo; ready for review.
+        </p>
+      </div>
+
+      {/* Floating score badge */}
+      <div
+        className="absolute -top-4 -right-4 rounded-xl px-4 py-3 hidden md:flex items-center gap-2"
+        style={{
+          background: "linear-gradient(135deg, #4F6EF7, #7C5CFC)",
+          boxShadow: "0 10px 25px -5px rgba(79, 110, 247, 0.4)",
+        }}
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+        </svg>
+        <span className="text-xs font-bold text-white">47 checks passed</span>
+      </div>
     </div>
   );
 }
