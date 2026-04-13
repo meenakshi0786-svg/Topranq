@@ -58,6 +58,14 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Transfer domain ownership from demo user to the signed-in user
+    if (domainId) {
+      db.update(schema.domains)
+        .set({ userId: user.id })
+        .where(eq(schema.domains.id, domainId))
+        .run();
+    }
+
     // Set auth cookie with user ID
     const redirectUrl = domainId
       ? `${APP_URL}/domain/${domainId}?autoaudit=true`
