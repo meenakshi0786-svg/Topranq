@@ -176,6 +176,38 @@ export default function DomainOverview() {
               </div>
             </div>
 
+            {/* Next Steps */}
+            <div className="card-static p-6 mb-5 fade-in">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-sm font-bold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
+                  What to do next
+                </h2>
+                <span className="text-xs" style={{ color: "var(--text-muted)" }}>Pick any to get started</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <NextStepCard
+                  href={`/domain/${domainId}/agents/blog-writer`}
+                  badge="Recommended"
+                  title="Generate a blog article"
+                  desc="AI-researched topics with smart keyword targeting, ready for review."
+                  icon="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                  highlight
+                />
+                <NextStepCard
+                  href={`/domain/${domainId}/audit`}
+                  title="Fix critical issues"
+                  desc={`${stats.issues.critical + stats.issues.high} high-priority issues are slowing down your rankings.`}
+                  icon="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
+                />
+                <NextStepCard
+                  href={`/domain/${domainId}/connectors`}
+                  title="Connect Shopify"
+                  desc="Auto-publish approved blog articles straight to your store."
+                  icon="M13 7h8l-1 10a2 2 0 01-2 2H8a2 2 0 01-2-2L5 7h3m5 0V5a2 2 0 10-4 0v2m4 0H9"
+                />
+              </div>
+            </div>
+
             {/* Category scores */}
             <div className="card-static p-7 mb-5 fade-in">
               <h2 className="text-sm font-bold uppercase tracking-wider mb-5" style={{ color: "var(--text-muted)" }}>
@@ -312,6 +344,48 @@ function NavCard({ href, icon, title, desc }: { href: string; icon: string; titl
       </div>
       <h3 className="font-semibold text-sm mb-0.5">{title}</h3>
       <p className="text-xs" style={{ color: "var(--text-muted)" }}>{desc}</p>
+    </Link>
+  );
+}
+
+function NextStepCard({
+  href,
+  icon,
+  title,
+  desc,
+  badge,
+  highlight,
+}: {
+  href: string;
+  icon: string;
+  title: string;
+  desc: string;
+  badge?: string;
+  highlight?: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      className="block p-5 rounded-xl transition-all cursor-pointer"
+      style={{
+        background: highlight ? "linear-gradient(135deg, #4F6EF708, #7C5CFC08)" : "var(--bg)",
+        border: `1.5px solid ${highlight ? "#4F6EF7" : "var(--border-light)"}`,
+      }}
+    >
+      <div className="flex items-start justify-between mb-3">
+        <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: highlight ? "#4F6EF7" : "var(--accent-light)", color: highlight ? "#fff" : "var(--accent)" }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d={icon} />
+          </svg>
+        </div>
+        {badge && (
+          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md" style={{ background: "#4F6EF7", color: "#fff" }}>
+            {badge}
+          </span>
+        )}
+      </div>
+      <h3 className="font-semibold text-sm mb-1" style={{ color: "var(--text-primary)" }}>{title}</h3>
+      <p className="text-xs leading-relaxed" style={{ color: "var(--text-muted)" }}>{desc}</p>
     </Link>
   );
 }
