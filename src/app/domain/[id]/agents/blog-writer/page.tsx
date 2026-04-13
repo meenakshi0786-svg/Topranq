@@ -276,7 +276,7 @@ export default function BlogWriterPage() {
       <div className="max-w-[1400px] mx-auto px-6 py-8">
         <div className={`flex gap-6 ${article ? "" : ""}`}>
           {/* ── Left Panel: Keywords + Topic Selection ── */}
-          <div className={`${article ? "w-1/2" : "w-full max-w-[900px] mx-auto"} transition-all duration-300`}>
+          <div className={`${article || generating ? "w-1/2" : "w-full max-w-[900px] mx-auto"} transition-all duration-300`}>
             <div className="mb-6">
               <h1 className="text-2xl font-bold tracking-tight mb-1">Blog Writer</h1>
               <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
@@ -298,11 +298,12 @@ export default function BlogWriterPage() {
               </div>
 
               {gscLoading ? (
-                <div className="py-8 text-center">
-                  <div className="animate-pulse">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" className="mx-auto mb-2"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>
-                  </div>
-                  <p className="text-xs" style={{ color: "var(--text-muted)" }}>Researching keywords...</p>
+                <div className="py-10 text-center">
+                  <svg className="animate-spin mx-auto mb-3" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#4F6EF7" strokeWidth="2.5">
+                    <circle cx="12" cy="12" r="10" strokeDasharray="60" strokeDashoffset="20" strokeLinecap="round" />
+                  </svg>
+                  <p className="text-sm font-semibold mb-1" style={{ color: "var(--text-primary)" }}>Researching keywords...</p>
+                  <p className="text-xs" style={{ color: "var(--text-muted)" }}>Fetching GSC data and running AI keyword research</p>
                 </div>
               ) : gscQueries.length === 0 ? (
                 <div className="py-4 text-center">
@@ -394,14 +395,12 @@ export default function BlogWriterPage() {
             {blogMode === "smart" && (
               <div className="card-static p-6 mb-6">
                 {smartLoading ? (
-                  <div className="py-12 text-center">
-                    <div className="animate-pulse mb-3" style={{ color: "#4F6EF7" }}>
-                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="mx-auto">
-                        <circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" />
-                      </svg>
-                    </div>
-                    <p className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>Analyzing your website...</p>
-                    <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>Scanning pages, keywords, content gaps, and audit issues</p>
+                  <div className="py-14 text-center">
+                    <svg className="animate-spin mx-auto mb-4" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#4F6EF7" strokeWidth="2.5">
+                      <circle cx="12" cy="12" r="10" strokeDasharray="60" strokeDashoffset="20" strokeLinecap="round" />
+                    </svg>
+                    <p className="text-base font-semibold mb-1" style={{ color: "var(--text-primary)" }}>Generating smart suggestions...</p>
+                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>Analyzing pages, keywords, content gaps, and audit issues</p>
                   </div>
                 ) : smartAnalysis ? (
                   <div>
@@ -601,6 +600,20 @@ export default function BlogWriterPage() {
               </div>
             )}
           </div>
+
+          {/* ── Right Panel: Article Generating Loader ── */}
+          {generating && !article && (
+            <div className="w-1/2 sticky top-4 self-start">
+              <div className="card-static p-12 text-center">
+                <svg className="animate-spin mx-auto mb-5" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#4F6EF7" strokeWidth="2.5">
+                  <circle cx="12" cy="12" r="10" strokeDasharray="60" strokeDashoffset="20" strokeLinecap="round" />
+                </svg>
+                <h3 className="text-lg font-bold mb-2" style={{ color: "var(--text-primary)" }}>Generating your article...</h3>
+                <p className="text-sm mb-1" style={{ color: "var(--text-secondary)" }}>Researching the topic, writing content, and optimizing for SEO.</p>
+                <p className="text-xs" style={{ color: "var(--text-muted)" }}>This usually takes 30–60 seconds.</p>
+              </div>
+            </div>
+          )}
 
           {/* ── Right Panel: Article Preview Sidebar ── */}
           {article && (
