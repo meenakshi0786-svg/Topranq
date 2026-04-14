@@ -111,10 +111,9 @@ export function analyzeRobotsTxt(robotsTxt: string | null): {
   allowed: string[];
   blocked: string[];
   wildcardBlock: boolean;
-  hasLlmsTxt: boolean;
 } {
   if (!robotsTxt) {
-    return { allowed: AI_CRAWLERS, blocked: [], wildcardBlock: false, hasLlmsTxt: false };
+    return { allowed: AI_CRAWLERS, blocked: [], wildcardBlock: false };
   }
 
   const blocked: string[] = [];
@@ -130,14 +129,14 @@ export function analyzeRobotsTxt(robotsTxt: string | null): {
   }
 
   const wildcardBlock = /user-agent:\s*\*[\s\S]*?disallow:\s*\/\s*$/m.test(robotsTxt);
-  const hasLlmsTxt = /llms\.txt/i.test(robotsTxt);
 
-  return { allowed, blocked, wildcardBlock, hasLlmsTxt };
+  return { allowed, blocked, wildcardBlock };
 }
 
 export function buildGEOReport(
   pages: PageRow[],
-  robotsTxt: string | null
+  robotsTxt: string | null,
+  hasLlmsTxt: boolean = false
 ): DomainGEOReport {
   const pageScores = pages.map(scorePage);
   const overallScore =
@@ -197,7 +196,7 @@ export function buildGEOReport(
       severity: "medium",
     });
   }
-  if (!robotsAnalysis.hasLlmsTxt) {
+  if (!hasLlmsTxt) {
     topIssues.push({
       issue: "No llms.txt file",
       affectedCount: 1,
@@ -227,7 +226,7 @@ export function buildGEOReport(
       blocked: robotsAnalysis.blocked,
       wildcardBlock: robotsAnalysis.wildcardBlock,
     },
-    hasLlmsTxt: robotsAnalysis.hasLlmsTxt,
+    hasLlmsTxt,
     pageScores: pageScores.sort((a, b) => a.score - b.score),
     topIssues,
   };

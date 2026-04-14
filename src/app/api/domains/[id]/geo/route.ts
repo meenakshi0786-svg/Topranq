@@ -17,6 +17,24 @@ async function fetchRobotsTxt(domainUrl: string): Promise<string | null> {
   }
 }
 
+async function checkLlmsTxt(domainUrl: string): Promise<boolean> {
+  try {
+    const base = new URL(domainUrl).origin;
+    const res = await fetch(`${base}/llms.txt`, {
+      headers: { "User-Agent": "RanqapexBot/1.0" },
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return false;
+    const text = await res.text();
+    // A valid llms.txt should be plain text with some content; reject HTML (soft 404)
+    if (text.trim().length < 20) return false;
+    if (/<html|<!doctype html/i.test(text.slice(0, 200))) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 // GET /api/domains/:id/geo — GEO report + llms.txt
 export async function GET(
   request: NextRequest,
@@ -56,8 +74,11 @@ export async function GET(
   }
 
   // ── Full GEO report ──
-  const robotsTxt = await fetchRobotsTxt(domain.domainUrl);
-  const report = buildGEOReport(pages, robotsTxt);
+  const [robotsTxt, hasLlmsTxt] = await Promise.all([
+    fetchRobotsTxt(domain.domainUrl),
+    checkLlmsTxt(domain.domainUrl),
+  ]);
+  const report = buildGEOReport(pages, robotsTxt, hasLlmsTxt);
 
   return NextResponse.json({
     domain: { id: domain.id, url: domain.domainUrl },
