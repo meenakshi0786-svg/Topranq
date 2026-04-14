@@ -1,6 +1,7 @@
 import * as cheerio from "cheerio";
 import robotsParser from "robots-parser";
 import { createHash } from "crypto";
+import { fetchPageWithPlaywright, looksLikeJsRendered } from "./playwright-fallback";
 
 export interface CrawlResult {
   url: string;
@@ -169,24 +170,55 @@ async function fetchPage(
       };
     }
 
-    const html = await response.text();
+    let html = await response.text();
+    let finalUrl = response.url;
+    let finalStatus = response.status;
+    let finalLoadTimeMs = loadTimeMs;
 
     // Track if we were redirected
     if (response.url !== url) {
       redirectChain.push(url);
     }
 
+    // Fallback to Playwright if HTML looks JS-only (empty SPA shell)
+    if (looksLikeJsRendered(html)) {
+      const pw = await fetchPageWithPlaywright(url, opts.userAgent, opts.timeoutMs);
+      if (pw && pw.html.length > html.length) {
+        html = pw.html;
+        finalUrl = pw.url;
+        finalStatus = pw.statusCode;
+        finalLoadTimeMs = pw.loadTimeMs;
+        if (finalUrl !== url && !redirectChain.includes(url)) {
+          redirectChain.push(url);
+        }
+      }
+    }
+
     return {
-      url: response.url,
-      statusCode: response.status,
+      url: finalUrl,
+      statusCode: finalStatus,
       contentType,
       html,
       headers: headersToObject(response.headers),
-      loadTimeMs,
+      loadTimeMs: finalLoadTimeMs,
       depth,
       redirectChain,
     };
   } catch {
+    // Even fetch failed entirely — try Playwright as a last resort
+    const pw = await fetchPageWithPlaywright(url, opts.userAgent, opts.timeoutMs);
+    if (pw) {
+      return {
+        url: pw.url,
+        statusCode: pw.statusCode,
+        contentType: "text/html",
+        html: pw.html,
+        headers: {},
+        loadTimeMs: pw.loadTimeMs,
+        depth,
+        redirectChain,
+      };
+    }
     return null;
   }
 }
