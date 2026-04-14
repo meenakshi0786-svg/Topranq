@@ -26,12 +26,68 @@ async function checkLlmsTxt(domainUrl: string): Promise<boolean> {
     });
     if (!res.ok) return false;
     const text = await res.text();
-    // A valid llms.txt should be plain text with some content; reject HTML (soft 404)
     if (text.trim().length < 20) return false;
     if (/<html|<!doctype html/i.test(text.slice(0, 200))) return false;
     return true;
   } catch {
     return false;
+  }
+}
+
+// Parse a sitemap.xml (or sitemap index) and return all URLs.
+// Handles nested sitemap indexes up to 1 level deep.
+async function fetchSitemapUrls(domainUrl: string, maxUrls = 500): Promise<string[]> {
+  try {
+    const base = new URL(domainUrl).origin;
+    const urls = new Set<string>();
+
+    // Try robots.txt for sitemap hints first
+    const sitemaps = new Set<string>([`${base}/sitemap.xml`, `${base}/sitemap_index.xml`]);
+    try {
+      const robotsRes = await fetch(`${base}/robots.txt`, {
+        signal: AbortSignal.timeout(5000),
+      });
+      if (robotsRes.ok) {
+        const robotsText = await robotsRes.text();
+        const matches = robotsText.matchAll(/sitemap:\s*(https?:\/\/[^\s]+)/gi);
+        for (const m of matches) sitemaps.add(m[1].trim());
+      }
+    } catch { /* skip */ }
+
+    async function parseSitemap(url: string, depth = 0): Promise<void> {
+      if (depth > 2 || urls.size >= maxUrls) return;
+      try {
+        const res = await fetch(url, {
+          headers: { "User-Agent": "RanqapexBot/1.0" },
+          signal: AbortSignal.timeout(10_000),
+        });
+        if (!res.ok) return;
+        const xml = await res.text();
+        const locs = [...xml.matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/gi)].map((m) => m[1]);
+
+        // If <sitemapindex>, recurse into each child sitemap
+        if (/<sitemapindex/i.test(xml)) {
+          for (const childUrl of locs.slice(0, 20)) {
+            if (urls.size >= maxUrls) break;
+            await parseSitemap(childUrl, depth + 1);
+          }
+        } else {
+          for (const u of locs) {
+            if (urls.size >= maxUrls) break;
+            urls.add(u);
+          }
+        }
+      } catch { /* skip this sitemap */ }
+    }
+
+    for (const sm of sitemaps) {
+      if (urls.size >= maxUrls) break;
+      await parseSitemap(sm);
+    }
+
+    return Array.from(urls);
+  } catch {
+    return [];
   }
 }
 
@@ -64,7 +120,8 @@ export async function GET(
 
   // ── llms.txt download ──
   if (action === "llms-txt") {
-    const content = generateLlmsTxt(domain.domainUrl, pages);
+    const sitemapUrls = await fetchSitemapUrls(domain.domainUrl);
+    const content = generateLlmsTxt(domain.domainUrl, pages, sitemapUrls);
     return new NextResponse(content, {
       headers: {
         "Content-Type": "text/plain; charset=utf-8",

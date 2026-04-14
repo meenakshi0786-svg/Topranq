@@ -235,6 +235,7 @@ export function buildGEOReport(
 export function generateLlmsTxt(
   domainUrl: string,
   pages: PageRow[],
+  sitemapUrls: string[] = [],
   metadata?: { description?: string }
 ): string {
   const hostname = (() => {
@@ -256,14 +257,56 @@ export function generateLlmsTxt(
     lines.push("");
   }
 
-  lines.push("## Pages");
-  lines.push("");
-  for (const page of pages) {
-    const title = page.title || page.url;
-    const desc = page.metaDescription ? `: ${page.metaDescription}` : "";
-    lines.push(`- [${title}](${page.url})${desc}`);
+  // Crawled pages (with titles + descriptions — richer)
+  const crawledUrls = new Set(pages.map((p) => p.url));
+  if (pages.length > 0) {
+    lines.push("## Pages");
+    lines.push("");
+    for (const page of pages) {
+      const title = page.title || page.url;
+      const desc = page.metaDescription ? `: ${page.metaDescription}` : "";
+      lines.push(`- [${title}](${page.url})${desc}`);
+    }
+    lines.push("");
   }
-  lines.push("");
+
+  // Sitemap URLs not already covered
+  const extraSitemapUrls = sitemapUrls.filter((u) => !crawledUrls.has(u));
+  if (extraSitemapUrls.length > 0) {
+    // Group by section (first path segment) for readability
+    const grouped: Record<string, string[]> = {};
+    for (const url of extraSitemapUrls) {
+      try {
+        const u = new URL(url);
+        const segment = u.pathname.split("/").filter(Boolean)[0] || "Site";
+        const label = segment.charAt(0).toUpperCase() + segment.slice(1).replace(/[-_]/g, " ");
+        if (!grouped[label]) grouped[label] = [];
+        grouped[label].push(url);
+      } catch {
+        /* skip malformed */
+      }
+    }
+
+    lines.push("## Additional URLs from sitemap");
+    lines.push("");
+    for (const [section, urls] of Object.entries(grouped)) {
+      if (urls.length === 1) {
+        lines.push(`- [${section}](${urls[0]})`);
+      } else {
+        lines.push(`### ${section}`);
+        lines.push("");
+        for (const url of urls.slice(0, 50)) {
+          const path = (() => {
+            try { return new URL(url).pathname; } catch { return url; }
+          })();
+          lines.push(`- [${path}](${url})`);
+        }
+        if (urls.length > 50) lines.push(`- ...and ${urls.length - 50} more`);
+        lines.push("");
+      }
+    }
+    lines.push("");
+  }
 
   lines.push("## Notes");
   lines.push("");
