@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { getGSCInsights } from "../gsc-intelligence";
 import { analyzeCompetitors } from "../competitor-research";
 import { generateFeaturedImageUrl, buildImagePrompt } from "../image-gen";
+import { buildProductCta } from "../product-cta";
 async function askClaude(prompt: string, maxTokens = 4000): Promise<string> {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new Error("OPENROUTER_API_KEY is not set");
@@ -191,10 +192,18 @@ export async function runBlogWriter(
 
   const suggestedInternalLinks = findInternalLinks(existingPages, keywords, topic);
   const imageSuggestions = generateImageSuggestions(outline, topic, primaryKeyword);
-  const estimatedWordCount = bodyMarkdown.split(/\s+/).length;
 
-  // Build HTML from markdown
-  const bodyHtml = markdownToHtml(bodyMarkdown);
+  // Append "Shop the edit" CTA with up to 5 relevant products (image + name + price + link)
+  const productCta = buildProductCta(domainId, title, primaryKeyword, bodyMarkdown);
+  const bodyMarkdownWithCta = productCta.markdown
+    ? `${bodyMarkdown}\n${productCta.markdown}`
+    : bodyMarkdown;
+  const estimatedWordCount = bodyMarkdownWithCta.split(/\s+/).length;
+
+  // Build HTML from markdown, then append product CTA HTML (custom block beyond markdown)
+  const bodyHtml = productCta.html
+    ? `${markdownToHtml(bodyMarkdown)}\n${productCta.html}`
+    : markdownToHtml(bodyMarkdown);
 
   // Build JSON-LD schema
   const schemaJsonLd = buildSchemaJsonLd(title, metaDescription, slug, faqItems);
@@ -222,7 +231,7 @@ export async function runBlogWriter(
       metaDescription,
       slug,
       h1,
-      bodyMarkdown,
+      bodyMarkdown: bodyMarkdownWithCta,
       bodyHtml,
       faqSchemaJson: JSON.stringify(faqItems),
       schemaJsonLd: JSON.stringify(schemaJsonLd),
@@ -249,7 +258,7 @@ export async function runBlogWriter(
     slug,
     h1,
     outline,
-    bodyMarkdown,
+    bodyMarkdown: bodyMarkdownWithCta,
     bodyHtml,
     frontMatter,
     suggestedInternalLinks,

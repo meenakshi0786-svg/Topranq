@@ -28,6 +28,7 @@ interface Product {
   price: string;
   description: string;
   category: string;
+  imageUrl?: string;
 }
 
 interface InfuserResult {
@@ -62,11 +63,12 @@ export default function ProductInfuserPage() {
         if (lines.length < 2) { setCsvError("CSV must have a header row and at least one product."); return; }
 
         const header = lines[0].toLowerCase().split(",").map((h) => h.trim());
-        const nameIdx = header.findIndex((h) => h.includes("name") || h.includes("title") || h.includes("product"));
-        const urlIdx = header.findIndex((h) => h.includes("url") || h.includes("link"));
+        const nameIdx = header.findIndex((h) => h === "name" || h === "title" || h === "product" || h.includes("product name") || h.includes("product title"));
+        const urlIdx = header.findIndex((h) => (h.includes("url") || h.includes("link")) && !h.includes("image") && !h.includes("cdn") && !h.includes("photo"));
         const priceIdx = header.findIndex((h) => h.includes("price") || h.includes("cost"));
         const descIdx = header.findIndex((h) => h.includes("desc"));
         const catIdx = header.findIndex((h) => h.includes("categ") || h.includes("type") || h.includes("collection"));
+        const imageIdx = header.findIndex((h) => h.includes("image") || h.includes("cdn") || h.includes("photo") || h.includes("picture"));
 
         if (nameIdx === -1) { setCsvError("CSV must have a 'name' or 'title' column."); return; }
 
@@ -78,6 +80,7 @@ export default function ProductInfuserPage() {
             price: priceIdx >= 0 ? cols[priceIdx] || "" : "",
             description: descIdx >= 0 ? cols[descIdx] || "" : "",
             category: catIdx >= 0 ? cols[catIdx] || "" : "",
+            imageUrl: imageIdx >= 0 ? cols[imageIdx] || "" : "",
           };
         }).filter((p) => p.name);
 

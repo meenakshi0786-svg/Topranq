@@ -117,9 +117,9 @@ export default function GEOPage() {
         {report && !loading && (
           <>
             {/* Overview cards */}
-            <div className="grid grid-cols-12 gap-5 mb-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
               {/* Score */}
-              <div className="col-span-12 md:col-span-4 card-static p-7 flex flex-col items-center justify-center fade-in">
+              <div className="card-static p-7 flex flex-col items-center justify-center fade-in">
                 <GEOScoreCircle score={report.overallScore} />
                 <p className="mt-3 text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
                   AI Readiness Score
@@ -130,7 +130,7 @@ export default function GEOPage() {
               </div>
 
               {/* AI Crawler Status */}
-              <div className="col-span-12 md:col-span-4 card-static p-6 fade-in">
+              <div className="card-static p-6 fade-in">
                 <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: "var(--text-muted)" }}>
                   AI Crawler Access
                 </p>
@@ -167,66 +167,39 @@ export default function GEOPage() {
                 )}
               </div>
 
-              {/* llms.txt */}
-              <div className="col-span-12 md:col-span-4 card-static p-6 fade-in">
-                <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: "var(--text-muted)" }}>
-                  llms.txt
-                </p>
-                {report.hasLlmsTxt ? (
-                  <>
-                    <p className="text-sm font-semibold mb-2" style={{ color: "#22c55e" }}>
-                      Detected
-                    </p>
-                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                      AI engines can find your content instructions.
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-sm font-semibold mb-2" style={{ color: "#f97316" }}>
-                      Not detected
-                    </p>
-                    <button
-                      onClick={downloadLlmsTxt}
-                      className="text-xs font-semibold px-3 py-1.5 rounded-md text-white cursor-pointer"
-                      style={{ background: "#4F6EF7" }}
-                    >
-                      Generate & download
-                    </button>
-                  </>
-                )}
-              </div>
             </div>
 
-            {/* Top issues */}
-            {report.topIssues.length > 0 && (
-              <div className="card-static p-7 mb-5 fade-in">
-                <h2 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: "var(--text-muted)" }}>
-                  Top issues
-                </h2>
-                <div className="space-y-3">
-                  {report.topIssues.map((issue, i) => (
-                    <div key={i} className="flex items-start gap-4 p-4 rounded-lg" style={{ background: "var(--bg)" }}>
-                      <SeverityBadge severity={issue.severity} />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold mb-1">{issue.issue}</p>
-                        <p className="text-xs mb-1.5" style={{ color: "var(--text-secondary)" }}>
-                          {issue.recommendation}
-                        </p>
-                        {issue.affectedCount > 1 && (
-                          <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-                            Affects {issue.affectedCount} page{issue.affectedCount !== 1 ? "s" : ""}
+            {/* Row 2: Top issues + Pages by score side by side */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+              {/* Top issues */}
+              {report.topIssues.length > 0 && (
+                <div className="card-static p-7 fade-in">
+                  <h2 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: "var(--text-muted)" }}>
+                    Top issues
+                  </h2>
+                  <div className="space-y-3">
+                    {report.topIssues.map((issue, i) => (
+                      <div key={i} className="flex items-start gap-4 p-4 rounded-lg" style={{ background: "var(--bg)" }}>
+                        <SeverityBadge severity={issue.severity} />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold mb-1">{issue.issue}</p>
+                          <p className="text-xs mb-1.5" style={{ color: "var(--text-secondary)" }}>
+                            {issue.recommendation}
                           </p>
-                        )}
+                          {issue.affectedCount > 1 && (
+                            <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+                              Affects {issue.affectedCount} page{issue.affectedCount !== 1 ? "s" : ""}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Per-page scores */}
-            <div className="card-static p-7 mb-5 fade-in">
+              {/* Per-page scores */}
+              <div className="card-static p-7 fade-in">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-sm font-bold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
                   Pages by score
@@ -310,37 +283,67 @@ export default function GEOPage() {
                   );
                 })}
               </div>
+              </div>
             </div>
 
-            {/* llms.txt generator */}
-            <div className="card-static p-7 fade-in" style={{ background: "linear-gradient(135deg, #4F6EF705, #7C5CFC05)", border: "1px solid #4F6EF720" }}>
-              <div className="flex items-start gap-4">
-                <div className="shrink-0 w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: "#4F6EF715" }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4F6EF7" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-                    <polyline points="14 2 14 8 20 8" />
-                    <line x1="16" y1="13" x2="8" y2="13" />
-                    <line x1="16" y1="17" x2="8" y2="17" />
-                  </svg>
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-sm mb-1">llms.txt generator</h3>
-                  <p className="text-xs mb-4" style={{ color: "var(--text-secondary)" }}>
-                    Auto-generate an <code style={{ background: "var(--bg)", padding: "2px 4px", borderRadius: 3 }}>llms.txt</code> file from your crawled pages.
-                    Upload it to your site root at <code style={{ background: "var(--bg)", padding: "2px 4px", borderRadius: 3 }}>/llms.txt</code> so AI engines know what to index.
-                  </p>
-                  <button
-                    onClick={downloadLlmsTxt}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white cursor-pointer"
-                    style={{ background: "#4F6EF7" }}
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                      <polyline points="7 10 12 15 17 10" />
-                      <line x1="12" y1="15" x2="12" y2="3" />
+            {/* Row 3: llms.txt status + llms.txt generator */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+              {/* llms.txt status */}
+              <div className="card-static p-7 fade-in">
+                <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: "var(--text-muted)" }}>
+                  llms.txt
+                </p>
+                {report.hasLlmsTxt ? (
+                  <>
+                    <p className="text-sm font-semibold mb-2" style={{ color: "#22c55e" }}>
+                      Detected
+                    </p>
+                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                      AI engines can find your content instructions.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm font-semibold mb-2" style={{ color: "#f97316" }}>
+                      Not detected
+                    </p>
+                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                      AI engines can&apos;t find content instructions for your site.
+                    </p>
+                  </>
+                )}
+              </div>
+
+              {/* llms.txt generator */}
+              <div className="card-static p-7 fade-in" style={{ background: "linear-gradient(135deg, #4F6EF705, #7C5CFC05)", border: "1px solid #4F6EF720" }}>
+                <div className="flex items-start gap-4">
+                  <div className="shrink-0 w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: "#4F6EF715" }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4F6EF7" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                      <polyline points="14 2 14 8 20 8" />
+                      <line x1="16" y1="13" x2="8" y2="13" />
+                      <line x1="16" y1="17" x2="8" y2="17" />
                     </svg>
-                    Download llms.txt
-                  </button>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-sm mb-1">llms.txt generator</h3>
+                    <p className="text-xs mb-4" style={{ color: "var(--text-secondary)" }}>
+                      Auto-generate an <code style={{ background: "var(--bg)", padding: "2px 4px", borderRadius: 3 }}>llms.txt</code> file from your crawled pages.
+                      Upload it to your site root at <code style={{ background: "var(--bg)", padding: "2px 4px", borderRadius: 3 }}>/llms.txt</code> so AI engines know what to index.
+                    </p>
+                    <button
+                      onClick={downloadLlmsTxt}
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white cursor-pointer"
+                      style={{ background: "#4F6EF7" }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" y1="15" x2="12" y2="3" />
+                      </svg>
+                      Download llms.txt
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

@@ -5,7 +5,7 @@ import { getOrCreateUser } from "@/lib/auth";
 
 /**
  * POST /api/products/import — Import products from CSV data
- * Body: { domainId, products: Array<{ name, url, price, description, category }> }
+ * Body: { domainId, products: Array<{ name, url, price, description, category, imageUrl }> }
  */
 export async function POST(request: NextRequest) {
   const user = await getOrCreateUser();
@@ -41,6 +41,7 @@ export async function POST(request: NextRequest) {
         price: p.price || null,
         description: p.description || null,
         category: p.category || null,
+        imageUrl: p.imageUrl || null,
       })
       .run();
     imported++;

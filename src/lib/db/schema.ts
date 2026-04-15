@@ -273,6 +273,7 @@ export const storeProducts = sqliteTable("store_products", {
   price: text("price"),
   description: text("description"),
   category: text("category"),
+  imageUrl: text("image_url"),
   createdAt: text("created_at").default(sql`(datetime('now'))`),
 });
 

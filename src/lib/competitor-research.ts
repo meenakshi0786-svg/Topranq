@@ -147,10 +147,18 @@ export async function analyzeCompetitors(keyword: string): Promise<CompetitorAna
       .slice(0, 8);
 
     // 5. Aggregate signals
-    const wordCounts = candidatePages.filter((r) => r.wordCount > 100).map((r) => r.wordCount);
-    const avgWordCount = wordCounts.length > 0
-      ? Math.round(wordCounts.reduce((a, b) => a + b, 0) / wordCounts.length)
-      : 1500;
+    // Use median and cap outliers so a single 17k-word page doesn't skew the target
+    const wordCounts = candidatePages
+      .filter((r) => r.wordCount > 100)
+      .map((r) => Math.min(r.wordCount, 6000))
+      .sort((a, b) => a - b);
+    const median = (nums: number[]) => {
+      const n = nums.length;
+      if (n === 0) return 1500;
+      const mid = Math.floor(n / 2);
+      return n % 2 ? nums[mid] : Math.round((nums[mid - 1] + nums[mid]) / 2);
+    };
+    const avgWordCount = median(wordCounts);
 
     const allHeadings = candidatePages.flatMap((r) => r.headings);
     const headingFreq = new Map<string, number>();
