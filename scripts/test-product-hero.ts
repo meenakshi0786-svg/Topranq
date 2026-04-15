@@ -5,7 +5,7 @@ import { composeProductHero } from "../src/lib/product-composite";
 const domain = process.argv[2] || "https://www.allbirds.com";
 const articleTitle = process.argv[3] || "The Best Running Shoes of 2026";
 const articleKeyword = process.argv[4] || "best running shoes 2026";
-const articleBody =
+const articleBody = process.argv[5] ||
   "Running shoes in 2026 combine breathable uppers, responsive foam, and durable outsoles. Whether you run trails or pavement, finding comfortable running shoes matters.";
 
 (async () => {

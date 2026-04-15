@@ -41,24 +41,16 @@ export async function composeProductHero(
   }
 
   // Fetch up to 5 images
-  const buffers = await Promise.all(
-    imageUrls.slice(0, 5).map(fetchImage),
-  );
+  const buffers = await Promise.all(imageUrls.slice(0, 5).map(fetchImage));
   const valid = buffers.filter((b): b is Buffer => b !== null);
   if (valid.length === 0) return null;
 
-  // Pad by cycling if fewer than 5 loaded
-  const images: Buffer[] = [];
-  for (let i = 0; i < 5; i++) images.push(valid[i % valid.length]);
-
-  // Resize each to its target cell size
-  const [bigBuf, ...smallBufs] = await Promise.all([
-    resizeCover(images[0], LEFT_WIDTH, OUTPUT_HEIGHT),
-    resizeCover(images[1], RIGHT_CELL_WIDTH, RIGHT_CELL_HEIGHT),
-    resizeCover(images[2], RIGHT_CELL_WIDTH, RIGHT_CELL_HEIGHT),
-    resizeCover(images[3], RIGHT_CELL_WIDTH, RIGHT_CELL_HEIGHT),
-    resizeCover(images[4], RIGHT_CELL_WIDTH, RIGHT_CELL_HEIGHT),
-  ]);
+  // Pick a layout that matches how many relevant products we actually got.
+  // Never pad with repeats — fewer, relevant cells beats a wall of duplicates.
+  const cells = layoutFor(valid.length);
+  const resized = await Promise.all(
+    valid.slice(0, cells.length).map((buf, i) => resizeCover(buf, cells[i].w, cells[i].h)),
+  );
 
   await sharp({
     create: {
@@ -68,17 +60,53 @@ export async function composeProductHero(
       background: BACKGROUND,
     },
   })
-    .composite([
-      { input: bigBuf, left: 0, top: 0 },
-      { input: smallBufs[0], left: LEFT_WIDTH, top: 0 },
-      { input: smallBufs[1], left: LEFT_WIDTH + RIGHT_CELL_WIDTH, top: 0 },
-      { input: smallBufs[2], left: LEFT_WIDTH, top: RIGHT_CELL_HEIGHT },
-      { input: smallBufs[3], left: LEFT_WIDTH + RIGHT_CELL_WIDTH, top: RIGHT_CELL_HEIGHT },
-    ])
+    .composite(
+      resized.map((input, i) => ({ input, left: cells[i].x, top: cells[i].y })),
+    )
     .jpeg({ quality: 85, mozjpeg: true })
     .toFile(outPath);
 
   return { url: publicUrl, path: outPath, productsUsed: valid.length };
+}
+
+interface Cell { x: number; y: number; w: number; h: number }
+
+function layoutFor(count: number): Cell[] {
+  const W = OUTPUT_WIDTH;
+  const H = OUTPUT_HEIGHT;
+  switch (count) {
+    case 1:
+      return [{ x: 0, y: 0, w: W, h: H }];
+    case 2:
+      return [
+        { x: 0, y: 0, w: W / 2, h: H },
+        { x: W / 2, y: 0, w: W / 2, h: H },
+      ];
+    case 3:
+      // 1 big left, 2 stacked right
+      return [
+        { x: 0, y: 0, w: W / 2, h: H },
+        { x: W / 2, y: 0, w: W / 2, h: H / 2 },
+        { x: W / 2, y: H / 2, w: W / 2, h: H / 2 },
+      ];
+    case 4:
+      // 2×2 grid
+      return [
+        { x: 0, y: 0, w: W / 2, h: H / 2 },
+        { x: W / 2, y: 0, w: W / 2, h: H / 2 },
+        { x: 0, y: H / 2, w: W / 2, h: H / 2 },
+        { x: W / 2, y: H / 2, w: W / 2, h: H / 2 },
+      ];
+    default:
+      // 5: 1 big left + 2×2 grid right
+      return [
+        { x: 0, y: 0, w: LEFT_WIDTH, h: OUTPUT_HEIGHT },
+        { x: LEFT_WIDTH, y: 0, w: RIGHT_CELL_WIDTH, h: RIGHT_CELL_HEIGHT },
+        { x: LEFT_WIDTH + RIGHT_CELL_WIDTH, y: 0, w: RIGHT_CELL_WIDTH, h: RIGHT_CELL_HEIGHT },
+        { x: LEFT_WIDTH, y: RIGHT_CELL_HEIGHT, w: RIGHT_CELL_WIDTH, h: RIGHT_CELL_HEIGHT },
+        { x: LEFT_WIDTH + RIGHT_CELL_WIDTH, y: RIGHT_CELL_HEIGHT, w: RIGHT_CELL_WIDTH, h: RIGHT_CELL_HEIGHT },
+      ];
+  }
 }
 
 async function fetchImage(url: string): Promise<Buffer | null> {

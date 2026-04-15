@@ -16,7 +16,7 @@ const STOP_WORDS = new Set([
   "also", "more", "most", "very", "much", "than", "other", "some",
 ]);
 
-const MIN_RELEVANCE = 15; // more lenient than before so we have hero material even on thin matches
+const MIN_RELEVANCE = 35; // strict — a poorly-matched product hurts the article more than a missing slot
 
 export interface PickedProduct extends ProductListing {
   relevance: number;
@@ -35,7 +35,7 @@ export function pickRelevantProducts(
   const articleWords = keywords(articleText);
   const body = articleText.toLowerCase();
 
-  const scored: PickedProduct[] = products
+  return products
     .filter((p) => !!p.imageUrl)
     .map((p) => {
       const productWords = keywords(
@@ -46,19 +46,6 @@ export function pickRelevantProducts(
     .filter((p) => p.relevance >= MIN_RELEVANCE)
     .sort((a, b) => b.relevance - a.relevance)
     .slice(0, limit);
-
-  // If we couldn't find 5 above the threshold, pad with top-scored remaining products
-  // so the hero composite always has 5 cells filled.
-  if (scored.length < limit) {
-    const already = new Set(scored.map((p) => p.imageUrl));
-    const extras = products
-      .filter((p) => !!p.imageUrl && !already.has(p.imageUrl))
-      .slice(0, limit - scored.length)
-      .map((p) => ({ ...p, relevance: 0 }));
-    scored.push(...extras);
-  }
-
-  return scored;
 }
 
 function keywords(text: string): string[] {
@@ -66,13 +53,29 @@ function keywords(text: string): string[] {
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, "")
     .split(/\s+/)
-    .filter((w) => w.length > 2 && !STOP_WORDS.has(w));
+    .filter((w) => w.length > 2 && !STOP_WORDS.has(w))
+    .map(stem);
+}
+
+// Tiny stemmer so "runner", "running", "runs" all reduce to "run" — enough for
+// product-matching without dragging in a full Porter implementation.
+function stem(w: string): string {
+  if (w.length <= 3) return w;
+  for (const suffix of ["ings", "ing", "ers", "er", "ies", "ied", "ed", "es", "s"]) {
+    if (w.length > suffix.length + 2 && w.endsWith(suffix)) {
+      const root = w.slice(0, -suffix.length);
+      return suffix === "ies" ? root + "y" : root;
+    }
+  }
+  return w;
 }
 
 function score(articleWords: string[], productWords: string[], articleBody: string): number {
   if (productWords.length === 0) return 0;
-  const overlap = productWords.filter((w) => articleWords.includes(w));
+  const article = new Set(articleWords);
+  const overlap = productWords.filter((w) => article.has(w));
   const overlapScore = (overlap.length / productWords.length) * 100;
+  // Body check uses stemmed article words already, so we substring-match the stem
   const bodyMatches = productWords.filter((w) => articleBody.includes(w));
   const bodyScore = (bodyMatches.length / productWords.length) * 100;
   return Math.min(100, Math.round(overlapScore * 0.4 + bodyScore * 0.6));
