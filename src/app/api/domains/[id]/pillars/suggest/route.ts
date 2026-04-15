@@ -37,7 +37,11 @@ export async function GET(
     rows = await tryFetchGscOnDemand(id, domain.domainUrl);
   }
 
-  if (rows.length === 0 && products.length === 0) {
+  // Extract site-side topical signals from crawled pages — works even when
+  // GSC is not accessible, since the audit always crawls the domain.
+  const siteKeywords = extractSiteKeywords(id);
+
+  if (rows.length === 0 && products.length === 0 && siteKeywords.length === 0) {
     // Distinguish "no connection" from "connected but no accessible property"
     const hasConnection = !!db
       .select()
@@ -50,8 +54,8 @@ export async function GET(
       )
       .get();
     const msg = hasConnection
-      ? "The connected Google account has no Search Console property matching this domain (or lacks access to query it). Reconnect with an account that owns the property, or import a product catalog."
-      : "Connect Google Search Console or import a product catalog first";
+      ? "We couldn't read GSC data for this domain and the site hasn't been crawled yet. Run an audit, import a product catalog, or reconnect GSC with an account that owns the property."
+      : "Run the site audit, connect Google Search Console, or import a product catalog first.";
     return NextResponse.json({ error: msg }, { status: 400 });
   }
 
@@ -81,12 +85,56 @@ export async function GET(
   const queries = Array.from(byQuery.values());
 
   try {
-    const suggestions = await suggestPillarsFromGSC(domain.domainUrl, queries, products);
+    const suggestions = await suggestPillarsFromGSC(domain.domainUrl, queries, products, siteKeywords);
     return NextResponse.json({ suggestions });
   } catch (err) {
     console.error("[pillars/suggest] failed:", err);
     return NextResponse.json({ error: "Failed to generate suggestions" }, { status: 500 });
   }
+}
+
+/**
+ * Pull noun-phrase-y keywords from the page titles and H1s of the domain's
+ * crawled pages. Used as a fallback / supplement to GSC + products.
+ */
+function extractSiteKeywords(domainId: string): string[] {
+  const pages = db
+    .select({ title: schema.pages.title, h1: schema.pages.h1, url: schema.pages.url })
+    .from(schema.pages)
+    .where(eq(schema.pages.domainId, domainId))
+    .all();
+  if (pages.length === 0) return [];
+
+  const STOP = new Set([
+    "the", "a", "an", "and", "or", "of", "to", "in", "for", "with", "on",
+    "at", "by", "from", "is", "are", "was", "were", "be", "been", "this",
+    "that", "your", "our", "we", "you", "how", "what", "when", "where",
+    "best", "top", "free", "buy", "shop", "page", "home", "blog", "about",
+    "contact", "privacy", "terms", "more", "all", "vs",
+  ]);
+  const phrases = new Map<string, number>();
+
+  for (const p of pages) {
+    const text = `${p.title || ""} | ${p.h1 || ""}`;
+    // Split into segments on punctuation — pipe, dash, colon often separate brand from topic
+    const segments = text.split(/[|—–\-:·•»·,]/).map((s) => s.trim()).filter(Boolean);
+    for (const seg of segments) {
+      const cleaned = seg.toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
+      if (!cleaned || cleaned.length < 4) continue;
+      // Skip pure boilerplate/branding
+      const words = cleaned.split(" ").filter((w) => w.length > 2);
+      if (words.length === 0) continue;
+      const meaningful = words.filter((w) => !STOP.has(w));
+      if (meaningful.length === 0) continue;
+      // Use the cleaned segment (preserves multi-word phrases like "ai agents")
+      const key = meaningful.slice(0, 6).join(" ");
+      phrases.set(key, (phrases.get(key) || 0) + 1);
+    }
+  }
+  return Array.from(phrases.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 30)
+    .map(([k]) => k);
 }
 
 /**

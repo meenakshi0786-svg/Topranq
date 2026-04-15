@@ -31,14 +31,17 @@ interface ProductHint {
 }
 
 /**
- * Suggest 3 pillar-topic candidates driven by GSC data and (when available)
- * the imported product catalog. Queries give us the topical authority signal;
- * products narrow the strategy to things the store actually sells.
+ * Suggest 3 pillar-topic candidates driven by any combination of:
+ *   - GSC striking-distance queries (when the user has GSC access)
+ *   - imported product catalog (commercial intent)
+ *   - crawled page titles / H1s (site's existing topical focus)
+ * Need at least one source to produce useful suggestions.
  */
 export async function suggestPillarsFromGSC(
   domainUrl: string,
   queries: GSCQuery[],
   products: ProductHint[] = [],
+  siteKeywords: string[] = [],
 ): Promise<PillarSuggestion[]> {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new Error("OPENROUTER_API_KEY is not set");
@@ -49,7 +52,7 @@ export async function suggestPillarsFromGSC(
     .sort((a, b) => b.impressions - a.impressions)
     .slice(0, 40);
   const candidates = strikingDistance.length > 0 ? strikingDistance : queries.slice(0, 40);
-  if (candidates.length === 0 && products.length === 0) return [];
+  if (candidates.length === 0 && products.length === 0 && siteKeywords.length === 0) return [];
 
   const queryList = candidates
     .map((q) => `- "${q.query}" (pos ${q.position.toFixed(1)}, ${q.impressions} impressions, ${q.clicks} clicks)`)
@@ -76,6 +79,10 @@ export async function suggestPillarsFromGSC(
       : namesWithoutCategory.slice(0, 15).map((n) => `- ${n}`).join("\n"))
     : "";
 
+  const siteSection = siteKeywords.length > 0
+    ? siteKeywords.slice(0, 25).map((k) => `- ${k}`).join("\n")
+    : "";
+
   const prompt = `You are an SEO content strategist for ${domainUrl}.
 
 ${queryList ? `Google Search Console queries this site already ranks for (positions 2-30, the "striking distance" zone):
@@ -85,6 +92,10 @@ ${queryList}
 Products the store actually sells (from the imported catalog):
 
 ${productSection}
+` : ""}${siteSection ? `
+Topics the site already covers (from page titles and H1s of crawled pages):
+
+${siteSection}
 ` : ""}
 TASK: Suggest THREE distinct pillar-topic candidates. Each pillar must:
 - Be a broad authoritative topic that can support a hub page plus 6-8 cluster articles
