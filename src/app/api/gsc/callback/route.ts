@@ -49,12 +49,12 @@ export async function GET(request: NextRequest) {
       .run();
 
     return NextResponse.redirect(
-      `${APP_URL}/domain/${domainId}/search-console?connected=true`
+      `${APP_URL}/domain/${domainId}?gscConnected=1`
     );
   } catch (err) {
     console.error("GSC callback error:", err);
     return NextResponse.redirect(
-      `${APP_URL}/domain/${domainId}/search-console?error=auth_failed`
+      `${APP_URL}/domain/${domainId}?gscError=auth_failed`
     );
   }
 }

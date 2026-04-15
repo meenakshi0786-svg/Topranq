@@ -5,6 +5,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { CubeLoader } from "@/components/cube-loader";
+import { OnboardingPanel } from "@/components/onboarding-panel";
 
 interface DomainData {
   domain: { id: string; domainUrl: string; status: string };
@@ -223,14 +224,24 @@ export default function DomainOverview() {
           </div>
         )}
 
+        {/* Onboarding (Connect GSC → Add Products → Create Pillar Strategy) */}
+        {latestAudit?.status === "complete" && (
+          <OnboardingPanel
+            domainId={domainId}
+            domainUrl={domain.domainUrl}
+            justConnectedGsc={searchParams.get("gscConnected") === "1"}
+          />
+        )}
+
         {/* Navigation */}
-        {/* NOTE: "Strategy AI Agents" and "Connectors" are temporarily hidden.
-            To restore: uncomment the two NavCards below and change md:grid-cols-4 back to md:grid-cols-6. */}
+        {/* NOTE: "Search Console", "Strategy AI Agents" and "Connectors" are temporarily hidden.
+            To restore: uncomment the NavCards below and change md:grid-cols-4 to match the new count. */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <NavCard href={`/domain/${domainId}/audit`} icon="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" title="Audit" desc={`${stats.issues.total} issues`} />
           <NavCard href={`/domain/${domainId}/geo`} icon="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" title="GEO" desc="AI readiness" />
           <NavCard href={`/domain/${domainId}/pillars`} icon="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" title="Pillars" desc="Topic clusters" />
-          <NavCard href={`/domain/${domainId}/search-console`} icon="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" title="Search Console" desc="GSC data" />
+          <NavCard href={`/domain/${domainId}/articles`} icon="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" title="Articles" desc="Generated content" />
+          {/* <NavCard href={`/domain/${domainId}/search-console`} icon="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" title="Search Console" desc="GSC data" /> */}
           {/* <NavCard href={`/domain/${domainId}/agents`} icon="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" title="Strategy AI Agents" desc="Deploy agents" /> */}
           {/* <NavCard href={`/domain/${domainId}/connectors`} icon="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101M10.172 13.828a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" title="Connectors" desc="Publish to CMS" /> */}
         </div>

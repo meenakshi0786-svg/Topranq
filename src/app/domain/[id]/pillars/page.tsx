@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { CubeLoader } from "@/components/cube-loader";
@@ -24,8 +24,15 @@ interface Pillar {
   clusters: Cluster[];
 }
 
+interface PillarSuggestion {
+  pillarTopic: string;
+  rationale: string;
+  supportingQueries: string[];
+}
+
 export default function PillarsPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const domainId = params.id as string;
 
   const [pillars, setPillars] = useState<Pillar[]>([]);
@@ -34,6 +41,8 @@ export default function PillarsPage() {
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [generating, setGenerating] = useState<string | null>(null); // id of item being generated
+  const [suggestions, setSuggestions] = useState<PillarSuggestion[] | null>(null);
+  const [suggestLoading, setSuggestLoading] = useState(false);
 
   const fetchPillars = useCallback(async () => {
     setLoading(true);
@@ -47,15 +56,32 @@ export default function PillarsPage() {
 
   useEffect(() => { fetchPillars(); }, [fetchPillars]);
 
-  async function createPillar() {
-    if (!seedTopic.trim()) return;
+  // Auto-fetch GSC-driven suggestions when the onboarding panel sent us here
+  // (?suggest=1), or whenever GSC data is present and no pillars exist yet.
+  useEffect(() => {
+    const shouldSuggest = searchParams.get("suggest") === "1";
+    if (!shouldSuggest) return;
+    setSuggestLoading(true);
+    fetch(`/api/domains/${domainId}/pillars/suggest`)
+      .then(async (r) => {
+        if (!r.ok) return null;
+        const d = await r.json();
+        return d.suggestions as PillarSuggestion[];
+      })
+      .then((s) => { if (s) setSuggestions(s); })
+      .finally(() => setSuggestLoading(false));
+  }, [domainId, searchParams]);
+
+  async function createPillar(overrideTopic?: string) {
+    const topic = (overrideTopic ?? seedTopic).trim();
+    if (!topic) return;
     setCreating(true);
     setError(null);
     try {
       const res = await fetch(`/api/domains/${domainId}/pillars`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ seedTopic: seedTopic.trim() }),
+        body: JSON.stringify({ seedTopic: topic }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -63,6 +89,7 @@ export default function PillarsPage() {
         return;
       }
       setSeedTopic("");
+      setSuggestions(null);
       await fetchPillars();
     } finally {
       setCreating(false);
@@ -120,6 +147,41 @@ export default function PillarsPage() {
           </p>
         </div>
 
+        {/* GSC-driven pillar suggestions (shown when arriving via ?suggest=1) */}
+        {(suggestLoading || (suggestions && suggestions.length > 0)) && (
+          <div className="card-static p-6 mb-6 fade-in">
+            <h2 className="text-sm font-bold uppercase tracking-wider mb-2" style={{ color: "var(--text-muted)" }}>
+              Suggested pillars — based on your GSC rankings
+            </h2>
+            <p className="text-xs mb-4" style={{ color: "var(--text-secondary)" }}>
+              These are grouped around queries your site is already ranking for. Pick one to generate the full pillar + clusters plan.
+            </p>
+            {suggestLoading && (
+              <p className="text-sm" style={{ color: "var(--text-muted)" }}>Analyzing your GSC data...</p>
+            )}
+            {suggestions && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {suggestions.map((s, i) => (
+                  <button
+                    key={i}
+                    disabled={creating}
+                    onClick={() => createPillar(s.pillarTopic)}
+                    className="text-left p-4 rounded-lg cursor-pointer disabled:opacity-50"
+                    style={{ background: "var(--bg)", border: "1px solid var(--border-light)" }}
+                  >
+                    <p className="text-sm font-semibold mb-1">{s.pillarTopic}</p>
+                    <p className="text-xs mb-2" style={{ color: "var(--text-secondary)" }}>{s.rationale}</p>
+                    <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+                      Covers: {s.supportingQueries.slice(0, 3).join(" · ")}
+                      {s.supportingQueries.length > 3 ? ` +${s.supportingQueries.length - 3}` : ""}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* New pillar form */}
         <div className="card-static p-6 mb-6">
           <h2 className="text-sm font-bold uppercase tracking-wider mb-3" style={{ color: "var(--text-muted)" }}>
@@ -137,7 +199,7 @@ export default function PillarsPage() {
               onKeyDown={(e) => e.key === "Enter" && createPillar()}
             />
             <button
-              onClick={createPillar}
+              onClick={() => createPillar()}
               disabled={creating || !seedTopic.trim()}
               className="px-6 py-3 rounded-lg text-sm font-semibold text-white cursor-pointer disabled:opacity-40"
               style={{ background: "#4F6EF7" }}
