@@ -79,12 +79,16 @@ export async function fetchSearchAnalytics(
   }));
 }
 
+// Permission levels that can query searchAnalytics. "siteUnverifiedUser" cannot.
+const QUERYABLE_PERMISSIONS = new Set(["siteOwner", "siteFullUser", "siteRestrictedUser"]);
+
 export async function fetchSiteList(refreshToken: string): Promise<string[]> {
   const auth = getAuthenticatedClient(refreshToken);
   const searchconsole = google.searchconsole({ version: "v1", auth });
 
   const response = await searchconsole.sites.list();
   return (response.data.siteEntry || [])
-    .map((site) => site.siteUrl || "")
+    .filter((site) => site.siteUrl && QUERYABLE_PERMISSIONS.has(site.permissionLevel || ""))
+    .map((site) => site.siteUrl!)
     .filter(Boolean);
 }
