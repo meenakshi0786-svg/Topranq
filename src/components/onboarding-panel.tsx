@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
 
 interface Props {
   domainId: string;
@@ -20,25 +19,21 @@ const GSC_PROGRESS_MESSAGES = [
 ];
 
 export function OnboardingPanel({ domainId, domainUrl, justConnectedGsc }: Props) {
-  const router = useRouter();
   const [gscConnected, setGscConnected] = useState<boolean | null>(null);
   const [hasProducts, setHasProducts] = useState<boolean | null>(null);
-  const [hasPillars, setHasPillars] = useState<boolean | null>(null);
   const [gscFetching, setGscFetching] = useState(false);
   const [gscProgressIdx, setGscProgressIdx] = useState(0);
   const [showImport, setShowImport] = useState(false);
   const autoFetchTriggered = useRef(false);
 
   const refresh = useCallback(async () => {
-    const [gsc, products, pillars] = await Promise.all([
+    const [gsc, products] = await Promise.all([
       fetch(`/api/domains/${domainId}/gsc?action=status`).then((r) => r.json()).catch(() => ({ connected: false })),
       fetch(`/api/products/import?domainId=${domainId}`).then((r) => r.json()).catch(() => []),
-      fetch(`/api/domains/${domainId}/pillars`).then((r) => r.json()).catch(() => []),
     ]);
     setGscConnected(Boolean(gsc?.connected));
     setHasProducts(Array.isArray(products) && products.length > 0);
-    setHasPillars(Array.isArray(pillars) && pillars.length > 0);
-    return { gsc, products, pillars };
+    return { gsc, products };
   }, [domainId]);
 
   useEffect(() => {
@@ -75,12 +70,11 @@ export function OnboardingPanel({ domainId, domainUrl, justConnectedGsc }: Props
   }, [gscFetching]);
 
   if (gscConnected === null) return null; // loading
-  const allDone = gscConnected && hasProducts && hasPillars;
+  const allDone = gscConnected && hasProducts;
   if (allDone) return null;
 
   const gscStatus: StepStatus = gscFetching ? "doing" : gscConnected ? "done" : "todo";
   const productStatus: StepStatus = hasProducts ? "done" : "todo";
-  const pillarStatus: StepStatus = hasPillars ? "done" : "todo";
 
   return (
     <div className="card-static p-7 mb-5 fade-in">
@@ -104,14 +98,6 @@ export function OnboardingPanel({ domainId, domainUrl, justConnectedGsc }: Props
           description="Import a CSV so article heroes use real product photos."
           actionLabel={hasProducts ? "Imported" : "Import"}
           onAction={() => setShowImport(true)}
-        />
-        <StepCard
-          number={3}
-          status={pillarStatus}
-          title="Create a new pillar strategy"
-          description="We&apos;ll suggest 3 pillars based on the queries you already rank for."
-          actionLabel={hasPillars ? "Created" : "Generate"}
-          onAction={() => router.push(`/domain/${domainId}/pillars?suggest=1`)}
         />
       </div>
 

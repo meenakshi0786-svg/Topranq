@@ -130,6 +130,15 @@ export default function DomainOverview() {
 
       <div className="max-w-[1100px] mx-auto px-6 py-10">
 
+        {/* Onboarding (Connect GSC + Add Products) — lives above the score */}
+        {latestAudit?.status === "complete" && (
+          <OnboardingPanel
+            domainId={domainId}
+            domainUrl={domain.domainUrl}
+            justConnectedGsc={searchParams.get("gscConnected") === "1"}
+          />
+        )}
+
         {/* Progress */}
         {isRunning && (
           <div className="card-static p-12 mb-8 fade-in">
@@ -222,15 +231,6 @@ export default function DomainOverview() {
               View Plans
             </Link>
           </div>
-        )}
-
-        {/* Onboarding (Connect GSC → Add Products → Create Pillar Strategy) */}
-        {latestAudit?.status === "complete" && (
-          <OnboardingPanel
-            domainId={domainId}
-            domainUrl={domain.domainUrl}
-            justConnectedGsc={searchParams.get("gscConnected") === "1"}
-          />
         )}
 
         {/* Navigation */}

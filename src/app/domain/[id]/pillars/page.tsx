@@ -43,6 +43,7 @@ export default function PillarsPage() {
   const [generating, setGenerating] = useState<string | null>(null); // id of item being generated
   const [suggestions, setSuggestions] = useState<PillarSuggestion[] | null>(null);
   const [suggestLoading, setSuggestLoading] = useState(false);
+  const [suggestError, setSuggestError] = useState<string | null>(null);
 
   const fetchPillars = useCallback(async () => {
     setLoading(true);
@@ -56,21 +57,29 @@ export default function PillarsPage() {
 
   useEffect(() => { fetchPillars(); }, [fetchPillars]);
 
-  // Auto-fetch GSC-driven suggestions when the onboarding panel sent us here
-  // (?suggest=1), or whenever GSC data is present and no pillars exist yet.
-  useEffect(() => {
-    const shouldSuggest = searchParams.get("suggest") === "1";
-    if (!shouldSuggest) return;
+  const runSuggest = useCallback(async () => {
+    setSuggestError(null);
     setSuggestLoading(true);
-    fetch(`/api/domains/${domainId}/pillars/suggest`)
-      .then(async (r) => {
-        if (!r.ok) return null;
-        const d = await r.json();
-        return d.suggestions as PillarSuggestion[];
-      })
-      .then((s) => { if (s) setSuggestions(s); })
-      .finally(() => setSuggestLoading(false));
-  }, [domainId, searchParams]);
+    setSuggestions(null);
+    try {
+      const res = await fetch(`/api/domains/${domainId}/pillars/suggest`);
+      const d = await res.json();
+      if (!res.ok) {
+        setSuggestError(d.error || "Failed to generate suggestions");
+        return;
+      }
+      setSuggestions(d.suggestions || []);
+    } catch {
+      setSuggestError("Failed to generate suggestions");
+    } finally {
+      setSuggestLoading(false);
+    }
+  }, [domainId]);
+
+  // Also trigger automatically when arriving from the onboarding panel (?suggest=1)
+  useEffect(() => {
+    if (searchParams.get("suggest") === "1") runSuggest();
+  }, [searchParams, runSuggest]);
 
   async function createPillar(overrideTopic?: string) {
     const topic = (overrideTopic ?? seedTopic).trim();
@@ -147,72 +156,93 @@ export default function PillarsPage() {
           </p>
         </div>
 
-        {/* GSC-driven pillar suggestions (shown when arriving via ?suggest=1) */}
-        {(suggestLoading || (suggestions && suggestions.length > 0)) && (
-          <div className="card-static p-6 mb-6 fade-in">
-            <h2 className="text-sm font-bold uppercase tracking-wider mb-2" style={{ color: "var(--text-muted)" }}>
-              Suggested pillars — based on your GSC rankings
-            </h2>
-            <p className="text-xs mb-4" style={{ color: "var(--text-secondary)" }}>
-              These are grouped around queries your site is already ranking for. Pick one to generate the full pillar + clusters plan.
-            </p>
-            {suggestLoading && (
-              <p className="text-sm" style={{ color: "var(--text-muted)" }}>Analyzing your GSC data...</p>
-            )}
-            {suggestions && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                {suggestions.map((s, i) => (
-                  <button
-                    key={i}
-                    disabled={creating}
-                    onClick={() => createPillar(s.pillarTopic)}
-                    className="text-left p-4 rounded-lg cursor-pointer disabled:opacity-50"
-                    style={{ background: "var(--bg)", border: "1px solid var(--border-light)" }}
-                  >
-                    <p className="text-sm font-semibold mb-1">{s.pillarTopic}</p>
-                    <p className="text-xs mb-2" style={{ color: "var(--text-secondary)" }}>{s.rationale}</p>
+        {/* Create a new pillar strategy — GSC + Products driven, with seed-topic fallback */}
+        <div className="card-static p-6 mb-6">
+          <div className="flex items-start justify-between gap-4 mb-4">
+            <div>
+              <h2 className="text-sm font-bold uppercase tracking-wider mb-1" style={{ color: "var(--text-muted)" }}>
+                Create a new pillar strategy
+              </h2>
+              <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                We&apos;ll analyze your Google Search Console rankings and imported products to suggest 3 pillar topics.
+              </p>
+            </div>
+            <button
+              onClick={runSuggest}
+              disabled={suggestLoading || creating}
+              className="px-6 py-3 rounded-lg text-sm font-semibold text-white cursor-pointer disabled:opacity-40 shrink-0"
+              style={{ background: "#4F6EF7" }}
+            >
+              {suggestLoading ? "Analyzing..." : "Generate"}
+            </button>
+          </div>
+
+          {suggestError && (
+            <p className="text-xs mb-3" style={{ color: "#ef4444" }}>{suggestError}</p>
+          )}
+
+          {suggestLoading && (
+            <div className="my-6">
+              <CubeLoader label="Analyzing GSC + products..." sublabel="Grouping your top queries into pillar candidates" />
+            </div>
+          )}
+
+          {suggestions && suggestions.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+              {suggestions.map((s, i) => (
+                <button
+                  key={i}
+                  disabled={creating}
+                  onClick={() => createPillar(s.pillarTopic)}
+                  className="text-left p-4 rounded-lg cursor-pointer disabled:opacity-50"
+                  style={{ background: "var(--bg)", border: "1px solid var(--border-light)" }}
+                >
+                  <p className="text-sm font-semibold mb-1">{s.pillarTopic}</p>
+                  <p className="text-xs mb-2" style={{ color: "var(--text-secondary)" }}>{s.rationale}</p>
+                  {s.supportingQueries.length > 0 && (
                     <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
                       Covers: {s.supportingQueries.slice(0, 3).join(" · ")}
                       {s.supportingQueries.length > 3 ? ` +${s.supportingQueries.length - 3}` : ""}
                     </p>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
 
-        {/* New pillar form */}
-        <div className="card-static p-6 mb-6">
-          <h2 className="text-sm font-bold uppercase tracking-wider mb-3" style={{ color: "var(--text-muted)" }}>
-            Create a new pillar strategy
-          </h2>
-          <div className="flex gap-3">
-            <input
-              type="text"
-              value={seedTopic}
-              onChange={(e) => setSeedTopic(e.target.value)}
-              placeholder="e.g. Organic skincare for sensitive skin"
-              className="flex-1 px-4 py-3 rounded-lg text-sm outline-none"
-              style={{ border: "1px solid var(--border)", background: "var(--bg)" }}
-              disabled={creating}
-              onKeyDown={(e) => e.key === "Enter" && createPillar()}
-            />
-            <button
-              onClick={() => createPillar()}
-              disabled={creating || !seedTopic.trim()}
-              className="px-6 py-3 rounded-lg text-sm font-semibold text-white cursor-pointer disabled:opacity-40"
-              style={{ background: "#4F6EF7" }}
-            >
-              {creating ? "Planning..." : "Generate Plan"}
-            </button>
-          </div>
+          {/* Manual seed topic fallback */}
+          <details className="mt-2">
+            <summary className="text-xs cursor-pointer" style={{ color: "var(--text-muted)" }}>
+              Or enter your own seed topic
+            </summary>
+            <div className="flex gap-3 mt-3">
+              <input
+                type="text"
+                value={seedTopic}
+                onChange={(e) => setSeedTopic(e.target.value)}
+                placeholder="e.g. Organic skincare for sensitive skin"
+                className="flex-1 px-4 py-3 rounded-lg text-sm outline-none"
+                style={{ border: "1px solid var(--border)", background: "var(--bg)" }}
+                disabled={creating}
+                onKeyDown={(e) => e.key === "Enter" && createPillar()}
+              />
+              <button
+                onClick={() => createPillar()}
+                disabled={creating || !seedTopic.trim()}
+                className="px-6 py-3 rounded-lg text-sm font-semibold cursor-pointer disabled:opacity-40"
+                style={{ border: "1px solid var(--border)", background: "var(--bg-white)" }}
+              >
+                {creating ? "Planning..." : "Generate Plan"}
+              </button>
+            </div>
+          </details>
+
           {error && (
             <p className="text-xs mt-3" style={{ color: "#ef4444" }}>{error}</p>
           )}
           {creating && (
             <div className="mt-6">
-              <CubeLoader label="Designing pillar & cluster strategy..." sublabel="Analyzing your site and picking high-authority subtopics" />
+              <CubeLoader label="Designing pillar & cluster strategy..." sublabel="Picking high-authority subtopics" />
             </div>
           )}
         </div>

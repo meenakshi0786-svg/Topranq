@@ -24,14 +24,20 @@ export async function GET(
     .where(eq(schema.searchConsoleData.domainId, id))
     .all();
 
-  if (rows.length === 0) {
+  const products = db
+    .select({ name: schema.storeProducts.name, category: schema.storeProducts.category })
+    .from(schema.storeProducts)
+    .where(eq(schema.storeProducts.domainId, id))
+    .all();
+
+  if (rows.length === 0 && products.length === 0) {
     return NextResponse.json(
-      { error: "Connect Google Search Console first — no GSC data for this domain" },
+      { error: "Connect Google Search Console or import a product catalog first" },
       { status: 400 },
     );
   }
 
-  // Aggregate by query across whatever date range we have stored
+  // Aggregate GSC rows by query (they're stored per-day)
   const byQuery = new Map<
     string,
     { query: string; impressions: number; clicks: number; position: number; n: number }
@@ -57,7 +63,7 @@ export async function GET(
   const queries = Array.from(byQuery.values());
 
   try {
-    const suggestions = await suggestPillarsFromGSC(domain.domainUrl, queries);
+    const suggestions = await suggestPillarsFromGSC(domain.domainUrl, queries, products);
     return NextResponse.json({ suggestions });
   } catch (err) {
     console.error("[pillars/suggest] failed:", err);
