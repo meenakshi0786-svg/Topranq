@@ -79,9 +79,8 @@ export function OnboardingPanel({ domainId, domainUrl, justConnectedGsc }: Props
   if (allDone) return null;
 
   const gscStatus: StepStatus = gscFetching ? "doing" : gscConnected ? "done" : "todo";
-  const productStatus: StepStatus = !gscConnected ? "locked" : hasProducts ? "done" : "todo";
-  const pillarStatus: StepStatus =
-    !gscConnected || !hasProducts ? "locked" : hasPillars ? "done" : "todo";
+  const productStatus: StepStatus = hasProducts ? "done" : "todo";
+  const pillarStatus: StepStatus = hasPillars ? "done" : "todo";
 
   return (
     <div className="card-static p-7 mb-5 fade-in">
