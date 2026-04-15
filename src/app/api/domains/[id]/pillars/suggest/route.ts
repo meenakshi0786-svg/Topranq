@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db, schema } from "@/lib/db";
-import { eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { suggestPillarsFromGSC } from "@/lib/pillars";
+import { fetchSearchAnalytics } from "@/lib/gsc";
 
 /**
  * GET /api/domains/:id/pillars/suggest
@@ -18,7 +19,7 @@ export async function GET(
     return NextResponse.json({ error: "Domain not found" }, { status: 404 });
   }
 
-  const rows = db
+  let rows = db
     .select()
     .from(schema.searchConsoleData)
     .where(eq(schema.searchConsoleData.domainId, id))
@@ -29,6 +30,12 @@ export async function GET(
     .from(schema.storeProducts)
     .where(eq(schema.storeProducts.domainId, id))
     .all();
+
+  // If GSC is connected but we haven't pulled data yet (or it was emptied),
+  // fetch it now from Google so the Generate button "just works".
+  if (rows.length === 0) {
+    rows = await tryFetchGscOnDemand(id, domain.domainUrl);
+  }
 
   if (rows.length === 0 && products.length === 0) {
     return NextResponse.json(
@@ -68,5 +75,67 @@ export async function GET(
   } catch (err) {
     console.error("[pillars/suggest] failed:", err);
     return NextResponse.json({ error: "Failed to generate suggestions" }, { status: 500 });
+  }
+}
+
+/**
+ * Fetch GSC search analytics live and persist rows for this domain.
+ * Returns the freshly-inserted rows (or empty if no connection / fetch fails).
+ */
+async function tryFetchGscOnDemand(domainId: string, domainUrl: string) {
+  const connection = db
+    .select()
+    .from(schema.domainLearnings)
+    .where(
+      and(
+        eq(schema.domainLearnings.domainId, domainId),
+        eq(schema.domainLearnings.learningType, "gsc_connection"),
+      ),
+    )
+    .orderBy(desc(schema.domainLearnings.createdAt))
+    .get();
+  if (!connection?.insight) return [];
+
+  let conn: { refreshToken: string; sites: string[] };
+  try { conn = JSON.parse(connection.insight); } catch { return []; }
+  if (!conn.refreshToken || !Array.isArray(conn.sites) || conn.sites.length === 0) return [];
+
+  const host = (() => { try { return new URL(domainUrl).hostname; } catch { return domainUrl; } })();
+  const siteUrl = conn.sites.find((s) => s.includes(host)) || conn.sites[0];
+
+  const endDate = new Date();
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - 28);
+  const fmt = (d: Date) => d.toISOString().split("T")[0];
+
+  try {
+    const queryData = await fetchSearchAnalytics(conn.refreshToken, siteUrl, {
+      startDate: fmt(startDate),
+      endDate: fmt(endDate),
+      dimensions: ["query", "page"],
+      rowLimit: 1000,
+    });
+    for (const row of queryData) {
+      db.insert(schema.searchConsoleData)
+        .values({
+          domainId,
+          pageUrl: row.page,
+          query: row.query,
+          impressions: row.impressions,
+          clicks: row.clicks,
+          ctr: row.ctr,
+          avgPosition: row.position,
+          date: fmt(endDate),
+        })
+        .run();
+    }
+    return db
+      .select()
+      .from(schema.searchConsoleData)
+      .where(eq(schema.searchConsoleData.domainId, domainId))
+      .all();
+  } catch (err) {
+    console.error("[pillars/suggest] on-demand GSC fetch failed:", err);
+    return [];
   }
 }
