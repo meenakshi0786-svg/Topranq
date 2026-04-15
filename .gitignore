@@ -30,8 +30,10 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files
-# .env* (committed for team — keep repo private!)
+# env files — NEVER commit, keys get auto-revoked by secret scanners
+.env
+.env.*
+!.env.example
 
 # database
 *.db
