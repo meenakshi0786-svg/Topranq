@@ -3,7 +3,9 @@ import { eq } from "drizzle-orm";
 import { getGSCInsights } from "../gsc-intelligence";
 import { analyzeCompetitors } from "../competitor-research";
 import { generateFeaturedImageUrl, buildImagePrompt } from "../image-gen";
-import { buildProductCta } from "../product-cta";
+import { pickRelevantProducts } from "../product-cta";
+import { fetchProductsFromDomain } from "../product-source";
+import { composeProductHero } from "../product-composite";
 async function askClaude(prompt: string, maxTokens = 4000): Promise<string> {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new Error("OPENROUTER_API_KEY is not set");
@@ -192,18 +194,10 @@ export async function runBlogWriter(
 
   const suggestedInternalLinks = findInternalLinks(existingPages, keywords, topic);
   const imageSuggestions = generateImageSuggestions(outline, topic, primaryKeyword);
+  const estimatedWordCount = bodyMarkdown.split(/\s+/).length;
 
-  // Append "Shop the edit" CTA with up to 5 relevant products (image + name + price + link)
-  const productCta = buildProductCta(domainId, title, primaryKeyword, bodyMarkdown);
-  const bodyMarkdownWithCta = productCta.markdown
-    ? `${bodyMarkdown}\n${productCta.markdown}`
-    : bodyMarkdown;
-  const estimatedWordCount = bodyMarkdownWithCta.split(/\s+/).length;
-
-  // Build HTML from markdown, then append product CTA HTML (custom block beyond markdown)
-  const bodyHtml = productCta.html
-    ? `${markdownToHtml(bodyMarkdown)}\n${productCta.html}`
-    : markdownToHtml(bodyMarkdown);
+  // Build HTML from markdown
+  const bodyHtml = markdownToHtml(bodyMarkdown);
 
   // Build JSON-LD schema
   const schemaJsonLd = buildSchemaJsonLd(title, metaDescription, slug, faqItems);
@@ -217,9 +211,31 @@ export async function runBlogWriter(
     primaryKeyword, suggestedInternalLinks, faqItems, imageSuggestions
   );
 
-  // Generate featured image (via Pollinations, no API cost)
+  // Featured image:
+  //   1) fetch product catalog from the domain,
+  //   2) pick 5 products most relevant to this article,
+  //   3) composite their photos into a single hero image.
+  // If that fails, fall back to the Pollinations AI hero.
   const featuredImagePrompt = buildImagePrompt(metaTitle || title, config.topic, tone);
-  const featuredImageUrl = generateFeaturedImageUrl(featuredImagePrompt);
+  let featuredImageUrl = generateFeaturedImageUrl(featuredImagePrompt);
+
+  try {
+    const domain = db.select().from(schema.domains).where(eq(schema.domains.id, domainId)).get();
+    const domainUrl = domain?.domainUrl;
+    if (domainUrl) {
+      const products = await fetchProductsFromDomain(domainUrl);
+      if (products.length > 0) {
+        const picked = pickRelevantProducts(products, title, primaryKeyword, bodyMarkdown, 5);
+        const imageUrls = picked.map((p) => p.imageUrl).filter(Boolean);
+        if (imageUrls.length > 0) {
+          const composite = await composeProductHero(imageUrls, `${slug}-${primaryKeyword}`);
+          if (composite?.url) featuredImageUrl = composite.url;
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("[blog-writer] product hero composite failed:", err);
+  }
 
   // Store in articles table
   const articleId = crypto.randomUUID();
@@ -231,7 +247,7 @@ export async function runBlogWriter(
       metaDescription,
       slug,
       h1,
-      bodyMarkdown: bodyMarkdownWithCta,
+      bodyMarkdown: bodyMarkdown,
       bodyHtml,
       faqSchemaJson: JSON.stringify(faqItems),
       schemaJsonLd: JSON.stringify(schemaJsonLd),
@@ -258,7 +274,7 @@ export async function runBlogWriter(
     slug,
     h1,
     outline,
-    bodyMarkdown: bodyMarkdownWithCta,
+    bodyMarkdown: bodyMarkdown,
     bodyHtml,
     frontMatter,
     suggestedInternalLinks,

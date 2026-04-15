@@ -35,6 +35,9 @@ yarn-error.log*
 .env.*
 !.env.example
 
+# generated article hero images
+public/article-images/
+
 # database
 *.db
 *.db-wal
