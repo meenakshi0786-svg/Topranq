@@ -295,14 +295,24 @@ export default function ArticleEditorPage() {
               {/* FAQ Schema */}
               {article.faqSchema && article.faqSchema.length > 0 && (
                 <div className="card-static p-5">
-                  <h3 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: "var(--text-muted)" }}>
-                    FAQ Schema ({article.faqSchema.length})
-                  </h3>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
+                      FAQ Schema ({article.faqSchema.length})
+                    </h3>
+                    <CopyButton
+                      text={article.faqSchema.map((f) => `Q: ${f.question}\nA: ${f.answer}`).join("\n\n")}
+                      label="Copy all"
+                      size={12}
+                    />
+                  </div>
                   <div className="space-y-2">
                     {article.faqSchema.map((faq, i) => (
-                      <div key={i} className="p-2.5 rounded-lg" style={{ background: "var(--bg)" }}>
-                        <p className="text-xs font-semibold mb-0.5">{faq.question}</p>
-                        <p className="text-xs" style={{ color: "var(--text-muted)" }}>{faq.answer}</p>
+                      <div key={i} className="p-2.5 rounded-lg flex items-start gap-2" style={{ background: "var(--bg)" }}>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold mb-0.5">{faq.question}</p>
+                          <p className="text-xs" style={{ color: "var(--text-muted)" }}>{faq.answer}</p>
+                        </div>
+                        <CopyButton text={`Q: ${faq.question}\nA: ${faq.answer}`} size={11} />
                       </div>
                     ))}
                   </div>
