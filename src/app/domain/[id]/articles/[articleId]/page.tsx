@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { CopyButton } from "@/components/copy-button";
+import { PublishModal } from "@/components/publish-modal";
 
 interface Article {
   id: string;
@@ -39,6 +40,7 @@ export default function ArticleEditorPage() {
   const [activeTab, setActiveTab] = useState<"edit" | "preview" | "seo">("edit");
   const [rejectFeedback, setRejectFeedback] = useState("");
   const [showRejectModal, setShowRejectModal] = useState(false);
+  const [showPublishModal, setShowPublishModal] = useState(false);
 
   // Editable fields
   const [metaTitle, setMetaTitle] = useState("");
@@ -160,14 +162,13 @@ export default function ArticleEditorPage() {
                 </button>
               </>
             ) : article.status === "approved" ? (
-              <>
-                <button onClick={() => publishArticle(true)} disabled={actionLoading === "preview"} className="px-4 py-1.5 rounded-lg text-xs font-medium cursor-pointer" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
-                  {actionLoading === "preview" ? "..." : "Dry Run"}
-                </button>
-                <button onClick={() => publishArticle(false)} disabled={actionLoading === "publish"} className="px-4 py-1.5 rounded-lg text-xs font-medium text-white cursor-pointer" style={{ background: "var(--accent)" }}>
-                  {actionLoading === "publish" ? "Publishing..." : "Publish"}
-                </button>
-              </>
+              <button onClick={() => setShowPublishModal(true)} className="px-4 py-1.5 rounded-lg text-xs font-medium text-white cursor-pointer" style={{ background: "var(--accent)" }}>
+                Publish
+              </button>
+            ) : article.status !== "published" ? (
+              <button onClick={() => setShowPublishModal(true)} className="px-4 py-1.5 rounded-lg text-xs font-medium text-white cursor-pointer" style={{ background: "var(--accent)" }}>
+                Publish
+              </button>
             ) : null}
           </div>
         </div>
@@ -364,6 +365,17 @@ export default function ArticleEditorPage() {
           </div>
         )}
       </div>
+
+      {/* Publish Modal */}
+      {showPublishModal && (
+        <PublishModal
+          domainId={domainId}
+          articleId={articleId}
+          articleTitle={metaTitle || h1 || "Untitled"}
+          onClose={() => setShowPublishModal(false)}
+          onPublished={() => { setShowPublishModal(false); fetchArticle(); }}
+        />
+      )}
 
       {/* Reject Modal */}
       {showRejectModal && (
