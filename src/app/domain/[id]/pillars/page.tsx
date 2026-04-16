@@ -30,6 +30,13 @@ interface PillarSuggestion {
   supportingQueries: string[];
 }
 
+interface GSCKeyword {
+  keyword: string;
+  clicks: number;
+  impressions: number;
+  position: number;
+}
+
 export default function PillarsPage() {
   const params = useParams();
   const searchParams = useSearchParams();
@@ -44,6 +51,7 @@ export default function PillarsPage() {
   const [interlinking, setInterlinking] = useState<string | null>(null);
   const [interlinkResult, setInterlinkResult] = useState<Record<string, { links: number; articles: number } | null>>({});
   const [suggestions, setSuggestions] = useState<PillarSuggestion[] | null>(null);
+  const [gscKeywords, setGscKeywords] = useState<GSCKeyword[]>([]);
   const [suggestLoading, setSuggestLoading] = useState(false);
   const [suggestError, setSuggestError] = useState<string | null>(null);
 
@@ -63,6 +71,7 @@ export default function PillarsPage() {
     setSuggestError(null);
     setSuggestLoading(true);
     setSuggestions(null);
+    setGscKeywords([]);
     try {
       const res = await fetch(`/api/domains/${domainId}/pillars/suggest`);
       const d = await res.json();
@@ -71,6 +80,7 @@ export default function PillarsPage() {
         return;
       }
       setSuggestions(d.suggestions || []);
+      setGscKeywords(d.keywords || []);
     } catch {
       setSuggestError("Failed to generate suggestions");
     } finally {
@@ -204,6 +214,55 @@ export default function PillarsPage() {
           {suggestLoading && (
             <div className="my-6">
               <CubeLoader label="Analyzing GSC + products..." sublabel="Grouping your top queries into pillar candidates" />
+            </div>
+          )}
+
+          {/* GSC Keyword Research table */}
+          {gscKeywords.length > 0 && (
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
+                  Keyword Research
+                </p>
+                <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+                  from Google Search Console
+                </p>
+              </div>
+              <div className="overflow-x-auto rounded-lg" style={{ border: "1px solid var(--border-light)" }}>
+                <table className="w-full text-xs" style={{ borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr style={{ background: "var(--bg)" }}>
+                      <th className="text-left px-4 py-2.5 font-semibold" style={{ color: "var(--text-secondary)" }}>Keyword</th>
+                      <th className="text-right px-4 py-2.5 font-semibold" style={{ color: "var(--text-secondary)" }}>Clicks</th>
+                      <th className="text-right px-4 py-2.5 font-semibold" style={{ color: "var(--text-secondary)" }}>Impressions</th>
+                      <th className="text-right px-4 py-2.5 font-semibold" style={{ color: "var(--text-secondary)" }}>Position</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {gscKeywords.map((kw, i) => (
+                      <tr key={i} style={{ borderTop: "1px solid var(--border-light)" }}>
+                        <td className="px-4 py-2" style={{ color: "var(--text-primary)" }}>{kw.keyword}</td>
+                        <td className="px-4 py-2 text-right tabular-nums" style={{ color: "#4F6EF7" }}>{kw.clicks}</td>
+                        <td className="px-4 py-2 text-right tabular-nums" style={{ color: "var(--text-secondary)" }}>{kw.impressions}</td>
+                        <td className="px-4 py-2 text-right">
+                          <span
+                            className="inline-block px-2 py-0.5 rounded text-[11px] font-bold tabular-nums"
+                            style={{
+                              background: kw.position <= 10 ? "#dcfce7" : kw.position <= 20 ? "#fef9c3" : "#fee2e2",
+                              color: kw.position <= 10 ? "#166534" : kw.position <= 20 ? "#854d0e" : "#991b1b",
+                            }}
+                          >
+                            {kw.position}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-[11px] mt-2" style={{ color: "var(--text-muted)" }}>
+                Keywords at position 4-20 are great opportunities for pillar content.
+              </p>
             </div>
           )}
 

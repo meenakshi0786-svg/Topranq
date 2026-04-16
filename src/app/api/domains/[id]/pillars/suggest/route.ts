@@ -84,9 +84,21 @@ export async function GET(
   }
   const queries = Array.from(byQuery.values());
 
+  // Top keywords sorted by impressions for the frontend table
+  const topKeywords = queries
+    .filter((q) => q.impressions > 0)
+    .sort((a, b) => b.impressions - a.impressions)
+    .slice(0, 30)
+    .map((q) => ({
+      keyword: q.query,
+      clicks: q.clicks,
+      impressions: q.impressions,
+      position: Math.round(q.position * 10) / 10,
+    }));
+
   try {
     const suggestions = await suggestPillarsFromGSC(domain.domainUrl, queries, products, siteKeywords);
-    return NextResponse.json({ suggestions });
+    return NextResponse.json({ suggestions, keywords: topKeywords });
   } catch (err) {
     console.error("[pillars/suggest] failed:", err);
     return NextResponse.json({ error: "Failed to generate suggestions" }, { status: 500 });
