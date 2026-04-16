@@ -19,6 +19,7 @@ interface Article {
   internalLinks: Array<{ anchorText: string; targetUrl: string }> | null;
   qualityScore: number | null;
   status: string;
+  articleType: "pillar" | "cluster" | null;
   createdAt: string | null;
 }
 
@@ -164,6 +165,17 @@ export default function ArticlesPage() {
                     </p>
                   </Link>
                   <div className="flex items-center gap-2 shrink-0">
+                    {article.articleType && (
+                      <span
+                        className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded"
+                        style={{
+                          background: article.articleType === "pillar" ? "#4F6EF715" : "#7C5CFC15",
+                          color: article.articleType === "pillar" ? "#4F6EF7" : "#7C5CFC",
+                        }}
+                      >
+                        {article.articleType}
+                      </span>
+                    )}
                     {article.qualityScore !== null && (
                       <span className="text-xs font-bold tabular-nums" style={{ color: article.qualityScore >= 70 ? "var(--success)" : "var(--high)" }}>
                         {article.qualityScore}

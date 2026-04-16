@@ -16,9 +16,21 @@ export async function GET(
     .orderBy(desc(schema.articles.createdAt))
     .all();
 
-  // Parse JSON fields
+  // Build lookup: which articles are pillars vs clusters
+  const pillarArticleIds = new Set(
+    db.select({ id: schema.pillars.pillarArticleId }).from(schema.pillars)
+      .where(eq(schema.pillars.domainId, id)).all()
+      .map((p) => p.id).filter(Boolean)
+  );
+  const clusterArticleIds = new Set(
+    db.select({ id: schema.pillarClusters.articleId }).from(schema.pillarClusters).all()
+      .map((c) => c.id).filter(Boolean)
+  );
+
+  // Parse JSON fields + add articleType
   const parsed = articles.map((a) => ({
     ...a,
+    articleType: pillarArticleIds.has(a.id) ? "pillar" : clusterArticleIds.has(a.id) ? "cluster" : null,
     faqSchema: a.faqSchemaJson ? JSON.parse(a.faqSchemaJson) : null,
     internalLinks: a.internalLinksJson ? JSON.parse(a.internalLinksJson) : null,
     faqSchemaJson: undefined,
