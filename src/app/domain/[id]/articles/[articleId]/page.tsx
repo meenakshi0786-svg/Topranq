@@ -328,8 +328,10 @@ export default function ArticleEditorPage() {
               <h1 className="text-3xl font-bold leading-tight">{h1 || "Untitled"}</h1>
               <CopyButton text={h1} label="Copy title" />
             </div>
-            <div className="relative">
-              <div className="absolute top-2 right-2 z-10"><CopyButton text={body} label="Copy article" /></div>
+            <div className="flex justify-end mb-3">
+              <CopyButton text={body} label="Copy article" />
+            </div>
+            <div>
               {article.bodyHtml ? (
                 <div
                   className="prose prose-sm max-w-none text-sm leading-relaxed"
