@@ -350,7 +350,22 @@ export default function GEOPage() {
                     guide={{
                       whatItIs: "The standard file AI crawlers look for — like robots.txt but for LLMs. Contains your site summary, grouped page index, key topics, capabilities, and use cases.",
                       whereToUpload: "Root of your website → yoursite.com/llms.txt (same directory as robots.txt and sitemap.xml).",
-                      howToUpload: "WordPress: upload via File Manager plugin or FTP to the folder where wp-config.php lives. Shopify: create a page template in Theme Editor, then create a page with URL handle 'llms.txt'.",
+                      howToUploadWP: [
+                        "Go to your WordPress admin panel",
+                        "Install and activate the File Manager plugin (or use FTP / cPanel)",
+                        "Navigate to the root directory where wp-config.php lives",
+                        "Upload the downloaded llms.txt file",
+                        "Verify by visiting yoursite.com/llms.txt",
+                      ],
+                      howToUploadShopify: [
+                        "Go to Shopify Admin → Online Store → Themes",
+                        "Click Actions → Edit code",
+                        "Under Templates, click Add a new template",
+                        "Create a page template named llms-txt",
+                        "Paste your llms.txt content into the template",
+                        "Go to Pages → Add page, set URL handle to llms.txt and assign the template",
+                        "Verify at yourstore.com/pages/llms.txt",
+                      ],
                       whoReadsIt: "GPTBot (ChatGPT), ClaudeBot (Claude), PerplexityBot (Perplexity), Google-Extended (AI Overviews), and any LLM crawler that checks for it.",
                       impact: "Baseline for AI discovery. Without it, AI engines guess what your site is about. With it, you control the narrative.",
                     }}
@@ -361,9 +376,25 @@ export default function GEOPage() {
                     tag="Extended"
                     onClick={() => downloadAsset("llms-full")}
                     guide={{
-                      whatItIs: "Extended semantic profile with full page descriptions, topical authority map, content architecture, relationship graph, and 20-30 semantic tags. The 'deep context' version of llms.txt.",
+                      whatItIs: "Extended semantic profile with full page descriptions, topical authority map, content architecture, relationship graph, and 20-30 semantic tags. The deep-context version of llms.txt.",
                       whereToUpload: "Root of your website → yoursite.com/llms-full.txt. Add a reference in your llms.txt: '> Full version: /llms-full.txt'.",
-                      howToUpload: "Same method as llms.txt — upload to root via File Manager, FTP, or Shopify page template.",
+                      howToUploadWP: [
+                        "Go to your WordPress admin panel",
+                        "Open File Manager plugin or connect via FTP",
+                        "Navigate to the root directory (where wp-config.php lives)",
+                        "Upload llms-full.txt alongside your llms.txt",
+                        "Open your llms.txt and add a line: > Full version: /llms-full.txt",
+                        "Verify at yoursite.com/llms-full.txt",
+                      ],
+                      howToUploadShopify: [
+                        "Go to Shopify Admin → Online Store → Themes → Edit code",
+                        "Create a new page template named llms-full-txt",
+                        "Paste the llms-full.txt content into the template",
+                        "Go to Pages → Add page, set URL handle to llms-full.txt",
+                        "Assign the llms-full-txt template",
+                        "Update your llms.txt page to reference: > Full version: /pages/llms-full.txt",
+                        "Verify at yourstore.com/pages/llms-full.txt",
+                      ],
                       whoReadsIt: "Perplexity and Claude follow links within llms.txt and read the full version. Google AI Overviews benefits from richer context when generating detailed answers.",
                       impact: "When an AI writes a detailed answer and needs to cite a source, the full version gives enough context to cite YOUR page over a competitor's.",
                     }}
@@ -375,9 +406,25 @@ export default function GEOPage() {
                     onClick={() => downloadAsset("entity-map")}
                     guide={{
                       whatItIs: "A JSON-LD knowledge graph — the same structured data format Google uses for Knowledge Panels. Maps your organization, pages, products, and topics with typed relationships.",
-                      whereToUpload: "Two places for maximum impact: (1) As a file at yoursite.com/entity-map.jsonld, and (2) Embedded in your homepage HTML inside a <script type=\"application/ld+json\"> tag.",
-                      howToUpload: "WordPress: use 'Insert Headers and Footers' plugin → paste in the Header section. Shopify: Theme → Edit code → theme.liquid → paste before </head>. Also upload the file to your root directory.",
-                      whoReadsIt: "Google (Knowledge Panels + AI Overviews), Bing (Copilot), and any AI that parses structured data. This is the most broadly supported format across all search engines.",
+                      whereToUpload: "Two places: (1) yoursite.com/entity-map.jsonld as a file, and (2) embedded in your homepage HTML inside a <script type='application/ld+json'> tag for maximum impact.",
+                      howToUploadWP: [
+                        "Install the 'Insert Headers and Footers' plugin (or WPCode)",
+                        "Go to the plugin settings → Header section",
+                        "Paste: <script type=\"application/ld+json\"> followed by the entity map content, then </script>",
+                        "Save — this embeds it on every page",
+                        "Also upload entity-map.jsonld to your root via File Manager / FTP",
+                        "Verify by viewing page source and searching for 'application/ld+json'",
+                      ],
+                      howToUploadShopify: [
+                        "Go to Online Store → Themes → Edit code",
+                        "Open Layout → theme.liquid",
+                        "Just before the </head> tag, paste: <script type=\"application/ld+json\">",
+                        "Paste the entity map JSON content",
+                        "Close with </script>",
+                        "Save — this embeds it on every page",
+                        "Verify by viewing page source and searching for 'application/ld+json'",
+                      ],
+                      whoReadsIt: "Google (Knowledge Panels + AI Overviews), Bing (Copilot), and any AI that parses structured data. Most broadly supported format across all search engines.",
                       impact: "Directly influences Google AI Overviews and Knowledge Panels. The 'knowsAbout' array tells Google what topics you are authoritative on.",
                     }}
                   />
@@ -388,9 +435,24 @@ export default function GEOPage() {
                     onClick={() => downloadAsset("citation-snippets")}
                     guide={{
                       whatItIs: "Pre-written, factual, quotable summaries for each important page plus FAQ Q&A pairs. Designed so AI models can quote them verbatim when citing your site.",
-                      whereToUpload: "Three strategies: (1) As a file at yoursite.com/ai-citation-snippets.md, (2) Embed each page's snippet as its first paragraph and og:description meta tag, (3) Create a dedicated /for-ai page with all snippets.",
-                      howToUpload: "Upload the file to your root. For maximum impact, copy each page's 'Quotable summary' into that page's meta description and opening paragraph — AI models pull from those when generating citations.",
-                      whoReadsIt: "Every AI model. When ChatGPT says 'According to [yoursite]...', the text it quotes comes from your meta descriptions and first paragraphs. These snippets pre-write those quotes.",
+                      whereToUpload: "Three strategies: (1) yoursite.com/ai-citation-snippets.md, (2) embed each snippet as its page's first paragraph + og:description, (3) create a /for-ai page with all snippets.",
+                      howToUploadWP: [
+                        "Upload ai-citation-snippets.md to your root via File Manager / FTP",
+                        "For each important page, copy its 'Quotable summary' from the file",
+                        "Edit the page in WordPress → paste the summary as the first paragraph",
+                        "Go to Yoast/RankMath SEO settings → paste it as the Meta Description",
+                        "Optionally: create a new page at /for-ai with the full snippets content",
+                        "Reference in llms.txt: > Citation snippets: /ai-citation-snippets.md",
+                      ],
+                      howToUploadShopify: [
+                        "Upload as a page: Pages → Add page, URL handle 'ai-citation-snippets'",
+                        "Paste the full snippets content as the page body",
+                        "For each product/page, copy its 'Quotable summary'",
+                        "Edit the product → paste the summary at the start of the description",
+                        "Edit SEO settings → paste it as the Meta Description",
+                        "Reference in llms.txt: > Citation snippets: /pages/ai-citation-snippets",
+                      ],
+                      whoReadsIt: "Every AI model. When ChatGPT says 'According to [yoursite]...', the quoted text comes from meta descriptions and first paragraphs. These snippets pre-write those quotes.",
                       impact: "Controls HOW you are cited, not just IF you are cited. The FAQ section is especially powerful — matching questions get your answer cited directly.",
                     }}
                   />
@@ -525,7 +587,8 @@ function CheckPill({ label, ok }: { label: string; ok: boolean }) {
 interface AssetGuide {
   whatItIs: string;
   whereToUpload: string;
-  howToUpload: string;
+  howToUploadWP: string[];
+  howToUploadShopify: string[];
   whoReadsIt: string;
   impact: string;
 }
@@ -582,7 +645,7 @@ function AssetCard({ title, desc, tag, onClick, guide }: { title: string; desc: 
           <div className="space-y-2.5 mt-2">
             <GuideRow label="What it is" text={guide.whatItIs} />
             <GuideRow label="Where to upload" text={guide.whereToUpload} />
-            <GuideRow label="How to upload" text={guide.howToUpload} />
+            <HowToUploadSection wpSteps={guide.howToUploadWP} shopifySteps={guide.howToUploadShopify} />
             <GuideRow label="Who reads it" text={guide.whoReadsIt} />
             <GuideRow label="Impact" text={guide.impact} />
           </div>
@@ -597,6 +660,51 @@ function GuideRow({ label, text }: { label: string; text: string }) {
     <div>
       <p className="text-[11px] font-bold uppercase tracking-wider mb-0.5" style={{ color: "var(--accent)" }}>{label}</p>
       <p className="text-xs leading-relaxed" style={{ color: "var(--text-secondary)", wordBreak: "break-word" }}>{text}</p>
+    </div>
+  );
+}
+
+function HowToUploadSection({ wpSteps, shopifySteps }: { wpSteps: string[]; shopifySteps: string[] }) {
+  const [showWP, setShowWP] = useState(false);
+  const [showShopify, setShowShopify] = useState(false);
+  return (
+    <div>
+      <p className="text-[11px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "var(--accent)" }}>How to upload</p>
+      <div className="space-y-1.5">
+        {/* WordPress */}
+        <button onClick={() => setShowWP(!showWP)} className="w-full flex items-center gap-2 p-2.5 rounded-md text-left cursor-pointer" style={{ background: "var(--bg-white)", border: "1px solid var(--border-light)" }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#21759b"><path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zM3.443 12c0-1.178.25-2.3.69-3.318L8.08 20.26A8.57 8.57 0 013.443 12zm8.557 8.557c-.879 0-1.723-.141-2.514-.396l2.67-7.758 2.736 7.497c.018.044.04.085.063.124a8.525 8.525 0 01-2.955.533z" /></svg>
+          <span className="flex-1 text-xs font-semibold">WordPress</span>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: showWP ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}><polyline points="6 9 12 15 18 9" /></svg>
+        </button>
+        {showWP && (
+          <ol className="space-y-1.5 pl-3 py-2">
+            {wpSteps.map((step, i) => (
+              <li key={i} className="flex gap-2 text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                <span className="font-bold shrink-0" style={{ color: "var(--text-primary)" }}>{i + 1}.</span>
+                <span>{step}</span>
+              </li>
+            ))}
+          </ol>
+        )}
+
+        {/* Shopify */}
+        <button onClick={() => setShowShopify(!showShopify)} className="w-full flex items-center gap-2 p-2.5 rounded-md text-left cursor-pointer" style={{ background: "var(--bg-white)", border: "1px solid var(--border-light)" }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#96bf48"><path d="M15.337 3.178c-.07-.024-.138.018-.158.088-.018.06-.3 1.03-.3 1.03a3.25 3.25 0 00-.87-.33c-.03-.39-.07-.95-.14-1.28-.19-.96-.76-1.46-1.45-1.46h-.06c-.05-.06-.12-.12-.18-.16C11.677.7 11.157.84 10.737 1.38c-.54.7-.95 1.74-1.07 2.5a13.33 13.33 0 00-1.41.44c-.43.14-.44.15-.5.56-.04.3-1.17 9.02-1.17 9.02l8.76 1.52.04-.02V3.26c-.01-.04-.02-.07-.05-.08z" /></svg>
+          <span className="flex-1 text-xs font-semibold">Shopify</span>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: showShopify ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}><polyline points="6 9 12 15 18 9" /></svg>
+        </button>
+        {showShopify && (
+          <ol className="space-y-1.5 pl-3 py-2">
+            {shopifySteps.map((step, i) => (
+              <li key={i} className="flex gap-2 text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                <span className="font-bold shrink-0" style={{ color: "var(--text-primary)" }}>{i + 1}.</span>
+                <span>{step}</span>
+              </li>
+            ))}
+          </ol>
+        )}
+      </div>
     </div>
   );
 }
