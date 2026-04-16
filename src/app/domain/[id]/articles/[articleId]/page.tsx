@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
+import { CopyButton } from "@/components/copy-button";
 
 interface Article {
   id: string;
@@ -197,13 +198,19 @@ export default function ArticleEditorPage() {
             <div className="col-span-12 lg:col-span-8">
               <div className="card-static p-6 space-y-5">
                 <div>
-                  <label className="text-xs font-bold uppercase tracking-wider mb-1.5 block" style={{ color: "var(--text-muted)" }}>H1</label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>H1</label>
+                    <CopyButton text={h1} label="Copy title" />
+                  </div>
                   <input type="text" value={h1} onChange={(e) => setH1(e.target.value)} className="w-full px-4 py-2.5 rounded-xl text-sm" style={{ border: "1px solid var(--border)", background: "var(--bg)" }} />
                 </div>
                 <div>
-                  <label className="text-xs font-bold uppercase tracking-wider mb-1.5 block" style={{ color: "var(--text-muted)" }}>
-                    Body (Markdown) <span className="font-normal normal-case" style={{ color: "var(--text-muted)" }}>· {wordCount} words</span>
-                  </label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
+                      Body (Markdown) <span className="font-normal normal-case" style={{ color: "var(--text-muted)" }}>· {wordCount} words</span>
+                    </label>
+                    <CopyButton text={body} label="Copy body" />
+                  </div>
                   <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={24} className="w-full px-4 py-3 rounded-xl text-sm font-mono leading-relaxed resize-y" style={{ border: "1px solid var(--border)", background: "var(--bg)" }} />
                 </div>
               </div>
@@ -215,19 +222,28 @@ export default function ArticleEditorPage() {
               <div className="card-static p-5 space-y-4">
                 <h3 className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Meta</h3>
                 <div>
-                  <label className="text-xs font-medium mb-1 block" style={{ color: "var(--text-secondary)" }}>
-                    Title <span className={titleLen > 60 ? "text-red-500" : ""}>({titleLen}/60)</span>
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
+                      Title <span className={titleLen > 60 ? "text-red-500" : ""}>({titleLen}/60)</span>
+                    </label>
+                    <CopyButton text={metaTitle} size={12} />
+                  </div>
                   <input type="text" value={metaTitle} onChange={(e) => setMetaTitle(e.target.value)} className="w-full px-3 py-2 rounded-lg text-sm" style={{ border: "1px solid var(--border)", background: "var(--bg)" }} />
                 </div>
                 <div>
-                  <label className="text-xs font-medium mb-1 block" style={{ color: "var(--text-secondary)" }}>
-                    Description <span className={descLen > 155 ? "text-red-500" : ""}>({descLen}/155)</span>
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
+                      Description <span className={descLen > 155 ? "text-red-500" : ""}>({descLen}/155)</span>
+                    </label>
+                    <CopyButton text={metaDescription} size={12} />
+                  </div>
                   <textarea value={metaDescription} onChange={(e) => setMetaDescription(e.target.value)} rows={3} className="w-full px-3 py-2 rounded-lg text-sm resize-none" style={{ border: "1px solid var(--border)", background: "var(--bg)" }} />
                 </div>
                 <div>
-                  <label className="text-xs font-medium mb-1 block" style={{ color: "var(--text-secondary)" }}>Slug</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-medium" style={{ color: "var(--text-secondary)" }}>Slug</label>
+                    <CopyButton text={slug} size={12} />
+                  </div>
                   <input type="text" value={slug} onChange={(e) => setSlug(e.target.value)} className="w-full px-3 py-2 rounded-lg text-sm font-mono" style={{ border: "1px solid var(--border)", background: "var(--bg)" }} />
                 </div>
               </div>
@@ -306,9 +322,15 @@ export default function ArticleEditorPage() {
                 />
               </div>
             )}
-            <h1 className="text-3xl font-bold mb-4 leading-tight">{h1 || "Untitled"}</h1>
-            <div className="prose prose-sm max-w-none text-sm leading-relaxed" style={{ color: "var(--text-secondary)", whiteSpace: "pre-wrap" }}>
-              {body || "No content yet."}
+            <div className="flex items-start justify-between gap-3 mb-4">
+              <h1 className="text-3xl font-bold leading-tight">{h1 || "Untitled"}</h1>
+              <CopyButton text={h1} label="Copy title" />
+            </div>
+            <div className="relative">
+              <div className="absolute top-2 right-2"><CopyButton text={body} label="Copy article" /></div>
+              <div className="prose prose-sm max-w-none text-sm leading-relaxed" style={{ color: "var(--text-secondary)", whiteSpace: "pre-wrap" }}>
+                {body || "No content yet."}
+              </div>
             </div>
           </div>
         )}

@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { PublishModal } from "@/components/publish-modal";
+import { CopyButton } from "@/components/copy-button";
 
 interface Article {
   id: string;
@@ -146,9 +147,12 @@ export default function ArticlesPage() {
                     href={`/domain/${domainId}/articles/${article.id}`}
                     className="flex-1 min-w-0 cursor-pointer"
                   >
-                    <p className="text-sm font-semibold mb-0.5">
-                      {article.metaTitle || article.h1 || "Untitled"}
-                    </p>
+                    <div className="flex items-center gap-1.5 mb-0.5">
+                      <p className="text-sm font-semibold">
+                        {article.metaTitle || article.h1 || "Untitled"}
+                      </p>
+                      <CopyButton text={article.bodyMarkdown || ""} size={12} />
+                    </div>
                     <p className="text-xs truncate" style={{ color: "var(--text-muted)" }}>
                       /{article.slug || "—"}
                       {article.createdAt && (
