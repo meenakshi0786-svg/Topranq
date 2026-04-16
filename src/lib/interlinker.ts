@@ -79,17 +79,29 @@ ${articleMap}
 TASK: Return updated markdown for each article with internal links inserted.
 
 LINKING RULES:
-1. PILLAR → CLUSTER: Scan the pillar article. Where a cluster topic or closely related concept is mentioned, convert that existing phrase into a markdown link [phrase](/slug). Max 1-2 links per cluster. Use semantically similar phrases already in the text — do NOT add new sentences.
 
-2. CLUSTER → PILLAR: In each cluster article, add 1 contextual link back to the pillar in the introduction or a relevant section. Use a natural phrase that reflects the pillar topic.
+1. PILLAR → CLUSTER (MANDATORY — EVERY cluster must be linked):
+   - The pillar article MUST contain at least 1 link to EVERY cluster article. No exceptions.
+   - First, scan for existing phrases that match or relate to each cluster topic — convert those into [phrase](/slug) links.
+   - If NO suitable phrase exists for a cluster, INSERT a short natural sentence in a relevant section that includes a link. Example: "For a deeper dive, see our guide on [cluster topic](/cluster-slug)." or "This connects closely to [cluster topic](/cluster-slug), which covers..."
+   - Place inserted sentences at the end of the most relevant paragraph — never in the middle of a sentence.
+   - Max 2 links per cluster, but minimum 1 is REQUIRED.
 
-3. CLUSTER ↔ CLUSTER: If two clusters are related, add 1 cross-link between them. Only where strong topical overlap exists.
+2. CLUSTER → PILLAR (MANDATORY):
+   - Every cluster article MUST contain exactly 1 contextual link back to the pillar.
+   - Place it in the introduction or first relevant section.
+   - Use a natural phrase that reflects the pillar topic.
 
-4. PRESERVE CONTENT: Do NOT rewrite articles. Only modify the specific words/phrases that become link anchors. Keep tone and flow intact.
+3. CLUSTER ↔ CLUSTER (optional):
+   - If two clusters are related, add 1 cross-link. Only where strong topical overlap exists.
 
-5. NATURAL ANCHORS ONLY: Use existing phrases. Never use "click here" or "read more". Prefer keyword-rich, natural text.
+4. PRESERVE CONTENT: Only modify specific anchor phrases or append linking sentences. Never rewrite paragraphs.
 
-6. NO OVER-LINKING: Max 1-2 links per paragraph. No duplicate links to the same target.
+5. NATURAL ANCHORS: Use keyword-rich phrases. Never "click here" or "read more".
+
+6. NO OVER-LINKING: Max 2 links per paragraph. No duplicate links to the same target.
+
+VERIFICATION — before returning, count the links in the pillar article. If ANY cluster slug is missing from the pillar's links, go back and add it. This is the most important rule.
 
 OUTPUT FORMAT — Return STRICT JSON only (no markdown fences, no prose):
 {
@@ -102,12 +114,11 @@ OUTPUT FORMAT — Return STRICT JSON only (no markdown fences, no prose):
   ]
 }
 
-QUALITY CHECK before returning:
-- Links feel natural when read aloud
-- No forced or irrelevant links
-- Each cluster is meaningfully connected to the pillar
-- No duplicate or excessive linking
-- Anchors are keyword-rich, not generic`;
+FINAL CHECK:
+- Every cluster slug appears at least once as a link in the pillar article
+- Every cluster article links back to the pillar
+- Links feel natural when read
+- No duplicate or excessive linking`;
 
   const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
