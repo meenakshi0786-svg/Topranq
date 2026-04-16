@@ -347,24 +347,52 @@ export default function GEOPage() {
                     desc="Standard AI-optimized index with grouped URLs, about section, and key topics."
                     tag="Standard"
                     onClick={() => downloadAsset("llms-txt")}
+                    guide={{
+                      whatItIs: "The standard file AI crawlers look for — like robots.txt but for LLMs. Contains your site summary, grouped page index, key topics, capabilities, and use cases.",
+                      whereToUpload: "Root of your website → yoursite.com/llms.txt (same directory as robots.txt and sitemap.xml).",
+                      howToUpload: "WordPress: upload via File Manager plugin or FTP to the folder where wp-config.php lives. Shopify: create a page template in Theme Editor, then create a page with URL handle 'llms.txt'.",
+                      whoReadsIt: "GPTBot (ChatGPT), ClaudeBot (Claude), PerplexityBot (Perplexity), Google-Extended (AI Overviews), and any LLM crawler that checks for it.",
+                      impact: "Baseline for AI discovery. Without it, AI engines guess what your site is about. With it, you control the narrative.",
+                    }}
                   />
                   <AssetCard
                     title="llms-full.txt"
                     desc="Long-form semantic version with full page descriptions, topical authority map, and relationship graph."
                     tag="Extended"
                     onClick={() => downloadAsset("llms-full")}
+                    guide={{
+                      whatItIs: "Extended semantic profile with full page descriptions, topical authority map, content architecture, relationship graph, and 20-30 semantic tags. The 'deep context' version of llms.txt.",
+                      whereToUpload: "Root of your website → yoursite.com/llms-full.txt. Add a reference in your llms.txt: '> Full version: /llms-full.txt'.",
+                      howToUpload: "Same method as llms.txt — upload to root via File Manager, FTP, or Shopify page template.",
+                      whoReadsIt: "Perplexity and Claude follow links within llms.txt and read the full version. Google AI Overviews benefits from richer context when generating detailed answers.",
+                      impact: "When an AI writes a detailed answer and needs to cite a source, the full version gives enough context to cite YOUR page over a competitor's.",
+                    }}
                   />
                   <AssetCard
                     title="entity-map.jsonld"
                     desc="JSON-LD knowledge graph of your site — entities, types, and relationships for structured AI understanding."
                     tag="Structured Data"
                     onClick={() => downloadAsset("entity-map")}
+                    guide={{
+                      whatItIs: "A JSON-LD knowledge graph — the same structured data format Google uses for Knowledge Panels. Maps your organization, pages, products, and topics with typed relationships.",
+                      whereToUpload: "Two places for maximum impact: (1) As a file at yoursite.com/entity-map.jsonld, and (2) Embedded in your homepage HTML inside a <script type=\"application/ld+json\"> tag.",
+                      howToUpload: "WordPress: use 'Insert Headers and Footers' plugin → paste in the Header section. Shopify: Theme → Edit code → theme.liquid → paste before </head>. Also upload the file to your root directory.",
+                      whoReadsIt: "Google (Knowledge Panels + AI Overviews), Bing (Copilot), and any AI that parses structured data. This is the most broadly supported format across all search engines.",
+                      impact: "Directly influences Google AI Overviews and Knowledge Panels. The 'knowsAbout' array tells Google what topics you are authoritative on.",
+                    }}
                   />
                   <AssetCard
                     title="ai-citation-snippets.md"
                     desc="Pre-written quotable summaries + FAQ pairs designed to be cited verbatim by AI models."
                     tag="Citations"
                     onClick={() => downloadAsset("citation-snippets")}
+                    guide={{
+                      whatItIs: "Pre-written, factual, quotable summaries for each important page plus FAQ Q&A pairs. Designed so AI models can quote them verbatim when citing your site.",
+                      whereToUpload: "Three strategies: (1) As a file at yoursite.com/ai-citation-snippets.md, (2) Embed each page's snippet as its first paragraph and og:description meta tag, (3) Create a dedicated /for-ai page with all snippets.",
+                      howToUpload: "Upload the file to your root. For maximum impact, copy each page's 'Quotable summary' into that page's meta description and opening paragraph — AI models pull from those when generating citations.",
+                      whoReadsIt: "Every AI model. When ChatGPT says 'According to [yoursite]...', the text it quotes comes from your meta descriptions and first paragraphs. These snippets pre-write those quotes.",
+                      impact: "Controls HOW you are cited, not just IF you are cited. The FAQ section is especially powerful — matching questions get your answer cited directly.",
+                    }}
                   />
                 </div>
 
@@ -494,26 +522,81 @@ function CheckPill({ label, ok }: { label: string; ok: boolean }) {
   );
 }
 
-function AssetCard({ title, desc, tag, onClick }: { title: string; desc: string; tag: string; onClick: () => void }) {
+interface AssetGuide {
+  whatItIs: string;
+  whereToUpload: string;
+  howToUpload: string;
+  whoReadsIt: string;
+  impact: string;
+}
+
+function AssetCard({ title, desc, tag, onClick, guide }: { title: string; desc: string; tag: string; onClick: () => void; guide: AssetGuide }) {
+  const [open, setOpen] = useState(false);
   return (
-    <button
-      onClick={onClick}
-      className="text-left p-4 rounded-lg cursor-pointer flex items-start gap-3"
-      style={{ background: "var(--bg)", border: "1px solid var(--border-light)" }}
-    >
-      <div className="shrink-0 w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: "#4F6EF715" }}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4F6EF7" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-          <polyline points="14 2 14 8 20 8" />
-        </svg>
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1">
-          <p className="text-sm font-semibold">{title}</p>
-          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded" style={{ background: "#4F6EF715", color: "#4F6EF7" }}>{tag}</span>
+    <div className="rounded-lg overflow-hidden" style={{ background: "var(--bg)", border: "1px solid var(--border-light)" }}>
+      <div className="p-4 flex items-start gap-3">
+        <div className="shrink-0 w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: "#4F6EF715" }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4F6EF7" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+          </svg>
         </div>
-        <p className="text-xs" style={{ color: "var(--text-secondary)" }}>{desc}</p>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <p className="text-sm font-semibold">{title}</p>
+            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded" style={{ background: "#4F6EF715", color: "#4F6EF7" }}>{tag}</span>
+          </div>
+          <p className="text-xs mb-3" style={{ color: "var(--text-secondary)" }}>{desc}</p>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onClick}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold text-white cursor-pointer"
+              style={{ background: "#4F6EF7" }}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              Generate
+            </button>
+            <button
+              onClick={() => setOpen(!open)}
+              className="inline-flex items-center gap-1 px-2 py-1.5 rounded-md text-xs cursor-pointer"
+              style={{ color: "var(--text-muted)", border: "1px solid var(--border-light)" }}
+            >
+              Guide
+              <svg
+                width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+          </div>
+        </div>
       </div>
-    </button>
+      {open && (
+        <div className="px-4 pb-4 pt-1" style={{ borderTop: "1px solid var(--border-light)" }}>
+          <div className="space-y-2.5 mt-2">
+            <GuideRow label="What it is" text={guide.whatItIs} />
+            <GuideRow label="Where to upload" text={guide.whereToUpload} />
+            <GuideRow label="How to upload" text={guide.howToUpload} />
+            <GuideRow label="Who reads it" text={guide.whoReadsIt} />
+            <GuideRow label="Impact" text={guide.impact} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function GuideRow({ label, text }: { label: string; text: string }) {
+  return (
+    <div>
+      <p className="text-[11px] font-bold uppercase tracking-wider mb-0.5" style={{ color: "var(--accent)" }}>{label}</p>
+      <p className="text-xs leading-relaxed" style={{ color: "var(--text-secondary)", wordBreak: "break-word" }}>{text}</p>
+    </div>
   );
 }
