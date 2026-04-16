@@ -418,7 +418,9 @@ Extract from the headings you actually used in the article.
 
 BEGIN THE ARTICLE NOW — first line must be a ## heading. No preamble.`;
 
-  const response = await askClaude(prompt, Math.max(4000, Math.floor(targetWordCount * 2)));
+  // 1 word ≈ 1.5 tokens. Article + FAQ JSON + outline JSON need headroom.
+  const estimatedTokens = Math.ceil(targetWordCount * 1.5) + 2000;
+  const response = await askClaude(prompt, Math.max(6000, estimatedTokens));
 
   // Parse the response
   let bodyMarkdown = response;
