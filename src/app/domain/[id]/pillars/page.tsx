@@ -28,6 +28,8 @@ interface PillarSuggestion {
   pillarTopic: string;
   rationale: string;
   supportingQueries: string[];
+  recommendedFormat?: string;
+  competitiveAdvantage?: string;
 }
 
 interface GSCKeyword {
@@ -257,10 +259,20 @@ export default function PillarsPage() {
                   style={{ background: "var(--bg)", border: "1px solid var(--border-light)" }}
                 >
                   <p className="text-sm font-semibold mb-1">{s.pillarTopic}</p>
-                  <p className="text-xs mb-2" style={{ color: "var(--text-secondary)" }}>{s.rationale}</p>
+                  {s.recommendedFormat && (
+                    <span className="inline-block text-[10px] font-medium px-1.5 py-0.5 rounded mb-1.5" style={{ background: "#4F6EF715", color: "#4F6EF7" }}>
+                      {s.recommendedFormat}
+                    </span>
+                  )}
+                  <p className="text-xs mb-1.5" style={{ color: "var(--text-secondary)" }}>{s.rationale}</p>
+                  {s.competitiveAdvantage && (
+                    <p className="text-[11px] mb-1.5" style={{ color: "var(--success)" }}>
+                      Edge: {s.competitiveAdvantage}
+                    </p>
+                  )}
                   {s.supportingQueries.length > 0 && (
                     <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-                      Covers: {s.supportingQueries.slice(0, 3).join(" · ")}
+                      Keywords: {s.supportingQueries.slice(0, 3).join(" · ")}
                       {s.supportingQueries.length > 3 ? ` +${s.supportingQueries.length - 3}` : ""}
                     </p>
                   )}
