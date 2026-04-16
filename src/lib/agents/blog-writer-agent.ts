@@ -167,6 +167,45 @@ export async function runBlogWriter(
 
   const slug = generateSlug(topic, primaryKeyword);
 
+  // ── Load product catalog for inline product weaving ──
+  let productCatalog = "";
+  try {
+    const domain = db.select().from(schema.domains).where(eq(schema.domains.id, domainId)).get();
+    const domainUrl = domain?.domainUrl;
+
+    // Try DB products first (CSV import), then auto-fetch from store
+    let products = db.select().from(schema.storeProducts).where(eq(schema.storeProducts.domainId, domainId)).all();
+    if (products.length === 0 && domainUrl) {
+      const fetched = await fetchProductsFromDomain(domainUrl);
+      if (fetched.length > 0) {
+        products = fetched.map((p) => ({
+          id: "", domainId, createdAt: null,
+          name: p.name, url: p.url, price: p.price || null,
+          description: p.description || null, category: p.category || null,
+          imageUrl: p.imageUrl,
+        }));
+      }
+    }
+
+    if (products.length > 0) {
+      // Pick products relevant to the topic + build catalog string
+      const topicLower = `${topic} ${keywords.join(" ")}`.toLowerCase();
+      const scored = products.map((p) => {
+        const pText = `${p.name} ${p.description || ""} ${p.category || ""}`.toLowerCase();
+        const words = pText.split(/\s+/).filter((w) => w.length > 3);
+        const matches = words.filter((w) => topicLower.includes(w)).length;
+        return { ...p, score: matches };
+      }).sort((a, b) => b.score - a.score);
+
+      const topProducts = scored.slice(0, 20);
+      productCatalog = topProducts.map((p, i) =>
+        `${i + 1}. ${p.name}${p.price ? ` — ${p.price}` : ""}${p.category ? ` [${p.category}]` : ""}\n   URL: ${p.url || "N/A"}${p.imageUrl ? `\n   Image: ${p.imageUrl}` : ""}${p.description ? `\n   ${p.description.slice(0, 120)}` : ""}`
+      ).join("\n");
+    }
+  } catch (err) {
+    console.warn("[blog-writer] product catalog load failed:", err);
+  }
+
   // ── Competitor Research: analyze what's ranking on Google ──
   const competitors = await analyzeCompetitors(primaryKeyword);
   const competitorBrief = competitors.contentBrief || "";
@@ -189,7 +228,7 @@ export async function runBlogWriter(
   const { outline, bodyMarkdown, faqItems } = await generateFullArticle(
     topic, keywords, tone, targetWordCount, intent, primaryKeyword,
     gscContext + (competitorBrief ? `\n\n${competitorBrief}` : ""),
-    config.productContext, config.reworkNotes, config.language,
+    productCatalog, config.reworkNotes, config.language,
   );
 
   const suggestedInternalLinks = findInternalLinks(existingPages, keywords, topic);
@@ -374,49 +413,73 @@ async function generateFullArticle(
     ? `\nLANGUAGE: Write the ENTIRE article (title, headings, body, FAQ, everything) in ${language}. Do NOT use English. All output must be native ${language}.\n`
     : "";
 
-  const prompt = `You are an expert SEO content writer. Write a complete, high-quality blog article.
+  const hasProducts = productContext && productContext.trim().length > 20;
 
-CRITICAL: Output the FULL article immediately. Do NOT ask clarifying questions, request confirmation, propose outlines for approval, or say "before I begin". Start writing the article from the first line of your response. This is a single-shot generation — there is no human in the loop to answer questions.
+  const productInstructions = hasProducts ? `
+PRODUCT CATALOG (use these as contextual recommendations in the article):
+${productContext}
 
-IMPORTANT: Today's date is ${currentMonth} ${currentDate.getDate()}, ${currentYear}. Use ${currentYear} as the current year throughout the article. NEVER reference 2024 or any past year as the current year.
+PRODUCT INTEGRATION RULES (CRITICAL):
+- Weave 5-15 relevant products NATURALLY throughout the article as contextual solutions
+- Pattern: explain a concept or problem → recommend a product as the solution → link it
+- Format each product mention as: [Product Name](product-url) — include price if available
+- After introducing a product, add its image on the next line: ![Product Name](image-url)
+- Spread products across different sections — never cluster them all in one place
+- Each product mention must be EARNED by the preceding paragraph (explain WHY this product fits)
+- Products should feel like helpful recommendations within a teaching context, NOT a product listing
+- BAD: "Here are some products you might like: Product A, Product B, Product C"
+- GOOD: "For the base layer, a fitted turtleneck creates a clean silhouette. The [Slim Turtleneck in Black](url) ($49) works well here because its stretch fabric stays flat under a blazer."
+- Only recommend products that are genuinely relevant to the section topic
+- If fewer than 5 products are relevant, use only the relevant ones — never force a product
+` : "";
+
+  const prompt = `You are an expert editorial content writer who creates articles that teach and recommend products naturally.
+
+CRITICAL: Output the FULL article immediately. Do NOT ask clarifying questions, request confirmation, or say "before I begin". Start writing from the first line. Single-shot generation — no human in the loop.
+
+Today's date is ${currentMonth} ${currentDate.getDate()}, ${currentYear}. Use ${currentYear} as the current year. NEVER reference past years as current.
 ${languageInstruction}
 TOPIC: ${topic}
 PRIMARY KEYWORD: ${primaryKeyword}
 SECONDARY KEYWORDS: ${keywords.slice(1).join(", ")}
-TONE: ${tone}
+TONE: ${tone === "casual" ? "conversational, friendly, directive — like a knowledgeable friend giving advice" : tone === "technical" ? "precise, detailed, expert-level — like a specialist writing a guide" : "clear, authoritative, approachable — like an editorial magazine piece"}
 INTENT: ${intent}
 TARGET WORD COUNT: ${targetWordCount}
 ${gscContext}
-${productContext ? `PRODUCT CONTEXT: ${productContext}` : ""}
 ${reworkNotes ? `REVISION NOTES: ${reworkNotes}` : ""}
+${productInstructions}
+ARTICLE STRUCTURE:
+1. Start with a ## heading immediately — no preamble
+2. Opening paragraph: 2-3 sentences that hook the reader and establish what they'll learn
+3. Body: 6-10 sections, each following this pattern:
+   - ## Heading (keyword-rich, sounds like something a user would search for)
+   - Teach a concept, rule, or technique (2-3 short paragraphs, 2-4 sentences each)
+   - ${hasProducts ? "Where relevant, recommend a specific product as a solution with [Product Name](url) link and image" : "Include specific examples or actionable advice"}
+4. Keep paragraphs SHORT: 2-4 sentences max. Scannable. No walls of text.
+5. Use bullet points and numbered lists for steps, comparisons, or feature lists
+6. End with a strong conclusion summarizing key takeaways
 
-INSTRUCTIONS:
-1. Write a complete blog article in markdown format — START IMMEDIATELY with the first ## heading
-2. Use ## for main headings and ### for subheadings
-3. Include the primary keyword in the first paragraph, at least 2 headings, and naturally throughout
-4. Include secondary keywords naturally — don't force them
-5. Write substantive, unique content — no filler sentences like "in today's fast-paced world"
-6. Include specific examples, data points, or actionable advice
-7. Use bullet points or numbered lists where appropriate
-8. Write for real humans, not search engines — be genuinely helpful
-9. Match the tone: ${tone === "casual" ? "conversational, friendly, use contractions" : tone === "technical" ? "precise, detailed, use technical terms" : "authoritative, clear, balanced"}
-10. End with a strong conclusion that summarizes key takeaways
-11. Any year references must use ${currentYear} — NEVER use 2024 or 2025
-12. NEVER include meta-commentary like "I'll write about...", "Let me clarify...", "Here's the article..." — just output the article content directly
+WRITING RULES:
+- Write like an expert editorial piece, not a generic SEO article
+- Be directive: "Use this", "Try this", "The key is" — not "You might consider"
+- Include specific details: numbers, measurements, comparisons, examples
+- Primary keyword in: first paragraph, at least 2 headings, conclusion
+- Secondary keywords woven naturally — never forced
+- NEVER use filler: "in today's fast-paced world", "it's no secret that"
+- NEVER use meta-commentary: "I'll write about...", "Let me clarify..."
+- NEVER use hedging: "may", "might", "potentially", "could be"
+- All year references must use ${currentYear}
 
-After the article, add this section:
+After the article, add:
 ---FAQ_START---
-Write 3-4 FAQ items as JSON array: [{"question":"...","answer":"..."}]
-Each answer should be 2-3 sentences, genuinely useful.
+[{"question":"...", "answer":"..."}] (4-6 items, 2-3 sentence answers)
 ---FAQ_END---
 
-After FAQ, add:
 ---OUTLINE_START---
-Write the outline as JSON array: [{"heading":"...","summary":"...","keyPoints":["...","...","..."]}]
-Extract from the headings you actually used in the article.
+[{"heading":"...", "summary":"...", "keyPoints":["...","...","..."]}]
 ---OUTLINE_END---
 
-BEGIN THE ARTICLE NOW — first line must be a ## heading. No preamble.`;
+BEGIN NOW — first line must be a ## heading.`;
 
   // 1 word ≈ 1.5 tokens. Article + FAQ JSON + outline JSON need headroom.
   const estimatedTokens = Math.ceil(targetWordCount * 1.5) + 2000;
