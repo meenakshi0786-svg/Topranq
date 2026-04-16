@@ -171,6 +171,17 @@ export default function ArticleEditorPage() {
                 Publish
               </button>
             ) : null}
+            <button
+              onClick={() => {
+                if (!confirm("Delete this article? This cannot be undone.")) return;
+                fetch(`/api/articles/${articleId}`, { method: "DELETE" })
+                  .then(() => router.push(`/domain/${domainId}/articles`));
+              }}
+              className="px-4 py-1.5 rounded-lg text-xs font-medium cursor-pointer"
+              style={{ background: "var(--critical-bg)", color: "var(--critical)" }}
+            >
+              Delete
+            </button>
           </div>
         </div>
       </header>
