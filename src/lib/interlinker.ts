@@ -126,9 +126,23 @@ QUALITY CHECK before returning:
   const jsonMatch = text.match(/\{[\s\S]*\}/);
   if (!jsonMatch) throw new Error("Could not parse interlink response");
 
-  const parsed = JSON.parse(jsonMatch[0]) as {
-    articles?: Array<{ id: string; updatedMarkdown: string; linksAdded: number }>;
-  };
+  // The AI embeds full markdown inside JSON string values. Literal newlines,
+  // tabs, and other control chars inside strings break JSON.parse. Fix them.
+  const sanitized = jsonMatch[0].replace(
+    /"(?:[^"\\]|\\.)*"/g,
+    (match) => match
+      .replace(/(?<!\\)\n/g, "\\n")
+      .replace(/(?<!\\)\r/g, "\\r")
+      .replace(/(?<!\\)\t/g, "\\t")
+      .replace(/[\x00-\x1f]/g, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, "0")}`),
+  );
+
+  let parsed: { articles?: Array<{ id: string; updatedMarkdown: string; linksAdded: number }> };
+  try {
+    parsed = JSON.parse(sanitized);
+  } catch {
+    throw new Error("Could not parse interlink response as JSON");
+  }
 
   if (!parsed.articles || !Array.isArray(parsed.articles)) {
     throw new Error("Invalid interlink response structure");
