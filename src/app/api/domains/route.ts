@@ -52,6 +52,32 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(existing);
     }
 
+    // Auto-detect language from the homepage's <html lang="..."> attribute
+    let detectedLanguage = "English";
+    try {
+      const langMap: Record<string, string> = {
+        fr: "French", es: "Spanish", de: "German", it: "Italian", pt: "Portuguese",
+        nl: "Dutch", ru: "Russian", ja: "Japanese", zh: "Chinese", ko: "Korean",
+        ar: "Arabic", hi: "Hindi", tr: "Turkish", pl: "Polish", sv: "Swedish",
+        da: "Danish", no: "Norwegian", fi: "Finnish", cs: "Czech", ro: "Romanian",
+        hu: "Hungarian", el: "Greek", th: "Thai", vi: "Vietnamese", id: "Indonesian",
+        ms: "Malay", he: "Hebrew", uk: "Ukrainian", en: "English",
+      };
+      const ac = new AbortController();
+      const timer = setTimeout(() => ac.abort(), 5000);
+      const res = await fetch(parsedUrl.origin, {
+        headers: { "User-Agent": "Mozilla/5.0 (compatible; RanqapexBot/1.0)" },
+        signal: ac.signal,
+      });
+      clearTimeout(timer);
+      const html = await res.text();
+      const langMatch = html.match(/<html[^>]*\slang=["']([a-z]{2})/i);
+      if (langMatch) {
+        const code = langMatch[1].toLowerCase();
+        detectedLanguage = langMap[code] || "English";
+      }
+    } catch { /* proceed with English */ }
+
     // Create domain
     const domainId = crypto.randomUUID();
     db.insert(schema.domains)
@@ -59,6 +85,7 @@ export async function POST(request: NextRequest) {
         id: domainId,
         userId: user.id,
         domainUrl: parsedUrl.origin,
+        language: detectedLanguage,
         status: "active",
       })
       .run();

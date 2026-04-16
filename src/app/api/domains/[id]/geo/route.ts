@@ -120,6 +120,7 @@ export async function GET(
   }
 
   const hostname = (() => { try { return new URL(domain.domainUrl).hostname; } catch { return domain.domainUrl; } })();
+  const language = domain.language || "English";
   const pageInputs = pages.map((p) => ({
     url: p.url,
     title: p.title || "",
@@ -131,7 +132,7 @@ export async function GET(
   // ── llms.txt download ──
   if (action === "llms-txt") {
     const sitemapUrls = await fetchSitemapUrls(domain.domainUrl);
-    const content = await generateLlmsTxt(domain.domainUrl, pages, sitemapUrls);
+    const content = await generateLlmsTxt(domain.domainUrl, pages, sitemapUrls, language);
     return new NextResponse(content, {
       headers: {
         "Content-Type": "text/plain; charset=utf-8",
@@ -143,7 +144,7 @@ export async function GET(
   // ── llms-full.txt download ──
   if (action === "llms-full") {
     const sitemapUrls = await fetchSitemapUrls(domain.domainUrl);
-    const content = await generateLlmsFullTxt(domain.domainUrl, hostname, pageInputs, sitemapUrls);
+    const content = await generateLlmsFullTxt(domain.domainUrl, hostname, pageInputs, sitemapUrls, language);
     return new NextResponse(content, {
       headers: {
         "Content-Type": "text/plain; charset=utf-8",
@@ -154,7 +155,7 @@ export async function GET(
 
   // ── Entity map download ──
   if (action === "entity-map") {
-    const content = await generateEntityMap(domain.domainUrl, hostname, pageInputs);
+    const content = await generateEntityMap(domain.domainUrl, hostname, pageInputs, language);
     return new NextResponse(content, {
       headers: {
         "Content-Type": "application/ld+json; charset=utf-8",
@@ -165,7 +166,7 @@ export async function GET(
 
   // ── Citation snippets download ──
   if (action === "citation-snippets") {
-    const content = await generateCitationSnippets(domain.domainUrl, hostname, pageInputs);
+    const content = await generateCitationSnippets(domain.domainUrl, hostname, pageInputs, language);
     return new NextResponse(content, {
       headers: {
         "Content-Type": "text/markdown; charset=utf-8",

@@ -93,3 +93,29 @@ export async function GET(
     recentActions,
   });
 }
+
+// PATCH /api/domains/:id — update domain settings (e.g. language)
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const body = await request.json();
+
+  const domain = await db.query.domains.findFirst({
+    where: eq(schema.domains.id, id),
+  });
+  if (!domain) {
+    return NextResponse.json({ error: "Domain not found" }, { status: 404 });
+  }
+
+  const updates: Record<string, unknown> = {};
+  if (body.language !== undefined) updates.language = body.language;
+
+  if (Object.keys(updates).length > 0) {
+    db.update(schema.domains).set(updates).where(eq(schema.domains.id, id)).run();
+  }
+
+  const updated = await db.query.domains.findFirst({ where: eq(schema.domains.id, id) });
+  return NextResponse.json(updated);
+}

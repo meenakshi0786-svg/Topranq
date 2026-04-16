@@ -26,6 +26,10 @@ export async function POST(
     return NextResponse.json({ error: "Pillar not found" }, { status: 404 });
   }
 
+  // Read the domain's language setting
+  const domain = db.select().from(schema.domains).where(eq(schema.domains.id, pillar.domainId)).get();
+  const domainLanguage = domain?.language || "English";
+
   let topic: string;
   let keywords: string[] = [];
   let targetWordCount = wordCount || 1500;
@@ -52,7 +56,7 @@ export async function POST(
       keywords,
       tone: (tone as "professional" | "casual" | "technical") || "professional",
       wordCount: targetWordCount,
-      language: language || "English",
+      language: language || domainLanguage,
     });
 
     // Link article back to pillar/cluster

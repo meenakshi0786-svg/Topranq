@@ -7,8 +7,16 @@ import { Logo } from "@/components/logo";
 import { CubeLoader } from "@/components/cube-loader";
 import { OnboardingPanel } from "@/components/onboarding-panel";
 
+const LANGUAGES = [
+  "English", "French", "Spanish", "German", "Italian", "Portuguese",
+  "Dutch", "Russian", "Japanese", "Chinese", "Korean", "Arabic",
+  "Hindi", "Turkish", "Polish", "Swedish", "Danish", "Norwegian",
+  "Finnish", "Czech", "Romanian", "Hungarian", "Greek", "Thai",
+  "Vietnamese", "Indonesian", "Malay", "Hebrew", "Ukrainian",
+];
+
 interface DomainData {
-  domain: { id: string; domainUrl: string; status: string };
+  domain: { id: string; domainUrl: string; status: string; language: string | null };
   latestAudit: {
     id: string;
     status: string;
@@ -116,15 +124,38 @@ export default function DomainOverview() {
             <span style={{ color: "var(--border)" }}>/</span>
             <span className="text-sm font-medium">{hostname}</span>
           </div>
-          <button
-            onClick={async () => {
-              await fetch(`/api/domains/${domainId}/crawl`, { method: "POST" });
-              window.location.reload();
-            }}
-            className="btn-primary px-5 py-2 text-sm cursor-pointer"
-          >
-            Re-run Audit
-          </button>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <label className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>Language</label>
+              <select
+                value={data?.domain.language || "English"}
+                onChange={async (e) => {
+                  const lang = e.target.value;
+                  await fetch(`/api/domains/${domainId}`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ language: lang }),
+                  });
+                  setData((prev) => prev ? { ...prev, domain: { ...prev.domain, language: lang } } : prev);
+                }}
+                className="px-3 py-1.5 rounded-lg text-xs cursor-pointer"
+                style={{ border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text-primary)" }}
+              >
+                {LANGUAGES.map((lang) => (
+                  <option key={lang} value={lang}>{lang}</option>
+                ))}
+              </select>
+            </div>
+            <button
+              onClick={async () => {
+                await fetch(`/api/domains/${domainId}/crawl`, { method: "POST" });
+                window.location.reload();
+              }}
+              className="btn-primary px-5 py-2 text-sm cursor-pointer"
+            >
+              Re-run Audit
+            </button>
+          </div>
         </div>
       </header>
 

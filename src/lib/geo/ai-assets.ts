@@ -41,6 +41,7 @@ export async function generateLlmsFullTxt(
   hostname: string,
   pages: PageInput[],
   sitemapUrls: string[],
+  language: string = "English",
 ): Promise<string> {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey || pages.length === 0) return fallbackFull(hostname, pages);
@@ -52,8 +53,9 @@ export async function generateLlmsFullTxt(
     .map((u) => `- ${u}`)
     .join("\n");
 
+  const langNote = language !== "English" ? `\nLANGUAGE: Write the ENTIRE output in ${language}. All descriptions and analysis MUST be in native ${language}. Only URLs and technical terms stay in English.\n` : "";
   const prompt = `You are an expert in Generative Engine Optimization.
-Create an llms-full.txt for ${hostname} (${domainUrl}) — this is the LONG-FORM semantic version of llms.txt designed for maximum AI comprehension.
+${langNote}Create an llms-full.txt for ${hostname} (${domainUrl}) — this is the LONG-FORM semantic version of llms.txt designed for maximum AI comprehension.
 
 Pages (title | url | description | word count):
 ${urlBlock}
@@ -121,14 +123,16 @@ export async function generateEntityMap(
   domainUrl: string,
   hostname: string,
   pages: PageInput[],
+  language: string = "English",
 ): Promise<string> {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey || pages.length === 0) return fallbackEntityMap(hostname, domainUrl);
 
   const urlBlock = buildUrlBlock(pages);
 
+  const langNote2 = language !== "English" ? `\nLANGUAGE: Write all "description" and "name" values in ${language}. Keep @type, @context, and property names in English (they are schema.org terms).\n` : "";
   const prompt = `You are an expert in structured data and knowledge graphs.
-Create a JSON-LD entity map for ${hostname} (${domainUrl}) that helps AI systems build a knowledge graph of this site.
+${langNote2}Create a JSON-LD entity map for ${hostname} (${domainUrl}) that helps AI systems build a knowledge graph of this site.
 
 Pages (title | url | description):
 ${urlBlock}
@@ -193,14 +197,16 @@ export async function generateCitationSnippets(
   domainUrl: string,
   hostname: string,
   pages: PageInput[],
+  language: string = "English",
 ): Promise<string> {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey || pages.length === 0) return fallbackSnippets(hostname, pages);
 
   const urlBlock = buildUrlBlock(pages.slice(0, 30));
 
+  const langNote3 = language !== "English" ? `\nLANGUAGE: Write ALL snippets, summaries, FAQ answers, and descriptions in ${language}. Only URLs stay in English.\n` : "";
   const prompt = `You are an expert in AI search optimization.
-Create "AI Citation Snippets" for ${hostname} (${domainUrl}) — these are pre-written, factual, quotable summaries that AI models can directly use when citing this site.
+${langNote3}Create "AI Citation Snippets" for ${hostname} (${domainUrl}) — these are pre-written, factual, quotable summaries that AI models can directly use when citing this site.
 
 Pages (title | url | description):
 ${urlBlock}

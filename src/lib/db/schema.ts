@@ -15,6 +15,7 @@ export const domains = sqliteTable("domains", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   domainUrl: text("domain_url").notNull(),
+  language: text("language").default("English"),
   status: text("status", { enum: ["active", "paused", "deleted"] }).notNull().default("active"),
   createdAt: text("created_at").default(sql`(datetime('now'))`),
 });

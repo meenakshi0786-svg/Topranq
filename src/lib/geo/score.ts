@@ -256,6 +256,7 @@ export async function generateLlmsTxt(
   domainUrl: string,
   pages: PageRow[],
   sitemapUrls: string[] = [],
+  language: string = "English",
 ): Promise<string> {
   const hostname = (() => { try { return new URL(domainUrl).hostname; } catch { return domainUrl; } })();
 
@@ -282,7 +283,7 @@ export async function generateLlmsTxt(
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (apiKey && allUrls.length > 0) {
     try {
-      const optimized = await generateOptimizedLlmsTxt(apiKey, hostname, domainUrl, urlBlock);
+      const optimized = await generateOptimizedLlmsTxt(apiKey, hostname, domainUrl, urlBlock, language);
       if (optimized) return optimized;
     } catch (err) {
       console.warn("[llms.txt] AI optimization failed, falling back to static:", err);
@@ -298,9 +299,13 @@ async function generateOptimizedLlmsTxt(
   hostname: string,
   domainUrl: string,
   urlBlock: string,
+  language: string = "English",
 ): Promise<string | null> {
+  const langInstruction = language !== "English"
+    ? `\n\nLANGUAGE REQUIREMENT: Write the ENTIRE output in ${language}. All descriptions, sections, key topics, capabilities, use cases, and audience text MUST be in native ${language}. Only URLs and technical terms (JSON-LD, schema.org) stay in English.\n`
+    : "";
   const prompt = `You are an expert in Generative Engine Optimization (GEO) and AI search systems.
-
+${langInstruction}
 Transform the following URL list for ${hostname} (${domainUrl}) into a high-quality, AI-optimized llms.txt that scores 9/10+ for LLM retrieval, understanding, and citation.
 
 URLs (format: title | url | description):
