@@ -130,11 +130,11 @@ QUALITY CHECK before returning:
   // tabs, and other control chars inside strings break JSON.parse. Fix them.
   const sanitized = jsonMatch[0].replace(
     /"(?:[^"\\]|\\.)*"/g,
-    (match) => match
+    (match: string) => match
       .replace(/(?<!\\)\n/g, "\\n")
       .replace(/(?<!\\)\r/g, "\\r")
       .replace(/(?<!\\)\t/g, "\\t")
-      .replace(/[\x00-\x1f]/g, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, "0")}`),
+      .replace(/[\x00-\x1f]/g, (c: string) => `\\u${c.charCodeAt(0).toString(16).padStart(4, "0")}`),
   );
 
   let parsed: { articles?: Array<{ id: string; updatedMarkdown: string; linksAdded: number }> };
