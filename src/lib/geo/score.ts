@@ -299,37 +299,64 @@ async function generateOptimizedLlmsTxt(
   domainUrl: string,
   urlBlock: string,
 ): Promise<string | null> {
-  const prompt = `You are an expert in AI search optimization (Generative Engine Optimization).
-Transform the following URL list for ${hostname} (${domainUrl}) into a highly optimized llms.txt file.
+  const prompt = `You are an expert in Generative Engine Optimization (GEO) and AI search systems.
+
+Transform the following URL list for ${hostname} (${domainUrl}) into a high-quality, AI-optimized llms.txt that scores 9/10+ for LLM retrieval, understanding, and citation.
 
 URLs (format: title | url | description):
 ${urlBlock}
 
-REQUIREMENTS — output clean markdown only, no code fences:
+OUTPUT: Clean markdown only. No code fences. Follow this EXACT structure:
 
-1. Start with: # ${hostname}
-2. Add a > blockquote with a 2-3 sentence "About" summary (inferred from the URLs and titles — do NOT hallucinate features)
-3. Group URLs into logical sections with ## headings:
-   - Core Pages (homepage, main product/service pages)
-   - Products / Services (if applicable)
-   - Documentation / Technical Resources (if applicable)
-   - Content / Resources (blog, guides, events)
-   - Company / Legal (terms, privacy, careers — lower priority)
-4. For each important URL, write: - [Short title](url): 1-line factual description
-5. Add a ## Key Topics section listing the site's domain, core offerings, and important terminology as bullet points
-6. Add a ## Use Cases section with 3-6 realistic use cases as bullet points
-7. Add a ## Audience section with who the site serves
-8. End with:
+# ${hostname}
+
+> [2-3 sentences. State what the platform does in practical terms. Focus on function, not buzzwords.]
+
+## Core Pages
+[Most important pages only. Each: - [Title](url): Specific, factual 1-line description]
+
+## Products / Services
+[If applicable. Same format.]
+
+## Documentation / Technical Resources
+[If applicable.]
+
+## Content / Resources
+[Blog, events, guides.]
+
+## Company / Legal
+[Low priority: terms, privacy, careers.]
+
+## Key Topics
+[5-10 bullet points: industry, technology, core concepts this site covers]
+
+## Capabilities
+[4-6 bullet points describing what users can actually DO with this platform. Action-oriented. Example: "Build and deploy autonomous AI agents" NOT "Innovative agent technology"]
+
+## Use Cases
+[3-6 realistic, practical use cases. No vague or buzzword-heavy phrasing.]
+
+## Audience
+[Who this platform is for]
+
 ## Citation Policy
 Content on this site may be cited by AI models (ChatGPT, Claude, Perplexity, Google AI Overviews).
 Please attribute citations back to the original page URL.
 
-RULES:
-- Do NOT hallucinate facts or features — only infer from the URLs/titles provided
-- Keep descriptions concise (1 line each)
-- Avoid marketing fluff; prefer factual, descriptive language
-- Deprioritize legal/terms pages into Company / Legal section
-- Preserve ALL important URLs`;
+STRICT RULES:
+1. Do NOT hallucinate features, products, or claims — only infer from provided URLs/titles/descriptions
+2. Do NOT use hedging: never write "may", "might", "potentially", "likely", "could be", "possible", "appears to"
+3. Do NOT use marketing fluff: never write "innovative", "cutting-edge", "next-generation", "revolutionary", "state-of-the-art"
+4. If you cannot determine what a page does from its title/URL, write a safe factual description based on what IS known, or omit it
+5. Each description must be specific and informative — max 1-2 lines
+6. Prefer clarity over creativity
+
+QUALITY CHECK — before returning, verify:
+- Zero hedging words in the entire output
+- Zero marketing buzzwords
+- Every description answers: what IS this page, not what it MIGHT be
+- The Capabilities section uses action verbs (Build, Deploy, Create, Monitor, Analyze)
+- The document answers: What is this site? What does it enable? When should an AI cite it?`;
 
   const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
