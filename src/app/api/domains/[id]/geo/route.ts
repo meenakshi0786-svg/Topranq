@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db, schema } from "@/lib/db";
 import { eq } from "drizzle-orm";
 import { buildGEOReport, generateLlmsTxt } from "@/lib/geo/score";
+import { generateLlmsFullTxt, generateEntityMap, generateCitationSnippets } from "@/lib/geo/ai-assets";
 
 async function fetchRobotsTxt(domainUrl: string): Promise<string | null> {
   try {
@@ -118,6 +119,15 @@ export async function GET(
     }, { status: 400 });
   }
 
+  const hostname = (() => { try { return new URL(domain.domainUrl).hostname; } catch { return domain.domainUrl; } })();
+  const pageInputs = pages.map((p) => ({
+    url: p.url,
+    title: p.title || "",
+    description: p.metaDescription || "",
+    h1: p.h1 || "",
+    wordCount: p.wordCount || 0,
+  }));
+
   // ── llms.txt download ──
   if (action === "llms-txt") {
     const sitemapUrls = await fetchSitemapUrls(domain.domainUrl);
@@ -126,6 +136,40 @@ export async function GET(
       headers: {
         "Content-Type": "text/plain; charset=utf-8",
         "Content-Disposition": `attachment; filename="llms.txt"`,
+      },
+    });
+  }
+
+  // ── llms-full.txt download ──
+  if (action === "llms-full") {
+    const sitemapUrls = await fetchSitemapUrls(domain.domainUrl);
+    const content = await generateLlmsFullTxt(domain.domainUrl, hostname, pageInputs, sitemapUrls);
+    return new NextResponse(content, {
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Content-Disposition": `attachment; filename="llms-full.txt"`,
+      },
+    });
+  }
+
+  // ── Entity map download ──
+  if (action === "entity-map") {
+    const content = await generateEntityMap(domain.domainUrl, hostname, pageInputs);
+    return new NextResponse(content, {
+      headers: {
+        "Content-Type": "application/ld+json; charset=utf-8",
+        "Content-Disposition": `attachment; filename="entity-map.jsonld"`,
+      },
+    });
+  }
+
+  // ── Citation snippets download ──
+  if (action === "citation-snippets") {
+    const content = await generateCitationSnippets(domain.domainUrl, hostname, pageInputs);
+    return new NextResponse(content, {
+      headers: {
+        "Content-Type": "text/markdown; charset=utf-8",
+        "Content-Disposition": `attachment; filename="ai-citation-snippets.md"`,
       },
     });
   }

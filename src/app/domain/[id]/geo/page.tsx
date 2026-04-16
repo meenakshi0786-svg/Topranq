@@ -64,8 +64,8 @@ export default function GEOPage() {
 
   useEffect(() => { fetchReport(); }, [fetchReport]);
 
-  function downloadLlmsTxt() {
-    window.location.href = `/api/domains/${domainId}/geo?action=llms-txt`;
+  function downloadAsset(action: string) {
+    window.location.href = `/api/domains/${domainId}/geo?action=${action}`;
     setLlmsDownloaded(true);
   }
 
@@ -331,35 +331,42 @@ export default function GEOPage() {
               </div>
             </div>
 
-            {/* llms.txt generator (full width) */}
+            {/* GEO AI Assets Toolkit */}
             <div className="mb-5">
               <div className="card-static p-7 fade-in" style={{ background: "linear-gradient(135deg, #4F6EF705, #7C5CFC05)", border: "1px solid #4F6EF720" }}>
-                <div className="flex items-start gap-4">
-                  <div className="shrink-0 w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: "#4F6EF715" }}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4F6EF7" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-                      <polyline points="14 2 14 8 20 8" />
-                      <line x1="16" y1="13" x2="8" y2="13" />
-                      <line x1="16" y1="17" x2="8" y2="17" />
-                    </svg>
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-sm mb-1">llms.txt generator</h3>
-                    <p className="text-xs mb-4" style={{ color: "var(--text-secondary)" }}>
-                      Auto-generate an <code style={{ background: "var(--bg)", padding: "2px 4px", borderRadius: 3 }}>llms.txt</code> file from your crawled pages so AI engines know what to index.
-                    </p>
-                    <button
-                      onClick={downloadLlmsTxt}
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white cursor-pointer"
-                      style={{ background: "#4F6EF7" }}
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                        <polyline points="7 10 12 15 17 10" />
-                        <line x1="12" y1="15" x2="12" y2="3" />
-                      </svg>
-                      Generate and Download
-                    </button>
+                <h2 className="text-sm font-bold uppercase tracking-wider mb-1" style={{ color: "var(--text-muted)" }}>
+                  AI Optimization Toolkit
+                </h2>
+                <p className="text-xs mb-5" style={{ color: "var(--text-secondary)" }}>
+                  Generate files that help AI engines understand, retrieve, and cite your site.
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                  <AssetCard
+                    title="llms.txt"
+                    desc="Standard AI-optimized index with grouped URLs, about section, and key topics."
+                    tag="Standard"
+                    onClick={() => downloadAsset("llms-txt")}
+                  />
+                  <AssetCard
+                    title="llms-full.txt"
+                    desc="Long-form semantic version with full page descriptions, topical authority map, and relationship graph."
+                    tag="Extended"
+                    onClick={() => downloadAsset("llms-full")}
+                  />
+                  <AssetCard
+                    title="entity-map.jsonld"
+                    desc="JSON-LD knowledge graph of your site — entities, types, and relationships for structured AI understanding."
+                    tag="Structured Data"
+                    onClick={() => downloadAsset("entity-map")}
+                  />
+                  <AssetCard
+                    title="ai-citation-snippets.md"
+                    desc="Pre-written quotable summaries + FAQ pairs designed to be cited verbatim by AI models."
+                    tag="Citations"
+                    onClick={() => downloadAsset("citation-snippets")}
+                  />
+                </div>
 
                     {llmsDownloaded && (
                       <div className="mt-4">
@@ -421,8 +428,6 @@ export default function GEOPage() {
                         )}
                       </div>
                     )}
-                  </div>
-                </div>
               </div>
             </div>
           </>
@@ -486,5 +491,29 @@ function CheckPill({ label, ok }: { label: string; ok: boolean }) {
       </svg>
       <span className="font-medium">{label}</span>
     </div>
+  );
+}
+
+function AssetCard({ title, desc, tag, onClick }: { title: string; desc: string; tag: string; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="text-left p-4 rounded-lg cursor-pointer flex items-start gap-3"
+      style={{ background: "var(--bg)", border: "1px solid var(--border-light)" }}
+    >
+      <div className="shrink-0 w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: "#4F6EF715" }}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4F6EF7" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+        </svg>
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-1">
+          <p className="text-sm font-semibold">{title}</p>
+          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded" style={{ background: "#4F6EF715", color: "#4F6EF7" }}>{tag}</span>
+        </div>
+        <p className="text-xs" style={{ color: "var(--text-secondary)" }}>{desc}</p>
+      </div>
+    </button>
   );
 }
