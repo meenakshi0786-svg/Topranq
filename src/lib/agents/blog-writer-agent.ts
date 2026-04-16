@@ -376,6 +376,8 @@ async function generateFullArticle(
 
   const prompt = `You are an expert SEO content writer. Write a complete, high-quality blog article.
 
+CRITICAL: Output the FULL article immediately. Do NOT ask clarifying questions, request confirmation, propose outlines for approval, or say "before I begin". Start writing the article from the first line of your response. This is a single-shot generation — there is no human in the loop to answer questions.
+
 IMPORTANT: Today's date is ${currentMonth} ${currentDate.getDate()}, ${currentYear}. Use ${currentYear} as the current year throughout the article. NEVER reference 2024 or any past year as the current year.
 ${languageInstruction}
 TOPIC: ${topic}
@@ -389,7 +391,7 @@ ${productContext ? `PRODUCT CONTEXT: ${productContext}` : ""}
 ${reworkNotes ? `REVISION NOTES: ${reworkNotes}` : ""}
 
 INSTRUCTIONS:
-1. Write a complete blog article in markdown format
+1. Write a complete blog article in markdown format — START IMMEDIATELY with the first ## heading
 2. Use ## for main headings and ### for subheadings
 3. Include the primary keyword in the first paragraph, at least 2 headings, and naturally throughout
 4. Include secondary keywords naturally — don't force them
@@ -400,6 +402,7 @@ INSTRUCTIONS:
 9. Match the tone: ${tone === "casual" ? "conversational, friendly, use contractions" : tone === "technical" ? "precise, detailed, use technical terms" : "authoritative, clear, balanced"}
 10. End with a strong conclusion that summarizes key takeaways
 11. Any year references must use ${currentYear} — NEVER use 2024 or 2025
+12. NEVER include meta-commentary like "I'll write about...", "Let me clarify...", "Here's the article..." — just output the article content directly
 
 After the article, add this section:
 ---FAQ_START---
@@ -413,7 +416,7 @@ Write the outline as JSON array: [{"heading":"...","summary":"...","keyPoints":[
 Extract from the headings you actually used in the article.
 ---OUTLINE_END---
 
-Write the article now. Make it ${targetWordCount} words. Be specific, original, and valuable.`;
+BEGIN THE ARTICLE NOW — first line must be a ## heading. No preamble.`;
 
   const response = await askClaude(prompt, Math.max(4000, Math.floor(targetWordCount * 2)));
 
