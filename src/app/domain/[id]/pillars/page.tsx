@@ -48,8 +48,6 @@ export default function PillarsPage() {
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [generating, setGenerating] = useState<string | null>(null); // id of item being generated
-  const [interlinking, setInterlinking] = useState<string | null>(null);
-  const [interlinkResult, setInterlinkResult] = useState<Record<string, { links: number; articles: number } | null>>({});
   const [suggestions, setSuggestions] = useState<PillarSuggestion[] | null>(null);
   const [gscKeywords, setGscKeywords] = useState<GSCKeyword[]>([]);
   const [suggestLoading, setSuggestLoading] = useState(false);
@@ -134,24 +132,6 @@ export default function PillarsPage() {
       await fetchPillars();
     } finally {
       setGenerating(null);
-    }
-  }
-
-  async function interlinkArticles(pillarId: string) {
-    setInterlinking(pillarId);
-    setInterlinkResult((prev) => ({ ...prev, [pillarId]: null }));
-    try {
-      const res = await fetch(`/api/pillars/${pillarId}/interlink`, { method: "POST" });
-      const data = await res.json();
-      if (!res.ok) {
-        alert(data.error || "Interlinking failed");
-        return;
-      }
-      setInterlinkResult((prev) => ({ ...prev, [pillarId]: { links: data.linksInserted, articles: data.updatedArticles } }));
-    } catch {
-      alert("Interlinking failed");
-    } finally {
-      setInterlinking(null);
     }
   }
 
@@ -440,27 +420,6 @@ export default function PillarsPage() {
                   ))}
                 </div>
 
-                {/* Interlink button — shown when at least 2 articles exist */}
-                {(pillar.clusters.filter((c) => c.articleId).length >= 1 || pillar.pillarArticleId) && (
-                  <div className="mt-4 p-4 rounded-lg flex items-center justify-between" style={{ background: "var(--accent-light)", border: "1px solid var(--accent)" }}>
-                    <div>
-                      <p className="text-xs font-bold" style={{ color: "var(--accent)" }}>Internal Linking</p>
-                      <p className="text-[11px]" style={{ color: "var(--text-secondary)" }}>
-                        {interlinkResult[pillar.id]
-                          ? `Done — ${interlinkResult[pillar.id]!.links} links added across ${interlinkResult[pillar.id]!.articles} articles`
-                          : "Add contextual links between your pillar and cluster articles"}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => interlinkArticles(pillar.id)}
-                      disabled={interlinking === pillar.id}
-                      className="text-xs font-semibold px-4 py-2 rounded-lg text-white cursor-pointer disabled:opacity-40"
-                      style={{ background: "var(--accent)" }}
-                    >
-                      {interlinking === pillar.id ? "Linking..." : interlinkResult[pillar.id] ? "Re-link" : "Interlink Articles"}
-                    </button>
-                  </div>
-                )}
               </div>
             ))}
           </div>
