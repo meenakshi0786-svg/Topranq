@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db, schema } from "@/lib/db";
 import { eq } from "drizzle-orm";
 import { runBlogWriter } from "@/lib/agents/blog-writer-agent";
+import { interlinkPillarCluster } from "@/lib/interlinker";
 
 // POST /api/pillars/:pillarId/clusters/:clusterId/generate
 // Body: { isPillar?: boolean, language?: string, tone?: string, wordCount?: number }
@@ -65,6 +66,14 @@ export async function POST(
         .set({ articleId: output.articleId })
         .where(eq(schema.pillarClusters.id, clusterId))
         .run();
+    }
+
+    // Auto-interlink: after generating any article, re-run internal linking
+    // across the entire pillar so pillar↔cluster links stay current.
+    try {
+      await interlinkPillarCluster(pillarId);
+    } catch (linkErr) {
+      console.warn("[generate] auto-interlink failed (non-fatal):", linkErr);
     }
 
     return NextResponse.json({
