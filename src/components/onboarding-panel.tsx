@@ -71,16 +71,23 @@ export function OnboardingPanel({ domainId, domainUrl, justConnectedGsc }: Props
 
   if (gscConnected === null) return null; // loading
   const allDone = gscConnected && hasProducts;
-  if (allDone) return null;
 
   const gscStatus: StepStatus = gscFetching ? "doing" : gscConnected ? "done" : "todo";
   const productStatus: StepStatus = hasProducts ? "done" : "todo";
 
   return (
     <div className="card-static p-7 mb-5 fade-in">
-      <h2 className="text-sm font-bold uppercase tracking-wider mb-5" style={{ color: "var(--text-muted)" }}>
-        Get set up
-      </h2>
+      <div className="flex items-center justify-between mb-5">
+        <h2 className="text-sm font-bold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
+          {allDone ? "Setup complete" : "Get set up"}
+        </h2>
+        {allDone && (
+          <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded" style={{ background: "var(--low-bg)", color: "var(--success)" }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>
+            All done
+          </span>
+        )}
+      </div>
       <div className="space-y-3">
         <StepCard
           number={1}
