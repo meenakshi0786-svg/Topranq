@@ -331,35 +331,8 @@ export default function GEOPage() {
               </div>
             </div>
 
-            {/* Row 3: llms.txt status + llms.txt generator */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
-              {/* llms.txt status */}
-              <div className="card-static p-7 fade-in">
-                <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: "var(--text-muted)" }}>
-                  llms.txt
-                </p>
-                {report.hasLlmsTxt ? (
-                  <>
-                    <p className="text-sm font-semibold mb-2" style={{ color: "#22c55e" }}>
-                      Detected
-                    </p>
-                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                      AI engines can find your content instructions.
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-sm font-semibold mb-2" style={{ color: "#f97316" }}>
-                      Not detected
-                    </p>
-                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                      AI engines can&apos;t find content instructions for your site.
-                    </p>
-                  </>
-                )}
-              </div>
-
-              {/* llms.txt generator */}
+            {/* llms.txt generator (full width) */}
+            <div className="mb-5">
               <div className="card-static p-7 fade-in" style={{ background: "linear-gradient(135deg, #4F6EF705, #7C5CFC05)", border: "1px solid #4F6EF720" }}>
                 <div className="flex items-start gap-4">
                   <div className="shrink-0 w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: "#4F6EF715" }}>
@@ -412,36 +385,36 @@ export default function GEOPage() {
                         </button>
 
                         {showUploadGuide && (
-                          <div className="mt-3 space-y-4">
+                          <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
                             {/* WordPress Guide */}
-                            <div className="p-4 rounded-lg" style={{ background: "var(--bg)", border: "1px solid var(--border-light)" }}>
-                              <div className="flex items-center gap-2 mb-3">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="#21759b"><path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zM3.443 12c0-1.178.25-2.3.69-3.318L8.08 20.26A8.57 8.57 0 013.443 12zm8.557 8.557c-.879 0-1.723-.141-2.514-.396l2.67-7.758 2.736 7.497c.018.044.04.085.063.124a8.525 8.525 0 01-2.955.533z" /></svg>
-                                <p className="text-xs font-bold">WordPress</p>
+                            <div className="p-5 rounded-lg" style={{ background: "var(--bg)", border: "1px solid var(--border-light)" }}>
+                              <div className="flex items-center gap-2 mb-4">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="#21759b"><path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zM3.443 12c0-1.178.25-2.3.69-3.318L8.08 20.26A8.57 8.57 0 013.443 12zm8.557 8.557c-.879 0-1.723-.141-2.514-.396l2.67-7.758 2.736 7.497c.018.044.04.085.063.124a8.525 8.525 0 01-2.955.533z" /></svg>
+                                <p className="text-sm font-bold">WordPress</p>
                               </div>
-                              <ol className="space-y-1.5 text-xs" style={{ color: "var(--text-secondary)" }}>
-                                <li className="flex gap-2"><span className="font-bold shrink-0" style={{ color: "var(--text-primary)" }}>1.</span> Go to your WordPress admin panel</li>
-                                <li className="flex gap-2"><span className="font-bold shrink-0" style={{ color: "var(--text-primary)" }}>2.</span> Install and activate the <strong>File Manager</strong> plugin (or use FTP/cPanel File Manager)</li>
-                                <li className="flex gap-2"><span className="font-bold shrink-0" style={{ color: "var(--text-primary)" }}>3.</span> Navigate to the root directory of your site (where <code style={{ background: "var(--bg-white)", padding: "1px 4px", borderRadius: 3 }}>wp-config.php</code> lives)</li>
-                                <li className="flex gap-2"><span className="font-bold shrink-0" style={{ color: "var(--text-primary)" }}>4.</span> Upload the downloaded <code style={{ background: "var(--bg-white)", padding: "1px 4px", borderRadius: 3 }}>llms.txt</code> file here</li>
-                                <li className="flex gap-2"><span className="font-bold shrink-0" style={{ color: "var(--text-primary)" }}>5.</span> Verify by visiting <code style={{ background: "var(--bg-white)", padding: "1px 4px", borderRadius: 3 }}>yoursite.com/llms.txt</code> in your browser</li>
+                              <ol className="space-y-2.5 text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                                <li><span className="font-bold" style={{ color: "var(--text-primary)" }}>1.</span> Open your WordPress admin panel</li>
+                                <li><span className="font-bold" style={{ color: "var(--text-primary)" }}>2.</span> Install the <strong>File Manager</strong> plugin (or use FTP / cPanel)</li>
+                                <li><span className="font-bold" style={{ color: "var(--text-primary)" }}>3.</span> Go to the root directory where <code style={{ background: "var(--bg-white)", padding: "1px 4px", borderRadius: 3, fontSize: 11 }}>wp-config.php</code> lives</li>
+                                <li><span className="font-bold" style={{ color: "var(--text-primary)" }}>4.</span> Upload the <code style={{ background: "var(--bg-white)", padding: "1px 4px", borderRadius: 3, fontSize: 11 }}>llms.txt</code> file</li>
+                                <li><span className="font-bold" style={{ color: "var(--text-primary)" }}>5.</span> Verify at <code style={{ background: "var(--bg-white)", padding: "1px 4px", borderRadius: 3, fontSize: 11 }}>yoursite.com/llms.txt</code></li>
                               </ol>
                             </div>
 
                             {/* Shopify Guide */}
-                            <div className="p-4 rounded-lg" style={{ background: "var(--bg)", border: "1px solid var(--border-light)" }}>
-                              <div className="flex items-center gap-2 mb-3">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="#96bf48"><path d="M15.337 3.178c-.07-.024-.138.018-.158.088-.018.06-.3 1.03-.3 1.03a3.25 3.25 0 00-.87-.33c-.03-.39-.07-.95-.14-1.28-.19-.96-.76-1.46-1.45-1.46h-.06c-.05-.06-.12-.12-.18-.16C11.677.7 11.157.84 10.737 1.38c-.54.7-.95 1.74-1.07 2.5a13.33 13.33 0 00-1.41.44c-.43.14-.44.15-.5.56-.04.3-1.17 9.02-1.17 9.02l8.76 1.52.04-.02V3.26c-.01-.04-.02-.07-.05-.08z" /></svg>
-                                <p className="text-xs font-bold">Shopify</p>
+                            <div className="p-5 rounded-lg" style={{ background: "var(--bg)", border: "1px solid var(--border-light)" }}>
+                              <div className="flex items-center gap-2 mb-4">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="#96bf48"><path d="M15.337 3.178c-.07-.024-.138.018-.158.088-.018.06-.3 1.03-.3 1.03a3.25 3.25 0 00-.87-.33c-.03-.39-.07-.95-.14-1.28-.19-.96-.76-1.46-1.45-1.46h-.06c-.05-.06-.12-.12-.18-.16C11.677.7 11.157.84 10.737 1.38c-.54.7-.95 1.74-1.07 2.5a13.33 13.33 0 00-1.41.44c-.43.14-.44.15-.5.56-.04.3-1.17 9.02-1.17 9.02l8.76 1.52.04-.02V3.26c-.01-.04-.02-.07-.05-.08z" /></svg>
+                                <p className="text-sm font-bold">Shopify</p>
                               </div>
-                              <ol className="space-y-1.5 text-xs" style={{ color: "var(--text-secondary)" }}>
-                                <li className="flex gap-2"><span className="font-bold shrink-0" style={{ color: "var(--text-primary)" }}>1.</span> Go to your Shopify admin &rarr; <strong>Online Store</strong> &rarr; <strong>Themes</strong></li>
-                                <li className="flex gap-2"><span className="font-bold shrink-0" style={{ color: "var(--text-primary)" }}>2.</span> Click <strong>Actions</strong> (or &ldquo;...&rdquo;) &rarr; <strong>Edit code</strong></li>
-                                <li className="flex gap-2"><span className="font-bold shrink-0" style={{ color: "var(--text-primary)" }}>3.</span> Under <strong>Templates</strong>, click <strong>Add a new template</strong></li>
-                                <li className="flex gap-2"><span className="font-bold shrink-0" style={{ color: "var(--text-primary)" }}>4.</span> Create a new page template, name it <code style={{ background: "var(--bg-white)", padding: "1px 4px", borderRadius: 3 }}>llms-txt</code></li>
-                                <li className="flex gap-2"><span className="font-bold shrink-0" style={{ color: "var(--text-primary)" }}>5.</span> Replace the template contents with your llms.txt content wrapped in <code style={{ background: "var(--bg-white)", padding: "1px 4px", borderRadius: 3 }}>{`{{ content_for_header | remove: '<' | remove: '>' }}`}</code></li>
-                                <li className="flex gap-2"><span className="font-bold shrink-0" style={{ color: "var(--text-primary)" }}>6.</span> Go to <strong>Pages</strong> &rarr; <strong>Add page</strong>, set URL handle to <code style={{ background: "var(--bg-white)", padding: "1px 4px", borderRadius: 3 }}>llms.txt</code> and assign the template</li>
-                                <li className="flex gap-2"><span className="font-bold shrink-0" style={{ color: "var(--text-primary)" }}>7.</span> Verify by visiting <code style={{ background: "var(--bg-white)", padding: "1px 4px", borderRadius: 3 }}>yourstore.com/pages/llms.txt</code></li>
+                              <ol className="space-y-2.5 text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                                <li><span className="font-bold" style={{ color: "var(--text-primary)" }}>1.</span> Go to <strong>Online Store</strong> &rarr; <strong>Themes</strong> &rarr; <strong>Edit code</strong></li>
+                                <li><span className="font-bold" style={{ color: "var(--text-primary)" }}>2.</span> Under <strong>Templates</strong>, click <strong>Add a new template</strong></li>
+                                <li><span className="font-bold" style={{ color: "var(--text-primary)" }}>3.</span> Name it <code style={{ background: "var(--bg-white)", padding: "1px 4px", borderRadius: 3, fontSize: 11 }}>llms-txt</code></li>
+                                <li><span className="font-bold" style={{ color: "var(--text-primary)" }}>4.</span> Paste your llms.txt content into the template</li>
+                                <li><span className="font-bold" style={{ color: "var(--text-primary)" }}>5.</span> Go to <strong>Pages</strong> &rarr; <strong>Add page</strong></li>
+                                <li><span className="font-bold" style={{ color: "var(--text-primary)" }}>6.</span> Set URL handle to <code style={{ background: "var(--bg-white)", padding: "1px 4px", borderRadius: 3, fontSize: 11 }}>llms.txt</code> and assign the template</li>
+                                <li><span className="font-bold" style={{ color: "var(--text-primary)" }}>7.</span> Verify at <code style={{ background: "var(--bg-white)", padding: "1px 4px", borderRadius: 3, fontSize: 11 }}>yourstore.com/pages/llms.txt</code></li>
                               </ol>
                             </div>
                           </div>
