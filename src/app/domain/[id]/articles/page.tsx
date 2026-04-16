@@ -164,6 +164,18 @@ export default function ArticlesPage() {
                         Publish
                       </button>
                     )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (!confirm("Delete this article? This cannot be undone.")) return;
+                        fetch(`/api/articles/${article.id}`, { method: "DELETE" })
+                          .then(() => setArticles((prev) => prev.filter((a) => a.id !== article.id)));
+                      }}
+                      className="px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer"
+                      style={{ background: "var(--critical-bg)", color: "var(--critical)" }}
+                    >
+                      Delete
+                    </button>
                     <Link href={`/domain/${domainId}/articles/${article.id}`}>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="9 18 15 12 9 6" />

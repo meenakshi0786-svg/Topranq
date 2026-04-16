@@ -68,3 +68,13 @@ export async function PATCH(
     internalLinks: updated?.internalLinksJson ? JSON.parse(updated.internalLinksJson) : null,
   });
 }
+
+// DELETE /api/articles/:id
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  db.delete(schema.articles).where(eq(schema.articles.id, id)).run();
+  return NextResponse.json({ ok: true });
+}
