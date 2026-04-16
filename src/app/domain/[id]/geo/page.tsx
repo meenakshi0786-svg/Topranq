@@ -148,7 +148,7 @@ export default function GEOPage() {
                 </p>
                 {report.aiCrawlers.checked ? (
                   <>
-                    <div className="flex items-baseline gap-1.5 mb-2">
+                    <div className="flex items-baseline gap-1.5 mb-3">
                       <span className="text-2xl font-bold tabular-nums" style={{ color: report.aiCrawlers.blocked.length === 0 ? "#22c55e" : "#f97316" }}>
                         {report.aiCrawlers.allowed.length}
                       </span>
@@ -156,19 +156,23 @@ export default function GEOPage() {
                         of {report.aiCrawlers.allowed.length + report.aiCrawlers.blocked.length} bots allowed
                       </span>
                     </div>
-                    {report.aiCrawlers.blocked.length > 0 && (
-                      <p className="text-xs" style={{ color: "#f97316" }}>
-                        Blocked: {report.aiCrawlers.blocked.join(", ")}
-                      </p>
-                    )}
+                    <div className="flex flex-wrap gap-1.5 mb-2">
+                      {report.aiCrawlers.allowed.map((bot) => (
+                        <span key={bot} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium" style={{ background: "var(--low-bg)", color: "var(--success)" }}>
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>
+                          {bot}
+                        </span>
+                      ))}
+                      {report.aiCrawlers.blocked.map((bot) => (
+                        <span key={bot} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium" style={{ background: "var(--critical-bg)", color: "var(--critical)" }}>
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                          {bot}
+                        </span>
+                      ))}
+                    </div>
                     {report.aiCrawlers.wildcardBlock && (
                       <p className="text-xs mt-1" style={{ color: "#ef4444" }}>
                         Wildcard disallow — all bots blocked
-                      </p>
-                    )}
-                    {report.aiCrawlers.blocked.length === 0 && !report.aiCrawlers.wildcardBlock && (
-                      <p className="text-xs" style={{ color: "#22c55e" }}>
-                        All major AI engines can crawl your site
                       </p>
                     )}
                   </>
