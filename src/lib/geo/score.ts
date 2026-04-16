@@ -246,87 +246,143 @@ export function buildGEOReport(
   };
 }
 
-export function generateLlmsTxt(
+/**
+ * Generate an AI-optimized llms.txt that helps LLMs understand, retrieve,
+ * and cite this website. Uses Claude to analyze the pages and produce
+ * structured sections: About, grouped URLs, Key Topics, Use Cases, Audience.
+ * Falls back to a static template if the AI call fails.
+ */
+export async function generateLlmsTxt(
   domainUrl: string,
   pages: PageRow[],
   sitemapUrls: string[] = [],
-  metadata?: { description?: string }
-): string {
-  const hostname = (() => {
-    try {
-      return new URL(domainUrl).hostname;
-    } catch {
-      return domainUrl;
-    }
-  })();
+): Promise<string> {
+  const hostname = (() => { try { return new URL(domainUrl).hostname; } catch { return domainUrl; } })();
 
+  // Collect all URLs with titles + descriptions for the AI prompt
+  const crawledUrls = new Set(pages.map((p) => p.url));
+  const pageEntries = pages.map((p) => ({
+    url: p.url,
+    title: p.title || "",
+    description: p.metaDescription || "",
+  }));
+  const extraUrls = sitemapUrls
+    .filter((u) => !crawledUrls.has(u))
+    .slice(0, 80)
+    .map((u) => {
+      const path = (() => { try { return new URL(u).pathname; } catch { return u; } })();
+      return { url: u, title: path, description: "" };
+    });
+  const allUrls = [...pageEntries, ...extraUrls];
+
+  const urlBlock = allUrls
+    .map((u) => `- ${u.title || u.url} | ${u.url}${u.description ? ` | ${u.description}` : ""}`)
+    .join("\n");
+
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  if (apiKey && allUrls.length > 0) {
+    try {
+      const optimized = await generateOptimizedLlmsTxt(apiKey, hostname, domainUrl, urlBlock);
+      if (optimized) return optimized;
+    } catch (err) {
+      console.warn("[llms.txt] AI optimization failed, falling back to static:", err);
+    }
+  }
+
+  // Static fallback
+  return buildStaticLlmsTxt(hostname, pageEntries, extraUrls);
+}
+
+async function generateOptimizedLlmsTxt(
+  apiKey: string,
+  hostname: string,
+  domainUrl: string,
+  urlBlock: string,
+): Promise<string | null> {
+  const prompt = `You are an expert in AI search optimization (Generative Engine Optimization).
+Transform the following URL list for ${hostname} (${domainUrl}) into a highly optimized llms.txt file.
+
+URLs (format: title | url | description):
+${urlBlock}
+
+REQUIREMENTS — output clean markdown only, no code fences:
+
+1. Start with: # ${hostname}
+2. Add a > blockquote with a 2-3 sentence "About" summary (inferred from the URLs and titles — do NOT hallucinate features)
+3. Group URLs into logical sections with ## headings:
+   - Core Pages (homepage, main product/service pages)
+   - Products / Services (if applicable)
+   - Documentation / Technical Resources (if applicable)
+   - Content / Resources (blog, guides, events)
+   - Company / Legal (terms, privacy, careers — lower priority)
+4. For each important URL, write: - [Short title](url): 1-line factual description
+5. Add a ## Key Topics section listing the site's domain, core offerings, and important terminology as bullet points
+6. Add a ## Use Cases section with 3-6 realistic use cases as bullet points
+7. Add a ## Audience section with who the site serves
+8. End with:
+## Citation Policy
+Content on this site may be cited by AI models (ChatGPT, Claude, Perplexity, Google AI Overviews).
+Please attribute citations back to the original page URL.
+
+RULES:
+- Do NOT hallucinate facts or features — only infer from the URLs/titles provided
+- Keep descriptions concise (1 line each)
+- Avoid marketing fluff; prefer factual, descriptive language
+- Deprioritize legal/terms pages into Company / Legal section
+- Preserve ALL important URLs`;
+
+  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "anthropic/claude-3.5-haiku",
+      max_tokens: 4000,
+      messages: [{ role: "user", content: prompt }],
+    }),
+  });
+
+  if (!res.ok) return null;
+  const data = await res.json();
+  const text = data.choices?.[0]?.message?.content;
+  if (!text || text.length < 100) return null;
+
+  // Strip any wrapping code fences the model might add
+  return text.replace(/^```(?:markdown)?\n?/i, "").replace(/\n?```$/i, "").trim() + "\n";
+}
+
+function buildStaticLlmsTxt(
+  hostname: string,
+  pages: Array<{ url: string; title: string; description: string }>,
+  extra: Array<{ url: string; title: string }>,
+): string {
   const lines: string[] = [];
   lines.push(`# ${hostname}`);
   lines.push("");
-  if (metadata?.description) {
-    lines.push(`> ${metadata.description}`);
-    lines.push("");
-  } else {
-    lines.push(`> Website content indexed for AI engines and large language models.`);
-    lines.push("");
-  }
+  lines.push(`> Website content indexed for AI engines and large language models.`);
+  lines.push("");
 
-  // Crawled pages (with titles + descriptions — richer)
-  const crawledUrls = new Set(pages.map((p) => p.url));
   if (pages.length > 0) {
     lines.push("## Pages");
     lines.push("");
-    for (const page of pages) {
-      const title = page.title || page.url;
-      const desc = page.metaDescription ? `: ${page.metaDescription}` : "";
-      lines.push(`- [${title}](${page.url})${desc}`);
+    for (const p of pages) {
+      const title = p.title || p.url;
+      const desc = p.description ? `: ${p.description}` : "";
+      lines.push(`- [${title}](${p.url})${desc}`);
     }
     lines.push("");
   }
 
-  // Sitemap URLs not already covered
-  const extraSitemapUrls = sitemapUrls.filter((u) => !crawledUrls.has(u));
-  if (extraSitemapUrls.length > 0) {
-    // Group by section (first path segment) for readability
-    const grouped: Record<string, string[]> = {};
-    for (const url of extraSitemapUrls) {
-      try {
-        const u = new URL(url);
-        const segment = u.pathname.split("/").filter(Boolean)[0] || "Site";
-        const label = segment.charAt(0).toUpperCase() + segment.slice(1).replace(/[-_]/g, " ");
-        if (!grouped[label]) grouped[label] = [];
-        grouped[label].push(url);
-      } catch {
-        /* skip malformed */
-      }
-    }
-
-    lines.push("## Additional URLs from sitemap");
+  if (extra.length > 0) {
+    lines.push("## Additional URLs");
     lines.push("");
-    for (const [section, urls] of Object.entries(grouped)) {
-      if (urls.length === 1) {
-        lines.push(`- [${section}](${urls[0]})`);
-      } else {
-        lines.push(`### ${section}`);
-        lines.push("");
-        for (const url of urls.slice(0, 50)) {
-          const path = (() => {
-            try { return new URL(url).pathname; } catch { return url; }
-          })();
-          lines.push(`- [${path}](${url})`);
-        }
-        if (urls.length > 50) lines.push(`- ...and ${urls.length - 50} more`);
-        lines.push("");
-      }
-    }
+    for (const u of extra) lines.push(`- [${u.title}](${u.url})`);
     lines.push("");
   }
 
-  lines.push("## Notes");
+  lines.push("## Citation Policy");
   lines.push("");
   lines.push("Content on this site may be cited by AI models (ChatGPT, Claude, Perplexity, Google AI Overviews).");
   lines.push("Please attribute citations back to the original page URL.");
   lines.push("");
-
   return lines.join("\n");
 }

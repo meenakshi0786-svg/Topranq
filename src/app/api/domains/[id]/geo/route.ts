@@ -121,7 +121,7 @@ export async function GET(
   // ── llms.txt download ──
   if (action === "llms-txt") {
     const sitemapUrls = await fetchSitemapUrls(domain.domainUrl);
-    const content = generateLlmsTxt(domain.domainUrl, pages, sitemapUrls);
+    const content = await generateLlmsTxt(domain.domainUrl, pages, sitemapUrls);
     return new NextResponse(content, {
       headers: {
         "Content-Type": "text/plain; charset=utf-8",
