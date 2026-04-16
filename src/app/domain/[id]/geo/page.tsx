@@ -220,14 +220,10 @@ export default function GEOPage() {
                               </p>
                               <div className="space-y-2">
                                 {issue.affectedPages.map((page, j) => (
-                                  <div key={j} className="flex items-start gap-2 p-2.5 rounded-md" style={{ background: "var(--bg-white)", border: "1px solid var(--border-light)" }}>
-                                    <div className="flex-1 min-w-0">
-                                      <p className="text-xs font-medium truncate">{page.title || page.url}</p>
-                                      <p className="text-[11px] truncate" style={{ color: "var(--text-muted)" }}>{page.url}</p>
-                                    </div>
-                                    <div className="shrink-0 text-right">
-                                      <p className="text-[11px]" style={{ color: "var(--accent)" }}>{page.suggestion}</p>
-                                    </div>
+                                  <div key={j} className="p-2.5 rounded-md" style={{ background: "var(--bg-white)", border: "1px solid var(--border-light)" }}>
+                                    <p className="text-xs font-medium" style={{ wordBreak: "break-word" }}>{page.title || page.url}</p>
+                                    <p className="text-[11px] mb-1.5" style={{ color: "var(--text-muted)", wordBreak: "break-all" }}>{page.url}</p>
+                                    <p className="text-[11px]" style={{ color: "var(--accent)", wordBreak: "break-word" }}>{page.suggestion}</p>
                                   </div>
                                 ))}
                               </div>
