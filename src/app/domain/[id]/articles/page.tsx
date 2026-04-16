@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
+import { PublishModal } from "@/components/publish-modal";
 
 interface Article {
   id: string;
@@ -25,6 +26,7 @@ export default function ArticlesPage() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState("all");
+  const [publishingArticle, setPublishingArticle] = useState<Article | null>(null);
 
 
   useEffect(() => {
@@ -128,12 +130,11 @@ export default function ArticlesPage() {
                 className="card-static overflow-hidden fade-in"
                 style={{ animationDelay: `${i * 0.03}s` }}
               >
-                {/* Header */}
-                <Link
-                  href={`/domain/${domainId}/articles/${article.id}`}
-                  className="w-full p-5 text-left flex items-center gap-4 cursor-pointer hover:bg-[var(--border-light)] transition-colors block"
-                >
-                  <div className="flex-1 min-w-0">
+                <div className="p-5 flex items-center gap-4">
+                  <Link
+                    href={`/domain/${domainId}/articles/${article.id}`}
+                    className="flex-1 min-w-0 cursor-pointer"
+                  >
                     <p className="text-sm font-semibold mb-0.5">
                       {article.metaTitle || article.h1 || "Untitled"}
                     </p>
@@ -146,23 +147,48 @@ export default function ArticlesPage() {
                         <> · ~{article.bodyMarkdown.split(/\s+/).length} words</>
                       )}
                     </p>
-                  </div>
-                  <div className="flex items-center gap-3 shrink-0">
+                  </Link>
+                  <div className="flex items-center gap-2 shrink-0">
                     {article.qualityScore !== null && (
                       <span className="text-xs font-bold tabular-nums" style={{ color: article.qualityScore >= 70 ? "var(--success)" : "var(--high)" }}>
                         {article.qualityScore}
                       </span>
                     )}
                     <StatusBadge status={article.status} />
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="9 18 15 12 9 6" />
-                    </svg>
+                    {article.status !== "published" && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setPublishingArticle(article); }}
+                        className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white cursor-pointer"
+                        style={{ background: "var(--accent)" }}
+                      >
+                        Publish
+                      </button>
+                    )}
+                    <Link href={`/domain/${domainId}/articles/${article.id}`}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="9 18 15 12 9 6" />
+                      </svg>
+                    </Link>
                   </div>
-                </Link>
+                </div>
 
               </div>
             ))}
           </div>
+        )}
+        {publishingArticle && (
+          <PublishModal
+            domainId={domainId}
+            articleId={publishingArticle.id}
+            articleTitle={publishingArticle.metaTitle || publishingArticle.h1 || "Untitled"}
+            onClose={() => setPublishingArticle(null)}
+            onPublished={() => {
+              setPublishingArticle(null);
+              setArticles((prev) => prev.map((a) =>
+                a.id === publishingArticle.id ? { ...a, status: "published" } : a
+              ));
+            }}
+          />
         )}
       </div>
     </div>
