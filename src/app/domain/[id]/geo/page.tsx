@@ -78,6 +78,13 @@ export default function GEOPage() {
             <span style={{ color: "var(--border)" }}>/</span>
             <span className="text-sm font-medium">GEO</span>
           </div>
+          <button
+            onClick={() => fetchReport()}
+            disabled={loading}
+            className="btn-primary px-5 py-2 text-sm cursor-pointer disabled:opacity-40"
+          >
+            {loading ? "Refreshing..." : "Re-run"}
+          </button>
         </div>
       </header>
 
