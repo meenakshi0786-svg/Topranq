@@ -16,7 +16,7 @@ async function askClaude(apiKey: string, prompt: string, maxTokens = 4000): Prom
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: "anthropic/claude-3.5-haiku",
+      model: process.env.OPENROUTER_MODEL || "anthropic/claude-3.5-haiku",
       max_tokens: maxTokens,
       messages: [{ role: "user", content: prompt }],
     }),

@@ -17,7 +17,7 @@ async function askAI(prompt: string, maxTokens = 2000): Promise<string> {
     method: "POST",
     headers: { "Authorization": `Bearer ${OPENROUTER_KEY}`, "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: "anthropic/claude-3.5-haiku",
+      model: process.env.OPENROUTER_MODEL || "anthropic/claude-3.5-haiku",
       max_tokens: maxTokens,
       messages: [{ role: "user", content: prompt }],
     }),

@@ -367,7 +367,7 @@ QUALITY CHECK — before returning, verify:
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: "anthropic/claude-3.5-haiku",
+      model: process.env.OPENROUTER_MODEL || "anthropic/claude-3.5-haiku",
       max_tokens: 4000,
       messages: [{ role: "user", content: prompt }],
     }),
