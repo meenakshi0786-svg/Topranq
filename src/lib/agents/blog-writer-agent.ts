@@ -231,12 +231,15 @@ export async function runBlogWriter(
     productCatalog, config.reworkNotes, config.language,
   );
 
+  // Post-process: hyperlink any product names mentioned in the article
+  const linkedMarkdown = hyperlinkProducts(bodyMarkdown, domainId);
+
   const suggestedInternalLinks = findInternalLinks(existingPages, keywords, topic);
   const imageSuggestions = generateImageSuggestions(outline, topic, primaryKeyword);
-  const estimatedWordCount = bodyMarkdown.split(/\s+/).length;
+  const estimatedWordCount = linkedMarkdown.split(/\s+/).length;
 
   // Build HTML from markdown
-  const bodyHtml = markdownToHtml(bodyMarkdown);
+  const bodyHtml = markdownToHtml(linkedMarkdown);
 
   // Build JSON-LD schema
   const schemaJsonLd = buildSchemaJsonLd(title, metaDescription, slug, faqItems);
@@ -246,7 +249,7 @@ export async function runBlogWriter(
 
   // Quality checks
   const qualityChecks = runQualityChecks(
-    title, h1, metaTitle, metaDescription, bodyMarkdown,
+    title, h1, metaTitle, metaDescription, linkedMarkdown,
     primaryKeyword, suggestedInternalLinks, faqItems, imageSuggestions
   );
 
@@ -264,7 +267,7 @@ export async function runBlogWriter(
     if (domainUrl) {
       const products = await fetchProductsFromDomain(domainUrl);
       if (products.length > 0) {
-        const picked = pickRelevantProducts(products, title, primaryKeyword, bodyMarkdown, 5);
+        const picked = pickRelevantProducts(products, title, primaryKeyword, linkedMarkdown, 5);
         const imageUrls = picked.map((p) => p.imageUrl).filter(Boolean);
         if (imageUrls.length > 0) {
           const composite = await composeProductHero(imageUrls, `${slug}-${primaryKeyword}`);
@@ -286,7 +289,7 @@ export async function runBlogWriter(
       metaDescription,
       slug,
       h1,
-      bodyMarkdown: bodyMarkdown,
+      bodyMarkdown: linkedMarkdown,
       bodyHtml,
       faqSchemaJson: JSON.stringify(faqItems),
       schemaJsonLd: JSON.stringify(schemaJsonLd),
@@ -313,7 +316,7 @@ export async function runBlogWriter(
     slug,
     h1,
     outline,
-    bodyMarkdown: bodyMarkdown,
+    bodyMarkdown: linkedMarkdown,
     bodyHtml,
     frontMatter,
     suggestedInternalLinks,
@@ -751,4 +754,55 @@ function runQualityChecks(
 
 function cap(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+/**
+ * Post-process: scan the article for product name mentions and convert them
+ * to markdown hyperlinks [Product Name](product-url). Skips names that are
+ * already inside an existing markdown link. Each product is linked only once
+ * (first occurrence) to avoid over-linking.
+ */
+function hyperlinkProducts(markdown: string, domainId: string): string {
+  const products = db
+    .select()
+    .from(schema.storeProducts)
+    .where(eq(schema.storeProducts.domainId, domainId))
+    .all()
+    .filter((p) => p.url && p.name && p.name.length > 3);
+
+  if (products.length === 0) return markdown;
+
+  // Sort by name length descending so longer names match first
+  // (e.g. "Slim Fit Turtleneck Black" before "Turtleneck")
+  const sorted = [...products].sort((a, b) => b.name.length - a.name.length);
+  const linked = new Set<string>();
+  let result = markdown;
+
+  for (const product of sorted) {
+    if (linked.has(product.name)) continue;
+
+    // Escape regex special chars in product name
+    const escaped = product.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    // Match product name NOT already inside a markdown link [...](...)
+    // Negative lookbehind for [ and negative lookahead for ](
+    const regex = new RegExp(
+      `(?<!\\[)\\b(${escaped})\\b(?!\\]\\()`,
+      "i",
+    );
+
+    const match = result.match(regex);
+    if (match && match.index !== undefined) {
+      const before = result.slice(0, match.index);
+      const after = result.slice(match.index + match[0].length);
+      // Don't link inside headings (lines starting with #)
+      const lineStart = before.lastIndexOf("\n") + 1;
+      const line = before.slice(lineStart);
+      if (line.trimStart().startsWith("#")) continue;
+
+      result = `${before}[${match[0]}](${product.url})${after}`;
+      linked.add(product.name);
+    }
+  }
+
+  return result;
 }
