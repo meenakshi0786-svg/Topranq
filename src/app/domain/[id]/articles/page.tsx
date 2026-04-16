@@ -13,6 +13,7 @@ interface Article {
   slug: string | null;
   h1: string | null;
   bodyMarkdown: string | null;
+  featuredImageUrl: string | null;
   faqSchema: Array<{ question: string; answer: string }> | null;
   internalLinks: Array<{ anchorText: string; targetUrl: string }> | null;
   qualityScore: number | null;
@@ -131,6 +132,16 @@ export default function ArticlesPage() {
                 style={{ animationDelay: `${i * 0.03}s` }}
               >
                 <div className="p-5 flex items-center gap-4">
+                  {article.featuredImageUrl && (
+                    <Link href={`/domain/${domainId}/articles/${article.id}`} className="shrink-0">
+                      <img
+                        src={article.featuredImageUrl}
+                        alt=""
+                        className="rounded-lg"
+                        style={{ width: 80, height: 48, objectFit: "cover" }}
+                      />
+                    </Link>
+                  )}
                   <Link
                     href={`/domain/${domainId}/articles/${article.id}`}
                     className="flex-1 min-w-0 cursor-pointer"

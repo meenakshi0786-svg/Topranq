@@ -13,6 +13,7 @@ interface Article {
   slug: string | null;
   h1: string | null;
   bodyMarkdown: string | null;
+  featuredImageUrl: string | null;
   faqSchema: Array<{ question: string; answer: string }> | null;
   internalLinks: Array<{ anchorText: string; targetUrl: string }> | null;
   qualityScore: number | null;
@@ -295,6 +296,16 @@ export default function ArticleEditorPage() {
 
         {activeTab === "preview" && (
           <div className="card-static p-8 max-w-3xl mx-auto fade-in">
+            {article.featuredImageUrl && (
+              <div className="mb-6 rounded-xl overflow-hidden" style={{ border: "1px solid var(--border-light)" }}>
+                <img
+                  src={article.featuredImageUrl}
+                  alt={h1 || "Featured image"}
+                  className="w-full"
+                  style={{ maxHeight: 400, objectFit: "cover" }}
+                />
+              </div>
+            )}
             <h1 className="text-3xl font-bold mb-4 leading-tight">{h1 || "Untitled"}</h1>
             <div className="prose prose-sm max-w-none text-sm leading-relaxed" style={{ color: "var(--text-secondary)", whiteSpace: "pre-wrap" }}>
               {body || "No content yet."}
