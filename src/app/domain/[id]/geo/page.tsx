@@ -29,6 +29,7 @@ interface GEOReport {
     affectedCount: number;
     recommendation: string;
     severity: "high" | "medium" | "low";
+    affectedPages: Array<{ url: string; title: string | null; suggestion: string }>;
   }>;
 }
 
@@ -40,6 +41,7 @@ export default function GEOPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedPage, setExpandedPage] = useState<string | null>(null);
+  const [expandedIssue, setExpandedIssue] = useState<number | null>(null);
 
   const fetchReport = useCallback(async () => {
     setLoading(true);
@@ -185,22 +187,55 @@ export default function GEOPage() {
                     Top issues
                   </h2>
                   <div className="space-y-3">
-                    {report.topIssues.map((issue, i) => (
-                      <div key={i} className="flex items-start gap-4 p-4 rounded-lg" style={{ background: "var(--bg)" }}>
-                        <SeverityBadge severity={issue.severity} />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold mb-1">{issue.issue}</p>
-                          <p className="text-xs mb-1.5" style={{ color: "var(--text-secondary)" }}>
-                            {issue.recommendation}
-                          </p>
-                          {issue.affectedCount > 1 && (
-                            <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-                              Affects {issue.affectedCount} page{issue.affectedCount !== 1 ? "s" : ""}
-                            </p>
+                    {report.topIssues.map((issue, i) => {
+                      const isOpen = expandedIssue === i;
+                      return (
+                        <div key={i} className="rounded-lg overflow-hidden" style={{ background: "var(--bg)" }}>
+                          <button
+                            onClick={() => setExpandedIssue(isOpen ? null : i)}
+                            className="w-full flex items-start gap-4 p-4 text-left cursor-pointer"
+                          >
+                            <SeverityBadge severity={issue.severity} />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-semibold mb-1">{issue.issue}</p>
+                              <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                                {issue.recommendation}
+                              </p>
+                              <p className="text-[11px] mt-1" style={{ color: "var(--text-muted)" }}>
+                                Affects {issue.affectedCount} page{issue.affectedCount !== 1 ? "s" : ""}
+                              </p>
+                            </div>
+                            <svg
+                              width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                              style={{ color: "var(--text-muted)", transform: isOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s", marginTop: 4, flexShrink: 0 }}
+                            >
+                              <polyline points="6 9 12 15 18 9" />
+                            </svg>
+                          </button>
+                          {isOpen && issue.affectedPages.length > 0 && (
+                            <div className="px-4 pb-4 pt-1" style={{ borderTop: "1px solid var(--border-light)" }}>
+                              <p className="text-[11px] font-bold uppercase tracking-wider mb-2" style={{ color: "var(--text-muted)" }}>
+                                Affected pages
+                              </p>
+                              <div className="space-y-2">
+                                {issue.affectedPages.map((page, j) => (
+                                  <div key={j} className="flex items-start gap-2 p-2.5 rounded-md" style={{ background: "var(--bg-white)", border: "1px solid var(--border-light)" }}>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-xs font-medium truncate">{page.title || page.url}</p>
+                                      <p className="text-[11px] truncate" style={{ color: "var(--text-muted)" }}>{page.url}</p>
+                                    </div>
+                                    <div className="shrink-0 text-right">
+                                      <p className="text-[11px]" style={{ color: "var(--accent)" }}>{page.suggestion}</p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
                           )}
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}

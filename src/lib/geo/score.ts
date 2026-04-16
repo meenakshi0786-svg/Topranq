@@ -37,6 +37,7 @@ export interface DomainGEOReport {
     affectedCount: number;
     recommendation: string;
     severity: "high" | "medium" | "low";
+    affectedPages: Array<{ url: string; title: string | null; suggestion: string }>;
   }>;
 }
 
@@ -168,18 +169,26 @@ export function buildGEOReport(
     if (!p.checks.canonicalSet) issueCount.canonical++;
   }
 
+  // Helper: collect pages failing a specific check
+  const pagesFor = (checkKey: keyof PageGEOScore["checks"], suggestion: string) =>
+    pageScores
+      .filter((p) => !p.checks[checkKey])
+      .map((p) => ({ url: p.url, title: p.title, suggestion }));
+
   const topIssues: DomainGEOReport["topIssues"] = [];
   if (issueCount.faq > 0) topIssues.push({
     issue: "Missing FAQPage schema",
     affectedCount: issueCount.faq,
     recommendation: "Add FAQPage JSON-LD to pages with Q&A content — biggest lift for AI citation",
     severity: "high",
+    affectedPages: pagesFor("hasFaqSchema", "Add FAQPage JSON-LD with Q&A pairs from existing content"),
   });
   if (issueCount.schema > 0) topIssues.push({
     issue: "No structured data",
     affectedCount: issueCount.schema,
     recommendation: "Add JSON-LD schema so AI engines can understand page context",
     severity: "high",
+    affectedPages: pagesFor("hasSchema", "Add Article, Product, or Organization JSON-LD schema"),
   });
   if (robotsAnalysis.wildcardBlock || robotsAnalysis.blocked.length === AI_CRAWLERS.length) {
     topIssues.push({
@@ -187,6 +196,7 @@ export function buildGEOReport(
       affectedCount: 1,
       recommendation: "Allow GPTBot, ClaudeBot, PerplexityBot, Google-Extended in robots.txt",
       severity: "high",
+      affectedPages: [{ url: "/robots.txt", title: "robots.txt", suggestion: "Remove Disallow rules for AI user agents" }],
     });
   } else if (robotsAnalysis.blocked.length > 0) {
     topIssues.push({
@@ -194,6 +204,7 @@ export function buildGEOReport(
       affectedCount: robotsAnalysis.blocked.length,
       recommendation: `Unblock: ${robotsAnalysis.blocked.join(", ")}`,
       severity: "medium",
+      affectedPages: robotsAnalysis.blocked.map((bot) => ({ url: "/robots.txt", title: bot, suggestion: `Allow ${bot} in robots.txt` })),
     });
   }
   if (!hasLlmsTxt) {
@@ -202,6 +213,7 @@ export function buildGEOReport(
       affectedCount: 1,
       recommendation: "Add an llms.txt file at your site root — use the generator on this page",
       severity: "medium",
+      affectedPages: [{ url: "/llms.txt", title: "llms.txt", suggestion: "Generate and upload llms.txt to your site root" }],
     });
   }
   if (issueCount.meta > 0) topIssues.push({
@@ -209,12 +221,14 @@ export function buildGEOReport(
     affectedCount: issueCount.meta,
     recommendation: "Write 80–180 char meta descriptions — AI engines use these as citation previews",
     severity: "medium",
+    affectedPages: pagesFor("hasMetaDescription", "Write a unique 80–180 character meta description with target keyword"),
   });
   if (issueCount.content > 0) topIssues.push({
     issue: "Thin content",
     affectedCount: issueCount.content,
     recommendation: "Pages under 300 words are rarely cited — expand or consolidate",
     severity: "low",
+    affectedPages: pagesFor("hasMinContent", "Expand to 300+ words or merge with a related page"),
   });
 
   return {
