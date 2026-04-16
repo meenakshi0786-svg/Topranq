@@ -105,6 +105,15 @@ export function OnboardingPanel({ domainId, domainUrl, justConnectedGsc }: Props
           description="Import a CSV so article heroes use real product photos."
           actionLabel={hasProducts ? "Imported" : "Import"}
           onAction={() => setShowImport(true)}
+          onRemove={hasProducts ? async () => {
+            if (!confirm("Remove imported products? You can re-import anytime.")) return;
+            await fetch(`/api/products/import`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ domainId, products: [] }),
+            });
+            refresh();
+          } : undefined}
         />
       </div>
 
@@ -120,7 +129,7 @@ export function OnboardingPanel({ domainId, domainUrl, justConnectedGsc }: Props
 }
 
 function StepCard({
-  number, status, title, description, actionLabel, onAction, progressMessage,
+  number, status, title, description, actionLabel, onAction, progressMessage, onRemove,
 }: {
   number: number;
   status: StepStatus;
@@ -129,6 +138,7 @@ function StepCard({
   actionLabel: string;
   onAction: () => void;
   progressMessage?: string | null;
+  onRemove?: () => void;
 }) {
   const locked = status === "locked";
   const done = status === "done";
@@ -157,6 +167,19 @@ function StepCard({
           {progressMessage || description}
         </p>
       </div>
+      <div className="flex items-center gap-1.5 shrink-0">
+      {done && onRemove && (
+        <button
+          onClick={onRemove}
+          className="w-7 h-7 rounded-md flex items-center justify-center cursor-pointer"
+          style={{ background: "var(--critical-bg)", color: "var(--critical)" }}
+          title="Remove and re-import"
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      )}
       <button
         disabled={locked || done || doing}
         onClick={onAction}
@@ -169,6 +192,7 @@ function StepCard({
       >
         {doing ? "Fetching..." : actionLabel}
       </button>
+      </div>
     </div>
   );
 }
