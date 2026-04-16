@@ -259,7 +259,7 @@ export async function runBlogWriter(
   //   3) composite their photos into a single hero image.
   // If that fails, fall back to the Pollinations AI hero.
   const featuredImagePrompt = buildImagePrompt(metaTitle || title, config.topic, tone);
-  let featuredImageUrl = generateFeaturedImageUrl(featuredImagePrompt);
+  let featuredImageUrl = await generateFeaturedImageUrl(featuredImagePrompt);
 
   try {
     const domain = db.select().from(schema.domains).where(eq(schema.domains.id, domainId)).get();
