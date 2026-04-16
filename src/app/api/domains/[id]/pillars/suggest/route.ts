@@ -39,7 +39,20 @@ export async function GET(
 
   // Extract site-side topical signals from crawled pages — works even when
   // GSC is not accessible, since the audit always crawls the domain.
-  const siteKeywords = extractSiteKeywords(id);
+  let siteKeywords = extractSiteKeywords(id);
+
+  // Fallback: if keyword extraction was too aggressive, use raw page titles
+  if (siteKeywords.length === 0) {
+    const rawPages = db
+      .select({ title: schema.pages.title, h1: schema.pages.h1 })
+      .from(schema.pages)
+      .where(eq(schema.pages.domainId, id))
+      .all();
+    siteKeywords = rawPages
+      .map((p) => p.title || p.h1 || "")
+      .filter((t) => t.length > 3)
+      .slice(0, 20);
+  }
 
   if (rows.length === 0 && products.length === 0 && siteKeywords.length === 0) {
     // Distinguish "no connection" from "connected but no accessible property"
