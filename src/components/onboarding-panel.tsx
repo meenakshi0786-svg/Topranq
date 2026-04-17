@@ -120,6 +120,7 @@ export function OnboardingPanel({ domainId, domainUrl, justConnectedGsc }: Props
       {showImport && (
         <ProductImportModal
           domainId={domainId}
+          domainUrl={domainUrl}
           onClose={() => setShowImport(false)}
           onImported={() => { setShowImport(false); refresh(); }}
         />
@@ -252,9 +253,10 @@ function pickSiteUrl(sites: string[], domainUrl: string): string | null {
 }
 
 function ProductImportModal({
-  domainId, onClose, onImported,
+  domainId, domainUrl, onClose, onImported,
 }: {
   domainId: string;
+  domainUrl: string;
   onClose: () => void;
   onImported: () => void;
 }) {
@@ -278,12 +280,16 @@ function ProductImportModal({
         img: header.findIndex((h) => h.includes("image") || h.includes("cdn") || h.includes("photo") || h.includes("picture")),
       };
       if (ix.name === -1) { setErr("CSV must have a 'name' or 'title' column. Found headers: " + header.slice(0, 8).join(", ")); return; }
+      // Detect if the URL column is a Shopify "Handle" (not a full URL)
+      const isHandleColumn = header[ix.url] === "handle";
+      const domainBase = (() => { try { return new URL(domainUrl).origin; } catch { return ""; } })();
+
       const products = rows.slice(1).map((cols) => {
         const name = cols[ix.name]?.trim() || "";
         let url = ix.url >= 0 ? cols[ix.url]?.trim() || "" : "";
-        // If "handle" column, convert to full URL
         if (url && !url.startsWith("http")) {
-          url = url.startsWith("/") ? url : `/products/${url}`;
+          const path = url.startsWith("/") ? url : `/products/${url}`;
+          url = domainBase ? `${domainBase}${path}` : path;
         }
         return {
           name,
