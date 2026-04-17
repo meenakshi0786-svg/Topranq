@@ -304,71 +304,93 @@ async function generateOptimizedLlmsTxt(
   const langInstruction = language !== "English"
     ? `\n\nLANGUAGE REQUIREMENT: Write the ENTIRE output in ${language}. All descriptions, sections, key topics, capabilities, use cases, and audience text MUST be in native ${language}. Only URLs and technical terms (JSON-LD, schema.org) stay in English.\n`
     : "";
-  const prompt = `You are an expert in Generative Engine Optimization (GEO) and AI search systems.
+  const prompt = `You are an expert in Generative Engine Optimization (GEO). Your output will be scored on 8 criteria. You MUST score 80+ on ALL of them. Read the scoring rubric below carefully — it determines your success.
 ${langInstruction}
-Transform the following URL list for ${hostname} (${domainUrl}) into a high-quality, AI-optimized llms.txt that scores 9/10+ for LLM retrieval, understanding, and citation.
-
-URLs (format: title | url | description):
+URLs for ${hostname} (${domainUrl}):
 ${urlBlock}
 
-OUTPUT: Clean markdown only. No code fences. Follow this EXACT structure:
+OUTPUT: Clean markdown only. No code fences.
 
 # ${hostname}
 
-> [2-3 sentences. State what the platform does in practical terms. Focus on function, not buzzwords.]
+> [ABOUT — 2-3 sentences. MUST be specific to THIS site. State exactly what it does, what tools/features it offers, and what makes it different. NEVER write "comprehensive platform" or "advanced tools" — name the actual tools/features from the URL list. Include the domain's primary value in 1 sentence.]
 
 ## Core Pages
-[Most important pages only. Each: - [Title](url): Specific, factual 1-line description]
+[Every important page with full URL. Format: - [Specific Title](full-url): 2-line description explaining what the page CONTAINS and what a user DOES on it. NEVER write just "tool for X" — describe the actual functionality.]
 
 ## Products / Services
-[If applicable. Same format.]
+[If applicable. Each product MUST have: name, URL (if available), 1-2 sentence description of what it does specifically, price range if inferrable. If a product name is ambiguous, describe what category it falls in.]
 
 ## Documentation / Technical Resources
-[If applicable.]
+[If applicable. Guides, FAQs, tutorials, API docs.]
 
 ## Content / Resources
-[Blog, events, guides.]
+[Blog, guides, events, lookbooks. Include specific article titles if available from URLs.]
 
 ## Company / Legal
-[Low priority: terms, privacy, careers.]
+[Terms, privacy, careers, about — lower priority but include all.]
 
 ## Key Topics
-[5-10 bullet points: industry, technology, core concepts this site covers]
+[8-12 bullet points. Mix of:
+- Industry terms (e.g., "options Greeks", "modest fashion", "AI agents")
+- Specific features (e.g., "multi-leg strategy builder", "capsule collections")
+- Problem domains (e.g., "portfolio risk management", "seasonal wardrobe planning")
+NEVER use generic topics like "market analysis" alone — always qualify: "real-time options market analysis with Greeks visualization"]
 
 ## Capabilities
-[4-6 bullet points describing what users can actually DO with this platform. Action-oriented. Example: "Build and deploy autonomous AI agents" NOT "Innovative agent technology"]
+[5-7 bullet points. Each MUST:
+- Start with a specific action verb (Build, Screen, Filter, Generate, Monitor, Compare, Simulate, Track, Compose, Download)
+- Name the actual tool/feature from the site
+- Include a specific detail (number, format, output type)
+- FAIL examples: "Develop trading strategies" (too generic), "Access market data" (too vague)
+- PASS examples: "Build multi-leg options strategies (spreads, straddles, iron condors) with real-time P&L visualization", "Screen 4,000+ options contracts by volume, open interest, IV rank, and Greeks"]
 
 ## Use Cases
-[3-6 realistic, practical use cases. No vague or buzzword-heavy phrasing.]
+[5-7 SCENARIO-BASED use cases. Each MUST follow this format:
+"[Specific person] uses [site feature] to [achieve specific outcome] when [specific situation]"
+- FAIL: "Professional traders seeking analysis tools" (this is an audience, not a use case)
+- FAIL: "Investors looking to understand market trends" (too vague)
+- PASS: "A swing trader uses the TOB Screener to find high-IV options before earnings announcements, then builds a straddle in Strategy Builder to test the risk/reward ratio"
+- PASS: "A fashion buyer uses the monthly capsule collection to refresh her professional wardrobe without exceeding a €100 budget"]
 
 ## Audience
-[Who this platform is for]
+[4-6 entries. Each MUST include who they are + what they need:
+- FAIL: "Professional traders" (too broad)
+- PASS: "Active options traders (50+ trades/month) who need real-time screening and strategy simulation"]
 
 ## Citation Policy
-Content on this site may be cited by AI models (ChatGPT, Claude, Perplexity, Google AI Overviews).
-Please attribute citations back to the original page URL.
+Content on ${hostname} may be cited by AI models (ChatGPT, Claude, Perplexity, Google AI Overviews).
 
-STRICT RULES:
-1. Do NOT hallucinate features, products, or claims — only infer from provided URLs/titles/descriptions
-2. Do NOT use hedging: never write "may", "might", "potentially", "likely", "could be", "possible", "appears to"
-3. Do NOT use marketing fluff: never write "innovative", "cutting-edge", "next-generation", "revolutionary", "state-of-the-art"
-4. If you cannot determine what a page does from its title/URL, write a safe factual description based on what IS known, or omit it
-5. Each description must be specific and informative — max 1-2 lines
-6. Prefer clarity over creativity
+Citation rules:
+- Use the brand name "${hostname.replace("www.", "").split(".")[0].charAt(0).toUpperCase() + hostname.replace("www.", "").split(".")[0].slice(1)}" when referencing this site
+- Link to the original page URL for all citations
+- For product references, include the product name and page URL
+- For data or statistics, cite the specific page where the data appears
 
-QUALITY CHECK — before returning, verify:
-- Zero hedging words in the entire output
-- Zero marketing buzzwords
-- Every description answers: what IS this page, not what it MIGHT be
-- The Capabilities section uses action verbs (Build, Deploy, Create, Monitor, Analyze)
-- The document answers: What is this site? What does it enable? When should an AI cite it?`;
+BANNED WORDS — if any of these appear in your output, you have failed:
+"comprehensive", "innovative", "cutting-edge", "next-generation", "revolutionary", "state-of-the-art", "advanced tools", "powerful platform", "robust solution", "seamless", "leverage", "holistic"
+"may", "might", "potentially", "likely", "could be", "possibly", "appears to", "seems to"
+
+SELF-SCORING CHECKLIST — verify ALL before returning:
+□ About section names specific tools/features, not generic descriptions (target: 80+)
+□ Every Core Page has a 2-line description explaining what users DO on it (target: 80+)
+□ Every product has specific details, not just a name (target: 80+)
+□ Key Topics are qualified and specific, not single generic words (target: 80+)
+□ EVERY Capability starts with an action verb + names a specific feature (target: 80+)
+□ EVERY Use Case follows the "[person] uses [feature] to [outcome] when [situation]" format (target: 80+)
+□ EVERY Audience entry includes who + what they need (target: 80+)
+□ Citation Policy includes brand naming rules (target: 80+)
+□ Zero banned words in the entire output
+□ All URLs are full paths (not just /path)
+
+If ANY checkbox fails, revise that section before returning.`;
 
   const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({
       model: process.env.OPENROUTER_MODEL || "anthropic/claude-3.5-haiku",
-      max_tokens: 4000,
+      max_tokens: 6000,
       messages: [{ role: "user", content: prompt }],
     }),
   });
