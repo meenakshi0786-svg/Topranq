@@ -12,19 +12,34 @@ interface PageInput {
 }
 
 async function askClaude(apiKey: string, prompt: string, maxTokens = 4000): Promise<string | null> {
-  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: process.env.OPENROUTER_MODEL || "anthropic/claude-3.5-haiku",
-      max_tokens: maxTokens,
-      messages: [{ role: "user", content: prompt }],
-    }),
-  });
-  if (!res.ok) return null;
-  const data = await res.json();
-  const text = data.choices?.[0]?.message?.content;
-  return text && text.length > 50 ? text : null;
+  // Fallback chain: Gemini Flash → Haiku → Sonnet (same as blog writer)
+  const models = [
+    "google/gemini-2.5-flash",
+    process.env.OPENROUTER_MODEL || "anthropic/claude-3.5-haiku",
+    process.env.OPENROUTER_MODEL_SONNET,
+  ].filter(Boolean) as string[];
+
+  for (const model of models) {
+    try {
+      const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ model, max_tokens: maxTokens, messages: [{ role: "user", content: prompt }] }),
+      });
+      if (!res.ok) {
+        console.warn(`[geo-assets] ${model} failed (${res.status}), trying next...`);
+        continue;
+      }
+      const data = await res.json();
+      const text = data.choices?.[0]?.message?.content;
+      if (text && text.length > 100) return text;
+      console.warn(`[geo-assets] ${model} returned empty/short response, trying next...`);
+    } catch (err) {
+      console.warn(`[geo-assets] ${model} error:`, (err as Error).message);
+    }
+  }
+  console.error("[geo-assets] All models failed for GEO asset generation");
+  return null;
 }
 
 function buildUrlBlock(pages: PageInput[]): string {
