@@ -1,12 +1,9 @@
 /**
  * AI-powered internal linking between Pillar and Cluster articles.
  *
- * Given a pillar article + its cluster articles, uses Claude to:
- * 1. Pillar → Cluster: find natural phrases in the pillar to link to each cluster (1-2 per cluster)
- * 2. Cluster → Pillar: add 1 contextual backlink in each cluster's intro/body
- * 3. Cluster ↔ Cluster: add 1-2 cross-links between related clusters
- *
- * Only modifies sentences where links are inserted — preserves content integrity.
+ * Uses a SAFE find/replace approach: Claude returns link insertion instructions
+ * (original phrase → linked phrase), which are applied to the ORIGINAL full article.
+ * This prevents the truncation bug where Claude would return shortened articles.
  */
 
 import { db, schema } from "./db";
@@ -23,6 +20,12 @@ export interface InterlinkResult {
   updatedArticles: number;
   linksInserted: number;
   details: Array<{ articleId: string; title: string; linksAdded: number }>;
+}
+
+interface LinkInstruction {
+  articleId: string;
+  find: string;
+  replace: string;
 }
 
 export async function interlinkPillarCluster(pillarId: string): Promise<InterlinkResult> {
@@ -69,63 +72,67 @@ export async function interlinkPillarCluster(pillarId: string): Promise<Interlin
       }
     : null;
 
-  // Build the article map for the prompt
-  const articleMap = buildArticleMap(pillarRef, clusterArticles);
+  // Build a summary of articles (titles + slugs + first 500 chars) — NOT full content
+  const articleSummary = buildArticleSummary(pillarRef, clusterArticles);
 
-  const prompt = `You are an expert in SEO internal linking. You will interlink a set of related articles (1 pillar + its clusters).
+  const prompt = `You are an expert in SEO internal linking. You will create link insertion instructions for a set of related articles.
 
-${articleMap}
+${articleSummary}
 
-TASK: Return updated markdown for each article with internal links inserted.
+TASK: Return a list of FIND/REPLACE instructions. For each link to insert, provide:
+- The article ID where the link goes
+- The exact existing phrase to find in that article (verbatim, case-sensitive)
+- The replacement with a markdown link
 
 LINKING RULES:
 
 1. PILLAR → CLUSTER (MANDATORY — EVERY cluster must be linked):
-   - The pillar article MUST contain at least 1 link to EVERY cluster article. No exceptions.
-   - First, scan for existing phrases that match or relate to each cluster topic — convert those into [phrase](/slug) links.
-   - If NO suitable phrase exists for a cluster, INSERT a short natural sentence in a relevant section that includes a link. Example: "For a deeper dive, see our guide on [cluster topic](/cluster-slug)." or "This connects closely to [cluster topic](/cluster-slug), which covers..."
-   - Place inserted sentences at the end of the most relevant paragraph — never in the middle of a sentence.
-   - Max 2 links per cluster, but minimum 1 is REQUIRED.
+   - The pillar article MUST have at least 1 link to EVERY cluster. No exceptions.
+   - Find an existing phrase in the pillar that relates to each cluster topic.
+   - If no suitable phrase exists, provide an "append" instruction: a new sentence to add at the end of a relevant paragraph.
+   - The "find" for appends should be the last sentence of the most relevant paragraph (we'll append after it).
 
 2. CLUSTER → PILLAR (MANDATORY):
-   - Every cluster article MUST contain exactly 1 contextual link back to the pillar.
-   - Place it in the introduction or first relevant section.
-   - Use a natural phrase that reflects the pillar topic.
+   - Every cluster MUST have 1 link back to the pillar in its first few paragraphs.
+   - Find an existing phrase that relates to the pillar topic.
 
 3. CLUSTER ↔ CLUSTER (optional):
-   - If two clusters are related, add 1 cross-link. Only where strong topical overlap exists.
-
-4. PRESERVE CONTENT: Only modify specific anchor phrases or append linking sentences. Never rewrite paragraphs.
-
-5. NATURAL ANCHORS: Use keyword-rich phrases. Never "click here" or "read more".
-
-6. NO OVER-LINKING: Max 2 links per paragraph. No duplicate links to the same target.
-
-VERIFICATION — before returning, count the links in the pillar article. If ANY cluster slug is missing from the pillar's links, go back and add it. This is the most important rule.
+   - Only where strong topical overlap exists, add 1 cross-link.
 
 OUTPUT FORMAT — Return STRICT JSON only (no markdown fences, no prose):
 {
-  "articles": [
+  "instructions": [
     {
-      "id": "article-id",
-      "updatedMarkdown": "full updated markdown with links inserted",
-      "linksAdded": 3
+      "articleId": "the-article-id",
+      "find": "exact phrase to find in the article",
+      "replace": "[exact phrase with link](/target-slug)",
+      "type": "replace"
+    },
+    {
+      "articleId": "the-article-id",
+      "find": "last sentence of a paragraph to append after",
+      "replace": "last sentence of a paragraph to append after For a deeper dive, see our guide on [topic](/slug).",
+      "type": "append"
     }
   ]
 }
 
-FINAL CHECK:
-- Every cluster slug appears at least once as a link in the pillar article
-- Every cluster article links back to the pillar
-- Links feel natural when read
-- No duplicate or excessive linking`;
+RULES:
+- "find" must be an EXACT phrase that exists in the article (case-sensitive, verbatim)
+- "replace" is the same phrase but with a markdown [link](/slug) inserted
+- For appends, "replace" includes the original "find" sentence plus the new linking sentence
+- Use natural, keyword-rich anchor text — never "click here"
+- Max 2 link instructions per target article
+- Each cluster slug must appear in at least 1 instruction targeting the pillar article
+
+VERIFICATION: Count your instructions. If any cluster slug is missing from pillar-targeted instructions, add one.`;
 
   const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({
       model: process.env.OPENROUTER_MODEL || "anthropic/claude-3.5-haiku",
-      max_tokens: 8000,
+      max_tokens: 4000,
       messages: [{ role: "user", content: prompt }],
     }),
   });
@@ -137,8 +144,7 @@ FINAL CHECK:
   const jsonMatch = text.match(/\{[\s\S]*\}/);
   if (!jsonMatch) throw new Error("Could not parse interlink response");
 
-  // The AI embeds full markdown inside JSON string values. Literal newlines,
-  // tabs, and other control chars inside strings break JSON.parse. Fix them.
+  // Sanitize control chars in JSON strings
   const sanitized = jsonMatch[0].replace(
     /"(?:[^"\\]|\\.)*"/g,
     (match: string) => match
@@ -148,71 +154,104 @@ FINAL CHECK:
       .replace(/[\x00-\x1f]/g, (c: string) => `\\u${c.charCodeAt(0).toString(16).padStart(4, "0")}`),
   );
 
-  let parsed: { articles?: Array<{ id: string; updatedMarkdown: string; linksAdded: number }> };
+  let parsed: { instructions?: LinkInstruction[] };
   try {
     parsed = JSON.parse(sanitized);
   } catch {
     throw new Error("Could not parse interlink response as JSON");
   }
 
-  if (!parsed.articles || !Array.isArray(parsed.articles)) {
-    throw new Error("Invalid interlink response structure");
+  if (!parsed.instructions || !Array.isArray(parsed.instructions)) {
+    return { updatedArticles: 0, linksInserted: 0, details: [] };
   }
 
+  // Apply instructions to ORIGINAL full articles
+  const articleUpdates = new Map<string, { markdown: string; count: number }>();
+
+  // Load original full articles into the map
+  const allArticles = [pillarRef, ...clusterArticles].filter(Boolean) as ArticleRef[];
+  for (const art of allArticles) {
+    articleUpdates.set(art.id, { markdown: art.bodyMarkdown, count: 0 });
+  }
+
+  for (const inst of parsed.instructions) {
+    const entry = articleUpdates.get(inst.articleId);
+    if (!entry) continue;
+    if (!inst.find || !inst.replace) continue;
+
+    // Apply the find/replace on the FULL original markdown
+    if (entry.markdown.includes(inst.find)) {
+      entry.markdown = entry.markdown.replace(inst.find, inst.replace);
+      entry.count++;
+    }
+  }
+
+  // Save updated articles back to DB
   let totalLinks = 0;
   const details: InterlinkResult["details"] = [];
   let updatedCount = 0;
 
-  for (const update of parsed.articles) {
-    if (!update.id || !update.updatedMarkdown || update.linksAdded === 0) continue;
-
-    const existing = db.select().from(schema.articles).where(eq(schema.articles.id, update.id)).get();
-    if (!existing) continue;
+  for (const [articleId, update] of articleUpdates) {
+    if (update.count === 0) continue;
 
     db.update(schema.articles)
-      .set({ bodyMarkdown: update.updatedMarkdown })
-      .where(eq(schema.articles.id, update.id))
+      .set({ bodyMarkdown: update.markdown })
+      .where(eq(schema.articles.id, articleId))
       .run();
 
     updatedCount++;
-    totalLinks += update.linksAdded;
+    totalLinks += update.count;
+
+    const art = allArticles.find((a) => a.id === articleId);
     details.push({
-      articleId: update.id,
-      title: existing.metaTitle || existing.h1 || "Untitled",
-      linksAdded: update.linksAdded,
+      articleId,
+      title: art?.title || "Untitled",
+      linksAdded: update.count,
     });
   }
 
   return { updatedArticles: updatedCount, linksInserted: totalLinks, details };
 }
 
-function buildArticleMap(pillar: ArticleRef | null, clusters: ArticleRef[]): string {
+/**
+ * Build a summary of articles for the prompt — titles, slugs, and FIRST 500 chars only.
+ * NEVER send full content to Claude (it would return truncated versions).
+ */
+function buildArticleSummary(pillar: ArticleRef | null, clusters: ArticleRef[]): string {
   const sections: string[] = [];
 
   if (pillar) {
-    // Truncate body to fit context — keep first 2000 chars
-    const body = pillar.bodyMarkdown.length > 2000
-      ? pillar.bodyMarkdown.slice(0, 2000) + "\n[...truncated]"
-      : pillar.bodyMarkdown;
+    const headings = extractHeadings(pillar.bodyMarkdown);
+    const preview = pillar.bodyMarkdown.slice(0, 800);
     sections.push(`PILLAR ARTICLE:
 ID: ${pillar.id}
 Title: ${pillar.title}
 Slug: /${pillar.slug || "pillar"}
-Content:
-${body}`);
+Headings: ${headings.join(" | ")}
+Preview (first 800 chars):
+${preview}`);
   }
 
   for (const c of clusters) {
-    const body = c.bodyMarkdown.length > 1200
-      ? c.bodyMarkdown.slice(0, 1200) + "\n[...truncated]"
-      : c.bodyMarkdown;
+    const headings = extractHeadings(c.bodyMarkdown);
+    const preview = c.bodyMarkdown.slice(0, 500);
     sections.push(`CLUSTER ARTICLE:
 ID: ${c.id}
 Title: ${c.title}
 Slug: /${c.slug || "cluster"}
-Content:
-${body}`);
+Headings: ${headings.join(" | ")}
+Preview (first 500 chars):
+${preview}`);
   }
 
   return sections.join("\n\n---\n\n");
+}
+
+function extractHeadings(markdown: string): string[] {
+  const headings: string[] = [];
+  for (const line of markdown.split("\n")) {
+    const match = line.match(/^#{1,3}\s+(.+)/);
+    if (match) headings.push(match[1].trim());
+  }
+  return headings;
 }
