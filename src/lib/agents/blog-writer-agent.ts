@@ -10,26 +10,58 @@ async function askClaude(prompt: string, maxTokens = 4000): Promise<string> {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new Error("OPENROUTER_API_KEY is not set");
 
-  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: process.env.OPENROUTER_MODEL_OPUS || process.env.OPENROUTER_MODEL || "anthropic/claude-3.5-haiku",
-      max_tokens: maxTokens,
-      messages: [{ role: "user", content: prompt }],
-    }),
-  });
+  // Fallback chain: Opus → Sonnet → Haiku. If a model fails (402 credits, etc.), try the next.
+  const models = [
+    process.env.OPENROUTER_MODEL_OPUS,
+    process.env.OPENROUTER_MODEL_SONNET,
+    process.env.OPENROUTER_MODEL || "anthropic/claude-3.5-haiku",
+  ].filter(Boolean) as string[];
 
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`OpenRouter API error: ${res.status} ${err}`);
+  for (const model of models) {
+    try {
+      const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model,
+          max_tokens: maxTokens,
+          messages: [{ role: "user", content: prompt }],
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.text().catch(() => "");
+        console.warn(`[blog-writer] ${model} failed (${res.status}), trying next model...`, err.slice(0, 150));
+        continue;
+      }
+
+      const data = await res.json();
+      const content = data.choices?.[0]?.message?.content || "";
+
+      // Reject truncated responses — if content is too short, the model likely ran out of credits mid-response
+      const wordCount = content.split(/\s+/).length;
+      if (wordCount < 300 && maxTokens > 2000) {
+        console.warn(`[blog-writer] ${model} returned only ${wordCount} words (expected ${maxTokens / 2}+), trying next model...`);
+        continue;
+      }
+
+      // Reject "continued in next reply" patterns — model thinks it's in a conversation
+      if (/\(continued|to be continued|next reply|will continue\)/i.test(content)) {
+        console.warn(`[blog-writer] ${model} returned partial response with continuation marker, trying next model...`);
+        continue;
+      }
+
+      return content;
+    } catch (err) {
+      console.warn(`[blog-writer] ${model} threw error, trying next:`, (err as Error).message);
+      continue;
+    }
   }
 
-  const data = await res.json();
-  return data.choices?.[0]?.message?.content || "";
+  throw new Error("All AI models failed — check OpenRouter credits and API key");
 }
 
 export interface BlogWriterConfig {
