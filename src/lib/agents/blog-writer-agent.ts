@@ -10,8 +10,9 @@ async function askClaude(prompt: string, maxTokens = 4000): Promise<string> {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new Error("OPENROUTER_API_KEY is not set");
 
-  // Fallback chain: Opus → Sonnet → Haiku. If a model fails (402 credits, etc.), try the next.
+  // Fallback chain: Gemini Flash (best value — long output, cheap) → Opus → Sonnet → Haiku
   const models = [
+    "google/gemini-2.5-flash",
     process.env.OPENROUTER_MODEL_OPUS,
     process.env.OPENROUTER_MODEL_SONNET,
     process.env.OPENROUTER_MODEL || "anthropic/claude-3.5-haiku",
@@ -518,8 +519,7 @@ BEGIN NOW — first line must be a ## heading.`;
 
   // 1 word ≈ 1.5 tokens. Article + FAQ JSON + outline JSON need headroom.
   const estimatedTokens = Math.ceil(targetWordCount * 1.5) + 2000;
-  // Cap at 7000 to stay within OpenRouter free-tier per-request limits
-  const response = await askClaude(prompt, Math.min(7000, Math.max(4000, estimatedTokens)));
+  const response = await askClaude(prompt, Math.max(4000, estimatedTokens));
 
   // Parse the response
   let bodyMarkdown = response;
