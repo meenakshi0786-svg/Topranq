@@ -265,7 +265,7 @@ export async function runBlogWriter(
   );
 
   // Post-process: hyperlink any product names mentioned in the article
-  const linkedMarkdown = hyperlinkProducts(bodyMarkdown, domainId);
+  const linkedMarkdown = await hyperlinkProducts(bodyMarkdown, domainId);
 
   const suggestedInternalLinks = findInternalLinks(existingPages, keywords, topic);
   const imageSuggestions = generateImageSuggestions(outline, topic, primaryKeyword);
@@ -795,7 +795,14 @@ function cap(s: string): string {
  * already inside an existing markdown link. Each product is linked only once
  * (first occurrence) to avoid over-linking.
  */
-function hyperlinkProducts(markdown: string, domainId: string): string {
+/**
+ * Post-process: scan the article for product name mentions, convert them
+ * to hyperlinks [Product Name](url), and insert product images below.
+ * - Products WITH CDN images from CSV → use the CDN image
+ * - Products WITHOUT CDN images → generate a lifestyle image with Nano Banana
+ * Each product is linked + imaged only once (first occurrence).
+ */
+async function hyperlinkProducts(markdown: string, domainId: string): Promise<string> {
   const products = db
     .select()
     .from(schema.storeProducts)
@@ -805,19 +812,15 @@ function hyperlinkProducts(markdown: string, domainId: string): string {
 
   if (products.length === 0) return markdown;
 
-  // Sort by name length descending so longer names match first
-  // (e.g. "Slim Fit Turtleneck Black" before "Turtleneck")
   const sorted = [...products].sort((a, b) => b.name.length - a.name.length);
   const linked = new Set<string>();
   let result = markdown;
+  let generatedImages = 0;
 
   for (const product of sorted) {
     if (linked.has(product.name)) continue;
 
-    // Escape regex special chars in product name
     const escaped = product.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    // Match product name NOT already inside a markdown link [...](...)
-    // Negative lookbehind for [ and negative lookahead for ](
     const regex = new RegExp(
       `(?<!\\[)\\b(${escaped})\\b(?!\\]\\()`,
       "i",
@@ -827,12 +830,43 @@ function hyperlinkProducts(markdown: string, domainId: string): string {
     if (match && match.index !== undefined) {
       const before = result.slice(0, match.index);
       const after = result.slice(match.index + match[0].length);
-      // Don't link inside headings (lines starting with #)
       const lineStart = before.lastIndexOf("\n") + 1;
       const line = before.slice(lineStart);
       if (line.trimStart().startsWith("#")) continue;
 
-      result = `${before}[${match[0]}](${product.url})${after}`;
+      // Build the linked text + image
+      const linkText = `[${match[0]}](${product.url})`;
+      let imageMarkdown = "";
+
+      if (product.imageUrl) {
+        // Use CDN image from CSV
+        imageMarkdown = `\n\n![${product.name}](${product.imageUrl})`;
+      } else if (generatedImages < 3) {
+        // Generate a lifestyle image (limit to 3 per article for cost/speed)
+        try {
+          const imageUrl = await generateFeaturedImageUrl(
+            `${product.name}, lifestyle product photography, person using or wearing this product, editorial style, clean background`
+          );
+          if (imageUrl) {
+            imageMarkdown = `\n\n![${product.name}](${imageUrl})`;
+            generatedImages++;
+          }
+        } catch {
+          // Skip image generation failure silently
+        }
+      }
+
+      // Find the end of the current paragraph to insert image after it
+      const afterMatch = result.slice(match.index + match[0].length);
+      const paragraphEnd = afterMatch.indexOf("\n\n");
+      if (paragraphEnd !== -1 && imageMarkdown) {
+        const beforeParagraphEnd = result.slice(0, match.index + match[0].length + paragraphEnd);
+        const afterParagraphEnd = result.slice(match.index + match[0].length + paragraphEnd);
+        result = `${before}${linkText}${afterMatch.slice(0, paragraphEnd)}${imageMarkdown}${afterParagraphEnd}`;
+      } else {
+        result = `${before}${linkText}${imageMarkdown}${after}`;
+      }
+
       linked.add(product.name);
     }
   }
