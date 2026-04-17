@@ -10,10 +10,10 @@ async function askClaude(prompt: string, maxTokens = 4000): Promise<string> {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new Error("OPENROUTER_API_KEY is not set");
 
-  // Article generation: Opus first (best quality) → Gemini Flash → Sonnet → Haiku
+  // Article generation: Gemini Flash first → Opus → Sonnet → Haiku
   const models = [
-    process.env.OPENROUTER_MODEL_OPUS,
     "google/gemini-2.5-flash",
+    process.env.OPENROUTER_MODEL_OPUS,
     process.env.OPENROUTER_MODEL_SONNET,
     process.env.OPENROUTER_MODEL || "anthropic/claude-3.5-haiku",
   ].filter(Boolean) as string[];
