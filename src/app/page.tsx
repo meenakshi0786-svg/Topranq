@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Logo } from "@/components/logo";
 
@@ -61,7 +61,7 @@ export default function LandingPage() {
     <div className="min-h-screen flex flex-col" style={{ background: "var(--bg)" }}>
       {/* Nav */}
       <nav className="px-6 py-5 flex items-center justify-between max-w-[1200px] mx-auto w-full">
-        <Logo size={28} />
+        <Logo size={42} />
         <div className="flex items-center gap-2">
           <a href="#features" className="text-sm font-medium px-4 py-2 rounded-lg hidden md:inline-block" style={{ color: "var(--text-secondary)" }}>
             Features
@@ -87,21 +87,37 @@ export default function LandingPage() {
 
       {/* Hero — two-column with mockup */}
       <section className="relative overflow-hidden">
-        {/* Background gradient blobs */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] rounded-full opacity-30 pointer-events-none" style={{ background: "radial-gradient(ellipse, #4F6EF7, transparent 70%)", filter: "blur(80px)" }} />
+        {/* Animated background gradient orbs */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] rounded-full pointer-events-none float-orb glow-pulse" style={{ background: "radial-gradient(ellipse, #4F6EF7, transparent 70%)", filter: "blur(80px)" }} />
+        <div className="absolute top-20 left-1/4 w-[400px] h-[300px] rounded-full pointer-events-none float-orb-2" style={{ background: "radial-gradient(ellipse, #7C5CFC, transparent 70%)", filter: "blur(100px)", opacity: 0.15 }} />
+        <div className="absolute top-40 right-1/4 w-[300px] h-[250px] rounded-full pointer-events-none float-orb" style={{ background: "radial-gradient(ellipse, #22c55e, transparent 70%)", filter: "blur(90px)", opacity: 0.08 }} />
 
-        <div className="max-w-[1200px] mx-auto px-6 pt-10 pb-20 relative">
+        <div className="max-w-[1200px] mx-auto px-6 pt-6 pb-20 relative">
+          {/* Floating AI feature cards — left side, aligned with dashboard mockup */}
+          <div className="absolute" style={{ left: -10, top: 340, width: 210, display: "var(--float-cards-display, none)" }}>
+            <FloatingCard delay={0} y={0} label="AI Readiness" value="85/100" icon="M9 12l2 2 4-4M21 12a9 9 0 11-18 0 9 9 0 0118 0z" color="#22c55e" />
+            <FloatingCard delay={1.5} y={130} label="Keywords Found" value="3,247" icon="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" color="#4F6EF7" />
+            <FloatingCard delay={3} y={260} label="Articles Generated" value="24" icon="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5" color="#7C5CFC" />
+          </div>
+
+          {/* Floating AI feature cards — right side, aligned with dashboard mockup */}
+          <div className="absolute" style={{ right: -10, top: 340, width: 210, display: "var(--float-cards-display, none)" }}>
+            <FloatingCard delay={0.8} y={0} label="llms.txt Score" value="92/100" icon="M9 17v-2a4 4 0 014-4h4" color="#7C5CFC" />
+            <FloatingCard delay={2.3} y={130} label="Citations" value="148" icon="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" color="#eab308" />
+            <FloatingCard delay={3.8} y={260} label="Pillar Strategies" value="3" icon="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0H5" color="#22c55e" />
+          </div>
+
           {/* Centered hero copy */}
           <div className="text-center fade-in max-w-3xl mx-auto">
             <div
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium mb-6"
-              style={{ background: "var(--accent-light)", color: "var(--accent)" }}
+              className="inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-semibold mb-8"
+              style={{ background: "linear-gradient(135deg, #4F6EF715, #7C5CFC15)", color: "var(--accent)", border: "1px solid #4F6EF730" }}
             >
-              <span className="relative flex w-2 h-2">
-                <span className="absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping" style={{ background: "var(--accent)" }} />
-                <span className="relative inline-flex rounded-full h-2 w-2" style={{ background: "var(--accent)" }} />
+              <span className="relative flex w-2.5 h-2.5">
+                <span className="absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping" style={{ background: "#22c55e" }} />
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5" style={{ background: "#22c55e" }} />
               </span>
-              Now with AI blog writer + Shopify publishing
+              Powered by Claude Opus + Gemini — GEO-optimized content
             </div>
 
             <h1
@@ -109,7 +125,7 @@ export default function LandingPage() {
               style={{ color: "var(--text-primary)" }}
             >
               Audit, fix, and publish<br />
-              <span style={{ background: "linear-gradient(135deg, #4F6EF7, #7C5CFC)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>SEO content</span> — on autopilot
+              <RotatingText words={["SEO content", "AI articles", "pillar strategies", "GEO assets", "citation snippets"]} /> — on autopilot
             </h1>
             <p className="text-base md:text-lg mb-8 max-w-xl mx-auto leading-relaxed" style={{ color: "var(--text-secondary)" }}>
               Enter your URL, sign in with Google, and we&rsquo;ll crawl your site, find content gaps, and draft blog articles ready to publish to Shopify.
@@ -191,18 +207,25 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Trust bar */}
-      <section style={{ background: "var(--bg-white)", borderTop: "1px solid var(--border-light)", borderBottom: "1px solid var(--border-light)" }}>
-        <div className="max-w-[1200px] mx-auto px-6 py-10">
-          <p className="text-center text-xs font-semibold uppercase tracking-widest mb-6" style={{ color: "var(--text-muted)" }}>
-            Publishes directly to
+      {/* Trust bar — AI engines + platforms marquee */}
+      <section style={{ background: "var(--bg-white)", borderTop: "1px solid var(--border-light)", borderBottom: "1px solid var(--border-light)", overflow: "hidden" }}>
+        <div className="py-8">
+          <p className="text-center text-xs font-semibold uppercase tracking-widest mb-5" style={{ color: "var(--text-muted)" }}>
+            Optimized for AI engines &amp; publishes to
           </p>
-          <div className="flex items-center justify-center flex-wrap opacity-70" style={{ gap: "8px 16px" }}>
-            <PlatformLogo name="Shopify" />
-            <PlatformLogo name="WordPress" />
-            <PlatformLogo name="Webflow" />
-            <PlatformLogo name="Ghost" />
-            <PlatformLogo name="Custom" />
+          <div style={{ overflow: "hidden", width: "100%" }}>
+            <div style={{ display: "flex", width: "max-content", animation: "marquee 20s linear infinite" }}>
+              {[0, 1, 2].map((set) => (
+                <div key={set} style={{ display: "flex", alignItems: "center", gap: 12, paddingRight: 12 }}>
+                  {["ChatGPT", "Claude", "Perplexity", "Google AI Overviews", "Shopify", "WordPress", "Webflow", "GPTBot", "ClaudeBot", "PerplexityBot"].map((name) => (
+                    <span key={`${set}-${name}`} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 20px", borderRadius: 999, fontSize: 13, fontWeight: 500, background: "var(--bg)", color: "var(--text-secondary)", border: "1px solid var(--border-light)", whiteSpace: "nowrap" }}>
+                      <span style={{ width: 7, height: 7, borderRadius: "50%", background: ["ChatGPT", "Claude", "Perplexity", "Google AI Overviews", "GPTBot", "ClaudeBot", "PerplexityBot"].includes(name) ? "#22c55e" : "#4F6EF7" }} />
+                      {name}
+                    </span>
+                  ))}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -442,10 +465,10 @@ export default function LandingPage() {
       <section style={{ background: "linear-gradient(135deg, #4F6EF7, #7C5CFC)" }}>
         <div className="max-w-[1200px] mx-auto px-6 py-14">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <Stat value="47" label="SEO checks per page" />
-            <Stat value="60s" label="Average audit time" />
-            <Stat value="8" label="Ranking categories" />
-            <Stat value="1-click" label="Publish to Shopify" />
+            <AnimatedStat target={47} suffix="" label="SEO checks per page" />
+            <AnimatedStat target={60} suffix="s" label="Average audit time" />
+            <AnimatedStat target={8} suffix="" label="Ranking categories" />
+            <AnimatedStat target={4} suffix=" assets" label="GEO toolkit files" />
           </div>
         </div>
       </section>
@@ -703,6 +726,120 @@ function Stat({ value, label }: { value: string; label: string }) {
   return (
     <div className="text-white">
       <p className="text-3xl md:text-4xl font-bold tracking-tight mb-1">{value}</p>
+      <p className="text-xs md:text-sm opacity-80">{label}</p>
+    </div>
+  );
+}
+
+function RotatingText({ words }: { words: string[] }) {
+  const [index, setIndex] = useState(0);
+  const [fade, setFade] = useState(true);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setFade(false);
+      setTimeout(() => { setIndex((i) => (i + 1) % words.length); setFade(true); }, 300);
+    }, 2500);
+    return () => clearInterval(interval);
+  }, [words.length]);
+  return (
+    <span
+      style={{
+        background: "linear-gradient(135deg, #4F6EF7, #7C5CFC)",
+        WebkitBackgroundClip: "text",
+        WebkitTextFillColor: "transparent",
+        backgroundClip: "text",
+        transition: "opacity 0.3s, transform 0.3s",
+        opacity: fade ? 1 : 0,
+        transform: fade ? "translateY(0)" : "translateY(8px)",
+        display: "inline-block",
+      }}
+    >
+      {words[index]}
+    </span>
+  );
+}
+
+function FloatingCard({ delay, y, label, value, icon, color }: { delay: number; y: number; label: string; value: string; icon: string; color: string }) {
+  return (
+    <div
+      className="fade-in"
+      style={{
+        position: "absolute",
+        top: y,
+        width: "100%",
+        animationDelay: `${delay}s`,
+        animation: `float-orb 8s ease-in-out infinite ${delay}s`,
+      }}
+    >
+      <div
+        style={{
+          background: "var(--bg-white)",
+          border: "1px solid var(--border-light)",
+          borderRadius: 14,
+          padding: "14px 16px",
+          boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+        }}
+      >
+        <div
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: 10,
+            background: `${color}15`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d={icon} />
+          </svg>
+        </div>
+        <div>
+          <p style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 500, lineHeight: 1.2 }}>{label}</p>
+          <p style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.3 }}>{value}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AnimatedStat({ target, suffix, label }: { target: number; suffix: string; label: string }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+  const started = useRef(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !started.current) {
+          started.current = true;
+          const duration = 1500;
+          const start = Date.now();
+          const step = () => {
+            const progress = Math.min((Date.now() - start) / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            setCount(Math.round(target * eased));
+            if (progress < 1) requestAnimationFrame(step);
+          };
+          requestAnimationFrame(step);
+        }
+      },
+      { threshold: 0.5 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [target]);
+
+  return (
+    <div ref={ref} className="text-white">
+      <p className="text-3xl md:text-4xl font-bold tracking-tight mb-1">{count}{suffix}</p>
       <p className="text-xs md:text-sm opacity-80">{label}</p>
     </div>
   );
