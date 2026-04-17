@@ -214,15 +214,32 @@ ANALYSIS RULES:
 - competitiveAdvantage must reference actual competitor gaps from the SERP analysis
 - If products are provided, at least 2 of 3 pillars should be commercially aligned`;
 
-  const opusRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ model: modelOpus, max_tokens: 3000, messages: [{ role: "user", content: opusPrompt }] }),
-  });
-
-  if (!opusRes.ok) throw new Error(`Opus error: ${opusRes.status}`);
-  const opusData = await opusRes.json();
-  const opusText = opusData.choices?.[0]?.message?.content || "";
+  // Try Opus → Sonnet → Haiku fallback for Stage 3
+  const stage3Models = [modelOpus, modelSonnet, process.env.OPENROUTER_MODEL || "anthropic/claude-3.5-haiku"];
+  let opusText = "";
+  for (const model of stage3Models) {
+    try {
+      const opusRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ model, max_tokens: 3000, messages: [{ role: "user", content: opusPrompt }] }),
+      });
+      if (!opusRes.ok) {
+        console.warn(`[pillar-pipeline] Stage 3 ${model} failed (${opusRes.status}), trying next...`);
+        continue;
+      }
+      const data = await opusRes.json();
+      opusText = data.choices?.[0]?.message?.content || "";
+      if (opusText.length > 100) {
+        console.log(`[pillar-pipeline] Stage 3 succeeded with ${model}`);
+        break;
+      }
+    } catch (err) {
+      console.warn(`[pillar-pipeline] Stage 3 ${model} error:`, (err as Error).message);
+      continue;
+    }
+  }
+  if (!opusText) throw new Error("All models failed for Stage 3 strategy generation");
   const jsonMatch = opusText.match(/\{[\s\S]*\}/);
   if (!jsonMatch) throw new Error("Could not parse pillar strategies from Opus");
 

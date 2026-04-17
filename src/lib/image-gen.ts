@@ -5,7 +5,7 @@ import fs from "fs";
 import path from "path";
 import crypto from "crypto";
 
-const GEMINI_MODEL = "gemini-2.0-flash-exp";
+const GEMINI_MODEL = "gemini-2.5-flash-preview-04-17";
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 // Save to data/ volume (persists across docker rebuilds), served via /api/images/[filename]
 const OUTPUT_DIR = path.join(process.cwd(), "data", "article-images");
