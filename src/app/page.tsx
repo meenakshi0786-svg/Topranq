@@ -672,12 +672,15 @@ function BigFeatureCard({
 }) {
   return (
     <div
-      className="rounded-2xl overflow-hidden transition-all fade-in"
+      className="rounded-2xl overflow-hidden fade-in"
       style={{
         background: "var(--bg-white)",
         border: "1px solid var(--border-light)",
         boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+        transition: "transform 0.4s ease, box-shadow 0.4s ease",
       }}
+      onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.boxShadow = "0 12px 40px rgba(79,110,247,0.12)"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.04)"; }}
     >
       <div className="relative h-44 overflow-hidden" style={{ background: "linear-gradient(135deg, #4F6EF710, #7C5CFC10)" }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -686,6 +689,9 @@ function BigFeatureCard({
           alt={title}
           className="w-full h-full object-cover"
           loading="lazy"
+          style={{ transition: "transform 0.6s ease" }}
+          onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.08)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
         />
         <span
           className="absolute top-3 left-3 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md"
