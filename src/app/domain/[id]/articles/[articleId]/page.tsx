@@ -355,7 +355,7 @@ export default function ArticleEditorPage() {
             <div>
               {article.bodyHtml ? (
                 <div
-                  className="prose prose-sm max-w-none text-sm leading-relaxed"
+                  className="prose prose-sm max-w-none text-sm leading-relaxed article-body"
                   style={{ color: "var(--text-secondary)" }}
                   dangerouslySetInnerHTML={{ __html: article.bodyHtml }}
                 />

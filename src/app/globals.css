@@ -21,3 +21,7 @@
 
 /* Show floating cards on wide screens only */
 @media (min-width: 1100px) { :root { --float-cards-display: block; } }
+
+/* Article body link styling */
+.article-body a{color:#4F6EF7;text-decoration:underline;text-underline-offset:2px;font-weight:500}
+.article-body a:hover{color:#3b57d9;text-decoration-thickness:2px}
