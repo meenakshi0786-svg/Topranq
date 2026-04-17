@@ -53,36 +53,66 @@ export default function ProductInfuserPage() {
   const [connectorUrl, setConnectorUrl] = useState("");
   const [csvError, setCsvError] = useState<string | null>(null);
 
+  function parseCSV(text: string): string[][] {
+    const rows: string[][] = [];
+    let row: string[] = [];
+    let cell = "";
+    let inQuotes = false;
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      const next = text[i + 1];
+      if (inQuotes) {
+        if (ch === '"' && next === '"') { cell += '"'; i++; }
+        else if (ch === '"') { inQuotes = false; }
+        else { cell += ch; }
+      } else {
+        if (ch === '"') { inQuotes = true; }
+        else if (ch === ",") { row.push(cell); cell = ""; }
+        else if (ch === "\n" || (ch === "\r" && next === "\n")) {
+          row.push(cell); cell = "";
+          if (row.some((c) => c.trim())) rows.push(row);
+          row = [];
+          if (ch === "\r") i++;
+        } else { cell += ch; }
+      }
+    }
+    row.push(cell);
+    if (row.some((c) => c.trim())) rows.push(row);
+    return rows;
+  }
+
   function handleCsvUpload(file: File) {
     setCsvError(null);
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
         const text = e.target?.result as string;
-        const lines = text.split("\n").filter((l) => l.trim());
-        if (lines.length < 2) { setCsvError("CSV must have a header row and at least one product."); return; }
+        const rows = parseCSV(text);
+        if (rows.length < 2) { setCsvError("CSV must have a header row and at least one product."); return; }
 
-        const header = lines[0].toLowerCase().split(",").map((h) => h.trim());
+        const header = rows[0].map((h) => h.toLowerCase().trim());
         const nameIdx = header.findIndex((h) => h === "name" || h === "title" || h === "product" || h.includes("product name") || h.includes("product title"));
-        const urlIdx = header.findIndex((h) => (h.includes("url") || h.includes("link")) && !h.includes("image") && !h.includes("cdn") && !h.includes("photo"));
-        const priceIdx = header.findIndex((h) => h.includes("price") || h.includes("cost"));
-        const descIdx = header.findIndex((h) => h.includes("desc"));
-        const catIdx = header.findIndex((h) => h.includes("categ") || h.includes("type") || h.includes("collection"));
+        const urlIdx = header.findIndex((h) => (h.includes("url") || h.includes("link") || h.includes("handle")) && !h.includes("image") && !h.includes("cdn") && !h.includes("photo"));
+        const priceIdx = header.findIndex((h) => h.includes("price") || h.includes("cost") || h.includes("variant price"));
+        const descIdx = header.findIndex((h) => h.includes("desc") || h.includes("body"));
+        const catIdx = header.findIndex((h) => h.includes("categ") || h.includes("type") || h.includes("collection") || h.includes("product type"));
         const imageIdx = header.findIndex((h) => h.includes("image") || h.includes("cdn") || h.includes("photo") || h.includes("picture"));
 
-        if (nameIdx === -1) { setCsvError("CSV must have a 'name' or 'title' column."); return; }
+        if (nameIdx === -1) { setCsvError("CSV must have a 'name' or 'title' column. Found: " + header.slice(0, 8).join(", ")); return; }
 
-        const parsed = lines.slice(1).map((line) => {
-          const cols = line.split(",").map((c) => c.trim().replace(/^"|"$/g, ""));
+        const parsed = rows.slice(1).map((cols) => {
+          const name = cols[nameIdx]?.trim() || "";
+          let url = urlIdx >= 0 ? cols[urlIdx]?.trim() || "" : "";
+          if (url && !url.startsWith("http")) url = url.startsWith("/") ? url : `/products/${url}`;
           return {
-            name: cols[nameIdx] || "",
-            url: urlIdx >= 0 ? cols[urlIdx] || "" : "",
-            price: priceIdx >= 0 ? cols[priceIdx] || "" : "",
-            description: descIdx >= 0 ? cols[descIdx] || "" : "",
-            category: catIdx >= 0 ? cols[catIdx] || "" : "",
-            imageUrl: imageIdx >= 0 ? cols[imageIdx] || "" : "",
+            name,
+            url,
+            price: priceIdx >= 0 ? cols[priceIdx]?.trim() || "" : "",
+            description: descIdx >= 0 ? cols[descIdx]?.trim().slice(0, 300) || "" : "",
+            category: catIdx >= 0 ? cols[catIdx]?.trim() || "" : "",
+            imageUrl: imageIdx >= 0 ? cols[imageIdx]?.trim() || "" : "",
           };
-        }).filter((p) => p.name);
+        }).filter((p) => p.name && p.name.length > 2);
 
         if (parsed.length === 0) { setCsvError("No valid products found in CSV."); return; }
         setProducts(parsed);

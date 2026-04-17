@@ -197,6 +197,53 @@ function StepCard({
   );
 }
 
+/**
+ * Parse CSV properly — handles commas inside quoted fields, newlines in quotes,
+ * and escaped quotes (""). Standard CSV per RFC 4180.
+ */
+function parseCSV(text: string): string[][] {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let cell = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    const next = text[i + 1];
+
+    if (inQuotes) {
+      if (ch === '"' && next === '"') {
+        cell += '"';
+        i++;
+      } else if (ch === '"') {
+        inQuotes = false;
+      } else {
+        cell += ch;
+      }
+    } else {
+      if (ch === '"') {
+        inQuotes = true;
+      } else if (ch === ",") {
+        row.push(cell);
+        cell = "";
+      } else if (ch === "\n" || (ch === "\r" && next === "\n")) {
+        row.push(cell);
+        cell = "";
+        if (row.some((c) => c.trim())) rows.push(row);
+        row = [];
+        if (ch === "\r") i++;
+      } else {
+        cell += ch;
+      }
+    }
+  }
+  // Last cell/row
+  row.push(cell);
+  if (row.some((c) => c.trim())) rows.push(row);
+
+  return rows;
+}
+
 function pickSiteUrl(sites: string[], domainUrl: string): string | null {
   if (sites.length === 0) return null;
   const host = (() => { try { return new URL(domainUrl).hostname; } catch { return domainUrl; } })();
@@ -219,29 +266,34 @@ function ProductImportModal({
     setUploading(true);
     try {
       const text = await file.text();
-      const lines = text.split("\n").filter((l) => l.trim());
-      if (lines.length < 2) { setErr("CSV must have a header row and at least one product."); return; }
-      const header = lines[0].toLowerCase().split(",").map((h) => h.trim());
+      const rows = parseCSV(text);
+      if (rows.length < 2) { setErr("CSV must have a header row and at least one product."); return; }
+      const header = rows[0].map((h) => h.toLowerCase().trim());
       const ix = {
         name: header.findIndex((h) => h === "name" || h === "title" || h === "product" || h.includes("product name") || h.includes("product title")),
-        url: header.findIndex((h) => (h.includes("url") || h.includes("link")) && !h.includes("image") && !h.includes("cdn") && !h.includes("photo")),
-        price: header.findIndex((h) => h.includes("price") || h.includes("cost")),
-        desc: header.findIndex((h) => h.includes("desc")),
-        cat: header.findIndex((h) => h.includes("categ") || h.includes("type") || h.includes("collection")),
+        url: header.findIndex((h) => (h.includes("url") || h.includes("link") || h.includes("handle")) && !h.includes("image") && !h.includes("cdn") && !h.includes("photo")),
+        price: header.findIndex((h) => h.includes("price") || h.includes("cost") || h.includes("variant price")),
+        desc: header.findIndex((h) => h.includes("desc") || h.includes("body")),
+        cat: header.findIndex((h) => h.includes("categ") || h.includes("type") || h.includes("collection") || h.includes("product type")),
         img: header.findIndex((h) => h.includes("image") || h.includes("cdn") || h.includes("photo") || h.includes("picture")),
       };
-      if (ix.name === -1) { setErr("CSV must have a 'name' or 'title' column."); return; }
-      const products = lines.slice(1).map((line) => {
-        const cols = line.split(",").map((c) => c.trim().replace(/^"|"$/g, ""));
+      if (ix.name === -1) { setErr("CSV must have a 'name' or 'title' column. Found headers: " + header.slice(0, 8).join(", ")); return; }
+      const products = rows.slice(1).map((cols) => {
+        const name = cols[ix.name]?.trim() || "";
+        let url = ix.url >= 0 ? cols[ix.url]?.trim() || "" : "";
+        // If "handle" column, convert to full URL
+        if (url && !url.startsWith("http")) {
+          url = url.startsWith("/") ? url : `/products/${url}`;
+        }
         return {
-          name: cols[ix.name] || "",
-          url: ix.url >= 0 ? cols[ix.url] || "" : "",
-          price: ix.price >= 0 ? cols[ix.price] || "" : "",
-          description: ix.desc >= 0 ? cols[ix.desc] || "" : "",
-          category: ix.cat >= 0 ? cols[ix.cat] || "" : "",
-          imageUrl: ix.img >= 0 ? cols[ix.img] || "" : "",
+          name,
+          url,
+          price: ix.price >= 0 ? cols[ix.price]?.trim() || "" : "",
+          description: ix.desc >= 0 ? cols[ix.desc]?.trim().slice(0, 300) || "" : "",
+          category: ix.cat >= 0 ? cols[ix.cat]?.trim() || "" : "",
+          imageUrl: ix.img >= 0 ? cols[ix.img]?.trim() || "" : "",
         };
-      }).filter((p) => p.name);
+      }).filter((p) => p.name && p.name.length > 2);
       if (products.length === 0) { setErr("No valid products found in CSV."); return; }
       const res = await fetch("/api/products/import", {
         method: "POST",
