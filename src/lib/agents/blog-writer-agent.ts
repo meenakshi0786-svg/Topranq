@@ -17,7 +17,7 @@ async function askClaude(prompt: string, maxTokens = 4000): Promise<string> {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: process.env.OPENROUTER_MODEL || "anthropic/claude-3.5-haiku",
+      model: process.env.OPENROUTER_MODEL_OPUS || process.env.OPENROUTER_MODEL || "anthropic/claude-3.5-haiku",
       max_tokens: maxTokens,
       messages: [{ role: "user", content: prompt }],
     }),
