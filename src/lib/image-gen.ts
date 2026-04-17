@@ -7,7 +7,8 @@ import crypto from "crypto";
 
 const GEMINI_MODEL = "gemini-2.0-flash-exp";
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
-const OUTPUT_DIR = path.join(process.cwd(), "public", "article-images");
+// Save to data/ volume (persists across docker rebuilds), served via /api/images/[filename]
+const OUTPUT_DIR = path.join(process.cwd(), "data", "article-images");
 const POLLINATIONS_BASE = "https://image.pollinations.ai/prompt";
 
 export async function generateFeaturedImageUrl(
@@ -59,7 +60,7 @@ async function generateWithNanoBanana(apiKey: string, prompt: string): Promise<s
   const buffer = Buffer.from(imagePart.inlineData.data, "base64");
   fs.writeFileSync(outPath, buffer);
 
-  return `/article-images/${filename}`;
+  return `/api/images/${filename}`;
 }
 
 function generateWithPollinations(prompt: string): string {

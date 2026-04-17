@@ -9,7 +9,7 @@ import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 
-const OUTPUT_DIR = path.join(process.cwd(), "public", "article-images");
+const OUTPUT_DIR = path.join(process.cwd(), "data", "article-images");
 const OUTPUT_WIDTH = 1200;
 const OUTPUT_HEIGHT = 630;
 const LEFT_WIDTH = 600;
@@ -34,7 +34,7 @@ export async function composeProductHero(
   const hash = crypto.createHash("sha1").update(cacheKey + imageUrls.join("|")).digest("hex").slice(0, 16);
   const filename = `${hash}.jpg`;
   const outPath = path.join(OUTPUT_DIR, filename);
-  const publicUrl = `/article-images/${filename}`;
+  const publicUrl = `/api/images/${filename}`;
 
   if (fs.existsSync(outPath)) {
     return { url: publicUrl, path: outPath, productsUsed: Math.min(imageUrls.length, 5) };
