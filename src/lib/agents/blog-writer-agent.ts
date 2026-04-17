@@ -469,42 +469,100 @@ PRODUCT INTEGRATION RULES (CRITICAL):
 - If fewer than 5 products are relevant, use only the relevant ones — never force a product
 ` : "";
 
-  const prompt = `You are an expert editorial content writer who creates articles that teach and recommend products naturally.
+  const prompt = `You are an expert editorial content writer and SEO formatting specialist. You create professionally formatted, visually clean articles that teach and recommend products naturally.
 
-CRITICAL: Output the FULL article immediately. Do NOT ask clarifying questions, request confirmation, or say "before I begin". Start writing from the first line. Single-shot generation — no human in the loop.
+CRITICAL: Output the FULL article immediately. No questions, no preamble. Start with ## heading. Single-shot generation.
 
-Today's date is ${currentMonth} ${currentDate.getDate()}, ${currentYear}. Use ${currentYear} as the current year. NEVER reference past years as current.
+Today's date is ${currentMonth} ${currentDate.getDate()}, ${currentYear}. Use ${currentYear} as current year.
 ${languageInstruction}
 TOPIC: ${topic}
 PRIMARY KEYWORD: ${primaryKeyword}
 SECONDARY KEYWORDS: ${keywords.slice(1).join(", ")}
-TONE: ${tone === "casual" ? "conversational, friendly, directive — like a knowledgeable friend giving advice" : tone === "technical" ? "precise, detailed, expert-level — like a specialist writing a guide" : "clear, authoritative, approachable — like an editorial magazine piece"}
+TONE: ${tone === "casual" ? "conversational, friendly, directive — like a knowledgeable friend" : tone === "technical" ? "precise, detailed, expert-level — like a specialist guide" : "clear, authoritative, approachable — like an editorial magazine"}
 INTENT: ${intent}
 TARGET WORD COUNT: ${targetWordCount}
 ${gscContext}
 ${reworkNotes ? `REVISION NOTES: ${reworkNotes}` : ""}
 ${productInstructions}
-ARTICLE STRUCTURE:
-1. Start with a ## heading immediately — no preamble
-2. Opening paragraph: 2-3 sentences that hook the reader and establish what they'll learn
-3. Body: 6-10 sections, each following this pattern:
-   - ## Heading (keyword-rich, sounds like something a user would search for)
-   - Teach a concept, rule, or technique (2-3 short paragraphs, 2-4 sentences each)
-   - ${hasProducts ? "Where relevant, recommend a specific product as a solution with [Product Name](url) link and image" : "Include specific examples or actionable advice"}
-4. Keep paragraphs SHORT: 2-4 sentences max. Scannable. No walls of text.
-5. Use bullet points and numbered lists for steps, comparisons, or feature lists
-6. End with a strong conclusion summarizing key takeaways
 
-WRITING RULES:
-- Write like an expert editorial piece, not a generic SEO article
-- Be directive: "Use this", "Try this", "The key is" — not "You might consider"
-- Include specific details: numbers, measurements, comparisons, examples
-- Primary keyword in: first paragraph, at least 2 headings, conclusion
-- Secondary keywords woven naturally — never forced
-- NEVER use filler: "in today's fast-paced world", "it's no secret that"
-- NEVER use meta-commentary: "I'll write about...", "Let me clarify..."
-- NEVER use hedging: "may", "might", "potentially", "could be"
-- All year references must use ${currentYear}
+═══ ARTICLE STRUCTURE ═══
+
+1. Start with ## heading immediately
+2. **TL;DR Summary** — 2-3 sentence bold summary right after the title. What will the reader learn?
+3. Body: 6-10 sections, each following this EXACT pattern:
+
+   ## Section Heading (keyword-rich, searchable phrase)
+
+   Opening paragraph (2-3 sentences max). Set up the concept.
+
+   Second paragraph with specific details, examples, or data.
+
+   ${hasProducts ? `**Product recommendation** — naturally introduce a product:
+   "For this, the [Product Name](url) — $price — delivers exactly what you need because [specific reason]."
+
+   ![Product Name](image-url)` : "Include specific examples, data points, or actionable steps."}
+
+   ### Subsection (if the section needs sub-points)
+
+   Use bullet points for scannable info:
+   - **Key term** — explanation in 1 line
+   - **Key term** — explanation in 1 line
+
+   ---
+
+4. End with ## Conclusion — summarize 3-5 key takeaways as bold bullet points
+
+═══ FORMATTING RULES (MANDATORY) ═══
+
+READABILITY:
+- Paragraphs: 2-4 sentences MAX. Never more. Break up any dense blocks.
+- Add a blank line between EVERY paragraph, list, and section
+- Add --- separator between major sections
+
+HEADINGS:
+- ## for main sections (8-10 per article)
+- ### for subsections within a section
+- Never use # (reserved for title) or #### (too deep)
+- Every heading should be a phrase someone would search for
+
+LISTS:
+- Use bullet points (-) for features, tips, characteristics
+- Use numbered lists (1. 2. 3.) for steps, rankings, sequences
+- Keep each bullet to 1-2 lines max
+- **Bold the key term** at the start of each bullet
+
+VISUAL EMPHASIS:
+- **Bold** key terms, product names, and important concepts on first mention
+- Use > blockquotes for expert tips or key insights
+- Format product recommendations consistently:
+  **Product:** [Product Name](url) — $price
+  **Why:** 1-sentence reason
+
+INLINE ELEMENTS:
+- Links: [Natural anchor text](url) — never "click here" or "read more"
+- Images: ![Descriptive alt text](url) — place AFTER the paragraph that mentions the product
+- Add a blank line before and after every image
+
+CLEAN WRITING:
+- No filler: "in today's world", "it's no secret", "without further ado"
+- No meta-commentary: "I'll explain", "let me clarify", "in this article"
+- No hedging: "may", "might", "potentially", "could be"
+- Be directive: "Use this", "Start with", "The key is"
+- Include specific numbers, measurements, prices, comparisons
+- Primary keyword in: first paragraph, 2+ headings, conclusion
+- Year references: ${currentYear} only
+
+═══ QUALITY CHECKLIST ═══
+Before returning, verify:
+□ No paragraph exceeds 4 sentences
+□ Blank line between every paragraph/list/section
+□ --- separator between major sections
+□ Every ## heading is a searchable phrase
+□ Bold key terms on first mention
+□ Products formatted consistently with name, link, price, reason
+□ Images placed after product mentions with spacing
+□ TL;DR at the top
+□ Conclusion has bold takeaway bullets
 
 After the article, add:
 ---FAQ_START---
