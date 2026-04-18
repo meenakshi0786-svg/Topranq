@@ -75,57 +75,100 @@ export async function interlinkPillarCluster(pillarId: string): Promise<Interlin
   // Build a summary of articles (titles + slugs + first 500 chars) — NOT full content
   const articleSummary = buildArticleSummary(pillarRef, clusterArticles);
 
-  const prompt = `You are an expert in SEO internal linking. You will create link insertion instructions for a set of related articles.
+  const prompt = `You are an expert in SEO content architecture and internal linking. Create precise, natural, SEO-optimized internal links between a Pillar article and its Cluster articles.
 
 ${articleSummary}
 
-TASK: Return a list of FIND/REPLACE instructions. For each link to insert, provide:
+TASK: Return FIND/REPLACE instructions to insert internal links. For each link:
 - The article ID where the link goes
-- The exact existing phrase to find in that article (verbatim, case-sensitive)
-- The replacement with a markdown link
+- The exact existing phrase to find (verbatim, case-sensitive)
+- The replacement with a markdown [link](/slug) inserted
 
-LINKING RULES:
+═══ PILLAR → CLUSTER LINKING (MANDATORY) ═══
 
-1. PILLAR → CLUSTER (MANDATORY — EVERY cluster must be linked):
-   - The pillar article MUST have at least 1 link to EVERY cluster. No exceptions.
-   - Find an existing phrase in the pillar that relates to each cluster topic.
-   - If no suitable phrase exists, provide an "append" instruction: a new sentence to add at the end of a relevant paragraph.
-   - The "find" for appends should be the last sentence of the most relevant paragraph (we'll append after it).
+Every cluster MUST be linked from the pillar. No exceptions.
 
-2. CLUSTER → PILLAR (MANDATORY):
-   - Every cluster MUST have 1 link back to the pillar in its first few paragraphs.
-   - Find an existing phrase that relates to the pillar topic.
+Strategy for each cluster:
+1. FIRST: Scan the pillar content for the cluster title or a close variation
+   → If found, convert that phrase into [phrase](/cluster-slug)
+2. IF NOT FOUND: Look for a semantically related phrase (the cluster's topic mentioned differently)
+   → Convert that phrase into a link
+3. LAST RESORT: Append a natural sentence at the end of the most relevant paragraph
+   → "For a detailed breakdown, see our guide on [cluster topic](/cluster-slug)."
 
-3. CLUSTER ↔ CLUSTER (optional):
-   - Only where strong topical overlap exists, add 1 cross-link.
+Rules:
+- Each cluster linked at least 1 time, maximum 2 times
+- Prefer exact match anchors, then close semantic variations
+- Spread links across different sections — not all in one paragraph
 
-OUTPUT FORMAT — Return STRICT JSON only (no markdown fences, no prose):
+═══ CLUSTER → PILLAR LINKING (MANDATORY) ═══
+
+Every cluster MUST link back to the pillar exactly once.
+
+Strategy:
+1. Find the first natural mention of the pillar topic in the cluster's introduction or first section
+   → Convert it into [pillar topic phrase](/pillar-slug)
+2. If no natural mention exists, add a sentence in the introduction:
+   → "As covered in our [pillar topic](/pillar-slug), understanding the fundamentals is essential."
+
+Rules:
+- Only 1 link per cluster back to the pillar
+- Place in the introduction or first relevant section — not buried at the end
+
+═══ CLUSTER ↔ CLUSTER LINKING (OPTIONAL) ═══
+
+Only if two clusters are strongly related:
+- Add 1 contextual link between them
+- Do NOT force this — skip if the connection isn't natural
+
+═══ ANCHOR TEXT RULES ═══
+
+GOOD anchors (keyword-rich, natural):
+- Exact match: "vertical spreads" → [vertical spreads](/vertical-spreads)
+- Semantic match: "layering strategies" → [layering strategies](/winter-layering-guide)
+- Contextual: "building multi-leg positions" → [building multi-leg positions](/multi-leg-options)
+
+BAD anchors (NEVER use):
+- "click here", "read more", "learn more", "this article", "here"
+
+═══ LINK DENSITY CONTROL ═══
+
+- Maximum 1 link per 150-200 words of content
+- Spread links evenly across the article — not clustered in one section
+- Never put 2 links in the same sentence
+- Maximum 2 links per paragraph
+
+═══ OUTPUT FORMAT ═══
+
+Return STRICT JSON only (no markdown fences, no prose):
 {
   "instructions": [
     {
       "articleId": "the-article-id",
-      "find": "exact phrase to find in the article",
+      "find": "exact phrase from the article (verbatim, case-sensitive)",
       "replace": "[exact phrase with link](/target-slug)",
       "type": "replace"
     },
     {
       "articleId": "the-article-id",
-      "find": "last sentence of a paragraph to append after",
-      "replace": "last sentence of a paragraph to append after For a deeper dive, see our guide on [topic](/slug).",
+      "find": "last sentence of paragraph to append after",
+      "replace": "last sentence of paragraph to append after. For a detailed breakdown, see our guide on [topic](/slug).",
       "type": "append"
     }
   ]
 }
 
-RULES:
-- "find" must be an EXACT phrase that exists in the article (case-sensitive, verbatim)
-- "replace" is the same phrase but with a markdown [link](/slug) inserted
-- For appends, "replace" includes the original "find" sentence plus the new linking sentence
-- Use natural, keyword-rich anchor text — never "click here"
-- Max 2 link instructions per target article
-- Each cluster slug must appear in at least 1 instruction targeting the pillar article
+═══ FINAL QUALITY CHECK ═══
 
-VERIFICATION: Count your instructions. If any cluster slug is missing from pillar-targeted instructions, add one.`;
+Before returning, verify ALL:
+□ Every cluster slug appears in at least 1 instruction targeting the pillar
+□ Every cluster has exactly 1 instruction linking back to the pillar
+□ All "find" strings are EXACT phrases from the article previews (case-sensitive)
+□ No "click here" or generic anchors
+□ No two links in the same sentence
+□ Links feel natural when read aloud — if forced, revise or remove
+
+If ANY cluster is missing from the pillar's links, go back and add it before returning.`;
 
   const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
