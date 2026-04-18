@@ -365,13 +365,18 @@ export default function PillarsPage() {
                     </p>
                   </div>
                   {pillar.pillarArticleId ? (
-                    <Link
-                      href={`/domain/${domainId}/articles/${pillar.pillarArticleId}`}
-                      className="text-xs font-semibold px-4 py-2 rounded-lg"
-                      style={{ background: "#22c55e", color: "#fff" }}
-                    >
-                      View article
-                    </Link>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold px-3 py-1.5 rounded-lg" style={{ background: "#dcfce7", color: "#166534" }}>
+                        Generated ✓
+                      </span>
+                      <Link
+                        href={`/domain/${domainId}/articles/${pillar.pillarArticleId}`}
+                        className="text-xs font-semibold px-4 py-2 rounded-lg"
+                        style={{ background: "#22c55e", color: "#fff" }}
+                      >
+                        View article
+                      </Link>
+                    </div>
                   ) : (
                     <button
                       onClick={() => generateArticle(pillar.id, null, true)}
@@ -411,13 +416,18 @@ export default function PillarsPage() {
                         </div>
                       )}
                       {cluster.articleId ? (
-                        <Link
-                          href={`/domain/${domainId}/articles/${cluster.articleId}`}
-                          className="inline-block text-[11px] font-semibold px-3 py-1 rounded"
-                          style={{ background: "#dcfce7", color: "#166534" }}
-                        >
-                          Generated →
-                        </Link>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px] font-semibold px-3 py-1 rounded" style={{ background: "#dcfce7", color: "#166534" }}>
+                            Generated ✓
+                          </span>
+                          <Link
+                            href={`/domain/${domainId}/articles/${cluster.articleId}`}
+                            className="text-[11px] font-semibold px-3 py-1 rounded"
+                            style={{ background: "#22c55e", color: "#fff" }}
+                          >
+                            View
+                          </Link>
+                        </div>
                       ) : (
                         <button
                           onClick={() => generateArticle(pillar.id, cluster.id, false)}
