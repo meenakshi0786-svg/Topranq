@@ -123,13 +123,33 @@ Only if two clusters are strongly related:
 
 ═══ ANCHOR TEXT RULES ═══
 
-GOOD anchors (keyword-rich, natural):
+GOOD anchors (keyword-rich, descriptive, natural):
 - Exact match: "vertical spreads" → [vertical spreads](/vertical-spreads)
-- Semantic match: "layering strategies" → [layering strategies](/winter-layering-guide)
-- Contextual: "building multi-leg positions" → [building multi-leg positions](/multi-leg-options)
+- Semantic match: "layering strategies for cold weather" → [layering strategies for cold weather](/winter-layering-guide)
+- Contextual: "building multi-leg options positions" → [building multi-leg options positions](/multi-leg-options)
+- Descriptive: "complete guide to capsule wardrobes" → [complete guide to capsule wardrobes](/capsule-wardrobe)
+
+WEAK anchors (REPLACE with descriptive versions):
+- TOO SHORT: [spreads](/vertical-spreads) → use [vertical spread strategies](/vertical-spreads)
+- TOO VAGUE: [options](/options-chain) → use [real-time options chain analysis](/options-chain)
+- SINGLE WORD: [trading](/strategies) → use [options trading strategies](/strategies)
+- REPEATED: if "vertical spreads" is already used as anchor, use a VARIATION next time like "spread trading techniques" or "building vertical positions"
 
 BAD anchors (NEVER use):
-- "click here", "read more", "learn more", "this article", "here"
+- "click here", "read more", "learn more", "this article", "here", "this guide"
+
+ANCHOR VARIATION (CRITICAL):
+- NEVER repeat the exact same anchor text for the same target URL
+- If linking to the same cluster twice, use DIFFERENT descriptive phrases each time
+  Example: first link → [iron condor strategy breakdown](/iron-condor)
+           second link → [advanced iron condor techniques](/iron-condor)
+- Minimum 3 words per anchor, prefer 4-6 word descriptive phrases
+
+READABILITY AROUND LINKS:
+- The sentence containing the link must read naturally with or without the link
+- BAD: "You should check out [vertical spreads](/vertical-spreads) for more info."
+- GOOD: "Traders looking to limit risk often start with [vertical spread strategies](/vertical-spreads) before progressing to more complex structures."
+- The link should be PART of the sentence's meaning, not an interruption
 
 ═══ LINK DENSITY CONTROL ═══
 
