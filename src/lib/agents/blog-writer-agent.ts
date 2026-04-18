@@ -221,7 +221,8 @@ export async function runBlogWriter(
     }
 
     if (products.length > 0) {
-      // Pick products relevant to the topic + build catalog string
+      // Pick products ONLY if they're genuinely relevant to the article topic.
+      // A fashion product in an SEO software article = spam. Skip entirely if no match.
       const topicLower = `${topic} ${keywords.join(" ")}`.toLowerCase();
       const scored = products.map((p) => {
         const pText = `${p.name} ${p.description || ""} ${p.category || ""}`.toLowerCase();
@@ -230,10 +231,17 @@ export async function runBlogWriter(
         return { ...p, score: matches };
       }).sort((a, b) => b.score - a.score);
 
-      const topProducts = scored.slice(0, 20);
-      productCatalog = topProducts.map((p, i) =>
-        `${i + 1}. ${p.name}${p.price ? ` — ${p.price}` : ""}${p.category ? ` [${p.category}]` : ""}\n   URL: ${p.url || "N/A"}${p.imageUrl ? `\n   Image: ${p.imageUrl}` : ""}${p.description ? `\n   ${p.description.slice(0, 120)}` : ""}`
-      ).join("\n");
+      // Only include products that actually match the topic (score > 0)
+      const relevant = scored.filter((p) => p.score > 0);
+
+      // If fewer than 3 products match, the topic probably doesn't relate to the catalog — skip entirely
+      if (relevant.length >= 3) {
+        const topProducts = relevant.slice(0, 15);
+        productCatalog = topProducts.map((p, i) =>
+          `${i + 1}. ${p.name}${p.price ? ` — ${p.price}` : ""}${p.category ? ` [${p.category}]` : ""}\n   URL: ${p.url || "N/A"}${p.imageUrl ? `\n   Image: ${p.imageUrl}` : ""}${p.description ? `\n   ${p.description.slice(0, 120)}` : ""}`
+        ).join("\n");
+      }
+      // If < 3 match, productCatalog stays empty → no product integration in this article
     }
   } catch (err) {
     console.warn("[blog-writer] product catalog load failed:", err);
@@ -452,21 +460,32 @@ async function generateFullArticle(
   const hasProducts = productContext && productContext.trim().length > 20;
 
   const productInstructions = hasProducts ? `
-PRODUCT CATALOG (use these as contextual recommendations in the article):
+PRODUCT CATALOG (these products are topically relevant to this article):
 ${productContext}
 
 PRODUCT INTEGRATION RULES (CRITICAL):
-- Weave 5-15 relevant products NATURALLY throughout the article as contextual solutions
-- Pattern: explain a concept or problem → recommend a product as the solution → link it
-- Format each product mention as: [Product Name](product-url) — include price if available
-- After introducing a product, add its image on the next line: ![Product Name](image-url)
-- Spread products across different sections — never cluster them all in one place
-- Each product mention must be EARNED by the preceding paragraph (explain WHY this product fits)
-- Products should feel like helpful recommendations within a teaching context, NOT a product listing
-- BAD: "Here are some products you might like: Product A, Product B, Product C"
-- GOOD: "For the base layer, a fitted turtleneck creates a clean silhouette. The [Slim Turtleneck in Black](url) ($49) works well here because its stretch fabric stays flat under a blazer."
-- Only recommend products that are genuinely relevant to the section topic
-- If fewer than 5 products are relevant, use only the relevant ones — never force a product
+- Weave relevant products NATURALLY as contextual recommendations within the teaching
+- Pattern: explain a concept → recommend a specific product as the solution → link + image
+- Format: [Product Name](product-url) — $price
+- After product mention, add image: ![Product Name](image-url)
+- Spread across sections — never cluster products together
+- Each product must be EARNED: the preceding paragraph explains WHY this product fits
+- ONLY recommend products that genuinely solve a problem discussed in that section
+
+ABSOLUTE RULES:
+- NEVER use metaphors to justify a product ("like a blazer provides flexibility, this software...")
+- NEVER recommend a product that doesn't directly relate to the section's topic
+- NEVER force a product — if a section doesn't naturally need one, skip it
+- If the product is clothing, it must appear in a fashion/styling context
+- If the product is tech, it must appear in a tech/productivity context
+- A dress CANNOT be recommended in a section about SEO strategy
+- A keyboard CANNOT be recommended in a section about skincare
+
+GOOD example (fashion article + fashion product):
+"For the base layer, a fitted turtleneck creates a clean silhouette. The [Cashmere Turtleneck — Camel](url) — €145 — works perfectly here because its stretch fabric stays flat under a blazer."
+
+BAD example (SEO article + fashion product):
+"Managing integrations requires flexibility, much like the [Silk Wrap Dress](url) — $129 — provides adaptable elegance." ← THIS IS SPAM. NEVER DO THIS.
 ` : "";
 
   const prompt = `You are an expert editorial content writer and SEO formatting specialist. You create professionally formatted, visually clean articles that teach and recommend products naturally.
