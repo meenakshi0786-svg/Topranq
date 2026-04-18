@@ -228,9 +228,12 @@ export default function GEOPage() {
                               <div className="space-y-2">
                                 {issue.affectedPages.map((page, j) => (
                                   <div key={j} className="p-2.5 rounded-md" style={{ background: "var(--bg-white)", border: "1px solid var(--border-light)" }}>
-                                    <p className="text-xs font-medium" style={{ wordBreak: "break-word" }}>{page.title || page.url}</p>
+                                    <a href={page.url} target="_blank" rel="noopener noreferrer" className="text-xs font-medium" style={{ wordBreak: "break-word", color: "var(--accent)", textDecoration: "underline", textUnderlineOffset: 2 }}>
+                                      {page.title || page.url}
+                                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "inline", marginLeft: 4, verticalAlign: "middle" }}><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
+                                    </a>
                                     <p className="text-[11px] mb-1.5" style={{ color: "var(--text-muted)", wordBreak: "break-all" }}>{page.url}</p>
-                                    <p className="text-[11px]" style={{ color: "var(--accent)", wordBreak: "break-word" }}>{page.suggestion}</p>
+                                    <p className="text-[11px]" style={{ color: "var(--text-secondary)", wordBreak: "break-word" }}>{page.suggestion}</p>
                                   </div>
                                 ))}
                               </div>
