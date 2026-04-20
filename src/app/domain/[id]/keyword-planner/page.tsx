@@ -107,7 +107,7 @@ export default function KeywordPlannerPage() {
             <p className="text-sm mb-6 max-w-md mx-auto" style={{ color: "var(--text-secondary)" }}>
               We&apos;ll analyze your GSC data, crawled pages, and competitor SERPs to find keyword gaps, cluster them into pillars, and create a prioritized content plan.
             </p>
-            <button onClick={generate} className="btn-primary px-8 py-3 text-sm cursor-pointer">
+            <button onClick={generate} className="btn-primary px-12 py-4 text-base font-semibold cursor-pointer rounded-xl">
               Generate Keyword Plan
             </button>
             {error && <p className="text-xs mt-4" style={{ color: "var(--critical)" }}>{error}</p>}
