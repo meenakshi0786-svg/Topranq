@@ -592,6 +592,8 @@ export default function LandingPage() {
             <a href="#features">Features</a>
             <a href="#how-it-works">How it works</a>
             <a href="/pricing">Pricing</a>
+            <a href="/blog">Blog</a>
+            <a href="/compare">Compare</a>
             <a href="/dashboard">Dashboard</a>
           </div>
         </div>
