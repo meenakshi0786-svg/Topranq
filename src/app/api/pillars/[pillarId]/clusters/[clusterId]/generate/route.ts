@@ -50,6 +50,29 @@ export async function POST(
     keywords = cluster.clusterKeywords ? JSON.parse(cluster.clusterKeywords) : [];
   }
 
+  // Build pillar/cluster context so the article can link during generation
+  const allClusters = db
+    .select()
+    .from(schema.pillarClusters)
+    .where(eq(schema.pillarClusters.pillarId, pillarId))
+    .all();
+
+  const pillarContext = {
+    pillarTitle: pillar.topic,
+    pillarSlug: pillar.pillarArticleId
+      ? db.select().from(schema.articles).where(eq(schema.articles.id, pillar.pillarArticleId)).get()?.slug || ""
+      : "",
+    isPillarArticle: isPillar === true,
+    clusters: allClusters.map((c: { articleId: string | null; clusterTopic: string }) => {
+      const art = c.articleId ? db.select().from(schema.articles).where(eq(schema.articles.id, c.articleId)).get() : null;
+      return {
+        topic: c.clusterTopic,
+        slug: art?.slug || "",
+        hasArticle: !!c.articleId,
+      };
+    }),
+  };
+
   try {
     const output = await runBlogWriter(pillar.domainId, {
       topic,
@@ -57,6 +80,7 @@ export async function POST(
       tone: (tone as "professional" | "casual" | "technical") || "professional",
       wordCount: targetWordCount,
       language: language || domainLanguage,
+      pillarClusterContext: pillarContext,
     });
 
     // Link article back to pillar/cluster

@@ -70,12 +70,18 @@ export interface BlogWriterConfig {
   keywords: string[];
   tone: "professional" | "casual" | "technical";
   wordCount: number;
-  language?: string; // ISO language code or display name (defaults to English)
-  intent?: string; // informational, commercial, transactional
+  language?: string;
+  intent?: string;
   audience?: string;
   competitorUrls?: string[];
   productContext?: string;
-  reworkNotes?: string; // feedback from reviewer for regeneration
+  reworkNotes?: string;
+  pillarClusterContext?: {
+    pillarTitle: string;
+    pillarSlug: string;
+    isPillarArticle: boolean;
+    clusters: Array<{ topic: string; slug: string; hasArticle: boolean }>;
+  };
 }
 
 export interface ImageSuggestion {
@@ -269,7 +275,8 @@ export async function runBlogWriter(
   const { outline, bodyMarkdown, faqItems } = await generateFullArticle(
     topic, keywords, tone, targetWordCount, intent, primaryKeyword,
     gscContext + (competitorBrief ? `\n\n${competitorBrief}` : ""),
-    productCatalog, config.reworkNotes, config.language,
+    productCatalog, config.pillarClusterContext,
+    config.reworkNotes, config.language,
   );
 
   // Post-process: hyperlink any product names mentioned in the article
@@ -442,6 +449,7 @@ async function generateFullArticle(
   primaryKeyword: string,
   gscContext: string,
   productContext?: string,
+  pillarClusterCtx?: BlogWriterConfig["pillarClusterContext"],
   reworkNotes?: string,
   language?: string,
 ): Promise<{
@@ -503,11 +511,30 @@ TARGET WORD COUNT: ${targetWordCount}
 ${gscContext}
 ${reworkNotes ? `REVISION NOTES: ${reworkNotes}` : ""}
 ${productInstructions}
+${pillarClusterCtx ? `
+INTERNAL LINKING CONTEXT (link to these articles DURING writing):
+${pillarClusterCtx.isPillarArticle ? `You are writing the PILLAR article. Naturally mention and link to these cluster articles:
+${pillarClusterCtx.clusters.filter(c => c.slug).map(c => `- [${c.topic}](/${c.slug})`).join("\n")}
+Include 3-5 of these links spread across different sections using natural anchor text.` : `You are writing a CLUSTER article. Link back to the pillar article once in the introduction:
+- Pillar: [${pillarClusterCtx.pillarTitle}](/${pillarClusterCtx.pillarSlug})
+Also link to 1-2 related clusters if relevant:
+${pillarClusterCtx.clusters.filter(c => c.slug && c.topic !== topic).slice(0, 3).map(c => `- [${c.topic}](/${c.slug})`).join("\n")}`}
+` : ""}
 
 ═══ ARTICLE STRUCTURE ═══
 
 1. Start with ## heading immediately
-2. **TL;DR Summary** — 2-3 sentence bold summary right after the title. What will the reader learn?
+
+2. **Introduction (Hook):**
+   - 2-3 short paragraphs introducing the topic
+   - Include the primary keyword naturally in the first paragraph
+   - End with a "**What you'll learn:**" section as a bullet list:
+     > **What you'll learn in this guide:**
+     > - Point 1
+     > - Point 2
+     > - Point 3
+   ${pillarClusterCtx && !pillarClusterCtx.isPillarArticle ? `- Include a contextual link back to the pillar article in the introduction` : ""}
+
 3. Body: 6-10 sections, each following this EXACT pattern:
 
    ## Section Heading (keyword-rich, searchable phrase)
@@ -526,6 +553,8 @@ ${productInstructions}
    Use bullet points for scannable info:
    - **Key term** — explanation in 1 line
    - **Key term** — explanation in 1 line
+
+   > **Pro Tip:** Add 1-2 "Pro Tip" callouts per article in relevant sections. Format as a blockquote with bold "Pro Tip:" prefix. These should contain insider knowledge, shortcuts, or common mistakes to avoid.
 
    ---
 
