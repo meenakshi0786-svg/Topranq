@@ -98,6 +98,9 @@ export default function DomainOverview() {
     }
   }, [searchParams, data, domainId]);
 
+  const hostname = data ? (() => { try { return new URL(data.domain.domainUrl).hostname; } catch { return data.domain.domainUrl; } })() : "";
+  usePageTitle(hostname ? `${hostname} — Dashboard` : "Loading...");
+
   if (!data) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -112,8 +115,6 @@ export default function DomainOverview() {
   }
 
   const { domain, latestAudit, stats, recentActions } = data;
-  const hostname = (() => { try { return new URL(domain.domainUrl).hostname; } catch { return domain.domainUrl; } })();
-  usePageTitle(`${hostname} — Dashboard`);
   const isRunning = latestAudit && !["complete", "failed"].includes(latestAudit.status);
 
   return (
