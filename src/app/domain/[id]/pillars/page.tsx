@@ -133,7 +133,20 @@ export default function PillarsPage() {
         alert(data.error || "Generation failed");
         return;
       }
-      await fetchPillars();
+      const result = await res.json();
+      // Immediately update the UI with the new article ID
+      setPillars((prev) => prev.map((p) => {
+        if (p.id !== pillarId) return p;
+        if (isPillar) return { ...p, pillarArticleId: result.articleId };
+        return {
+          ...p,
+          clusters: p.clusters.map((c) =>
+            c.id === clusterId ? { ...c, articleId: result.articleId } : c
+          ),
+        };
+      }));
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Generation failed");
     } finally {
       setGenerating(null);
     }
