@@ -85,61 +85,117 @@ export default function KeywordPlannerPage() {
       </header>
 
       <div className="max-w-[1100px] mx-auto px-6 py-10">
-        <div className="mb-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold mb-3" style={{ background: "var(--accent-light)", color: "var(--accent)" }}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" /></svg>
-            Magic Keyword Planner
+        {/* Animated Hero */}
+        <div className="relative mb-8 overflow-hidden" style={{ minHeight: 200 }}>
+          {/* Floating keyword bubbles */}
+          <div className="absolute inset-0 pointer-events-none" style={{ opacity: 0.5 }}>
+            {["SEO", "keywords", "ranking", "traffic", "content", "pillar", "cluster", "SERP", "backlinks", "authority"].map((word, i) => (
+              <span
+                key={word}
+                className="absolute text-[10px] font-medium rounded-full float-orb"
+                style={{
+                  left: `${8 + (i * 9) % 85}%`,
+                  top: `${15 + (i * 17) % 70}%`,
+                  padding: "4px 10px",
+                  background: i % 3 === 0 ? "#4F6EF710" : i % 3 === 1 ? "#7C5CFC10" : "#22c55e10",
+                  color: i % 3 === 0 ? "#4F6EF7" : i % 3 === 1 ? "#7C5CFC" : "#22c55e",
+                  border: `1px solid ${i % 3 === 0 ? "#4F6EF720" : i % 3 === 1 ? "#7C5CFC20" : "#22c55e20"}`,
+                  animationDelay: `${i * 0.8}s`,
+                  animationDuration: `${8 + i * 1.5}s`,
+                }}
+              >
+                {word}
+              </span>
+            ))}
           </div>
-          <h1 className="text-2xl font-bold tracking-tight mb-1">Keyword Gap &amp; Content Strategy</h1>
-          <p className="text-sm mb-4" style={{ color: "var(--text-secondary)" }}>
-            Analyze your domain vs competitors. Find missing keywords, cluster them into pillars, and get a complete content strategy with article titles and internal linking.
-          </p>
+
+          {/* Main heading */}
+          <div className="relative fade-in" style={{ zIndex: 1 }}>
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-4" style={{ background: "linear-gradient(135deg, #4F6EF715, #7C5CFC15)", color: "var(--accent)", border: "1px solid #4F6EF730" }}>
+              <span className="relative flex w-2 h-2">
+                <span className="absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping" style={{ background: "#22c55e" }} />
+                <span className="relative inline-flex rounded-full h-2 w-2" style={{ background: "#22c55e" }} />
+              </span>
+              Magic Keyword Planner
+            </div>
+            <h1 className="text-3xl font-bold tracking-tight mb-2" style={{ color: "var(--text-primary)" }}>
+              Keyword Gap &amp;{" "}
+              <span style={{ background: "linear-gradient(135deg, #4F6EF7, #7C5CFC)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                Content Strategy
+              </span>
+            </h1>
+            <p className="text-sm" style={{ color: "var(--text-secondary)", maxWidth: 500 }}>
+              Analyze your domain vs competitors. Find missing keywords, cluster them into pillars, and get a complete content strategy.
+            </p>
+          </div>
         </div>
 
-        {/* What is this tool */}
-        <div className="card-static p-6 mb-6 fade-in" style={{ background: "linear-gradient(135deg, #4F6EF705, #7C5CFC05)", border: "1px solid #4F6EF720" }}>
-          <h3 className="text-sm font-bold mb-3" style={{ color: "var(--text-primary)" }}>What does the Magic Keyword Planner do?</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "#ef444415" }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+        {/* Feature cards with hover animations */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          {[
+            { icon: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z", color: "#ef4444", title: "Find Keyword Gaps", desc: "Discovers keywords your competitors rank for but you don't — plus untapped topic clusters you're missing entirely." },
+            { icon: "M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5", color: "#4F6EF7", title: "Build Content Strategy", desc: "Groups keywords into pillar-cluster strategies with prioritized article titles, word counts, and content angles." },
+            { icon: "M13 10V3L4 14h7v7l9-11h-7z", color: "#22c55e", title: "Spot Quick Wins", desc: "Identifies low-competition keywords where you can rank fast — perfect for first articles that drive traffic quickly." },
+          ].map((item, i) => (
+            <div
+              key={item.title}
+              className="card-static p-5 fade-in"
+              style={{
+                animationDelay: `${i * 0.1}s`,
+                transition: "transform 0.3s, box-shadow 0.3s",
+                cursor: "default",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = `0 8px 25px ${item.color}15`; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "var(--shadow-xs)"; }}
+            >
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style={{ background: `${item.color}12` }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={item.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={item.icon} /></svg>
               </div>
-              <div>
-                <p className="text-xs font-semibold mb-0.5" style={{ color: "var(--text-primary)" }}>Find Keyword Gaps</p>
-                <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>Discovers keywords your competitors rank for but you don&apos;t — plus untapped topic clusters you&apos;re missing entirely.</p>
-              </div>
+              <p className="text-sm font-bold mb-1" style={{ color: "var(--text-primary)" }}>{item.title}</p>
+              <p className="text-xs" style={{ color: "var(--text-muted)" }}>{item.desc}</p>
             </div>
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "#4F6EF715" }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4F6EF7" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" /></svg>
-              </div>
-              <div>
-                <p className="text-xs font-semibold mb-0.5" style={{ color: "var(--text-primary)" }}>Build Content Strategy</p>
-                <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>Groups keywords into pillar-cluster strategies with prioritized article titles, word counts, and content angles — ready to generate.</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "#22c55e15" }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><polyline points="13 17 18 12 13 7" /><polyline points="6 17 11 12 6 7" /></svg>
-              </div>
-              <div>
-                <p className="text-xs font-semibold mb-0.5" style={{ color: "var(--text-primary)" }}>Spot Quick Wins</p>
-                <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>Identifies low-competition keywords where you can rank fast — perfect for your first articles that drive traffic quickly.</p>
-              </div>
-            </div>
-          </div>
-          <p className="text-[11px] mt-4" style={{ color: "var(--text-muted)" }}>
-            <strong>How to use:</strong> Generate the plan below → review the pillar strategies → go to the <strong>Pillars</strong> page to create pillars from the suggested topics → generate articles for each cluster. The internal linking plan tells you exactly how to connect them.
-          </p>
+          ))}
+        </div>
+
+        {/* How to use — step flow */}
+        <div className="flex items-center justify-center gap-2 mb-6 flex-wrap text-[11px]" style={{ color: "var(--text-muted)" }}>
+          {["Generate Plan", "Review Pillars", "Create Content", "Auto-Link", "Publish"].map((step, i) => (
+            <span key={step} className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-medium" style={{ background: "var(--bg)", border: "1px solid var(--border-light)" }}>
+                <span className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold" style={{ background: "var(--accent)", color: "#fff" }}>{i + 1}</span>
+                {step}
+              </span>
+              {i < 4 && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--border)" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>}
+            </span>
+          ))}
         </div>
 
         {!plan && !loading && (
-          <div className="card-static p-8 text-center fade-in">
-            <h2 className="text-lg font-bold mb-2" style={{ color: "var(--text-primary)" }}>Ready to find your keyword opportunities?</h2>
+          <div className="card-static p-10 text-center fade-in" style={{ background: "linear-gradient(135deg, #4F6EF705, #7C5CFC05)", border: "1px solid #4F6EF720" }}>
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5 glow-pulse" style={{ background: "linear-gradient(135deg, #4F6EF720, #7C5CFC20)" }}>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                <path d="M10 7v6m3-3H7" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-bold mb-2" style={{ color: "var(--text-primary)" }}>Ready to find your keyword opportunities?</h2>
             <p className="text-sm mb-6 max-w-md mx-auto" style={{ color: "var(--text-secondary)" }}>
               We&apos;ll analyze your GSC data, crawled pages, and competitor SERPs to build a prioritized content strategy.
             </p>
-            <button onClick={generate} className="btn-primary cursor-pointer" style={{ padding: "16px 48px", fontSize: 16, fontWeight: 600, borderRadius: 14 }}>
+            <button
+              onClick={generate}
+              className="btn-primary cursor-pointer"
+              style={{
+                padding: "16px 48px",
+                fontSize: 16,
+                fontWeight: 600,
+                borderRadius: 14,
+                boxShadow: "0 4px 15px rgba(79, 110, 247, 0.3)",
+                transition: "all 0.3s",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 25px rgba(79, 110, 247, 0.4)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 15px rgba(79, 110, 247, 0.3)"; }}
+            >
               Generate Keyword Plan
             </button>
             {error && <p className="text-xs mt-4" style={{ color: "var(--critical)" }}>{error}</p>}
