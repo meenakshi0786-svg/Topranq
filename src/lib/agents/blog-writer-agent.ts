@@ -309,27 +309,10 @@ export async function runBlogWriter(
   //   1) fetch product catalog from the domain,
   //   2) pick 5 products most relevant to this article,
   //   3) composite their photos into a single hero image.
-  // If that fails, fall back to the Pollinations AI hero.
+  // Hero image: always AI-generated editorial lifestyle photo.
+  // Product photos belong INLINE in the article body (from CSV CDN URLs), not as the hero.
   const featuredImagePrompt = buildImagePrompt(metaTitle || title, config.topic, tone, config.language);
-  let featuredImageUrl = await generateFeaturedImageUrl(featuredImagePrompt, config.language);
-
-  try {
-    const domain = db.select().from(schema.domains).where(eq(schema.domains.id, domainId)).get();
-    const domainUrl = domain?.domainUrl;
-    if (domainUrl) {
-      const products = await fetchProductsFromDomain(domainUrl);
-      if (products.length > 0) {
-        const picked = pickRelevantProducts(products, title, primaryKeyword, linkedMarkdown, 5);
-        const imageUrls = picked.map((p) => p.imageUrl).filter(Boolean);
-        if (imageUrls.length > 0) {
-          const composite = await composeProductHero(imageUrls, `${slug}-${primaryKeyword}`);
-          if (composite?.url) featuredImageUrl = composite.url;
-        }
-      }
-    }
-  } catch (err) {
-    console.warn("[blog-writer] product hero composite failed:", err);
-  }
+  const featuredImageUrl = await generateFeaturedImageUrl(featuredImagePrompt, config.language);
 
   // Store in articles table
   const articleId = crypto.randomUUID();
