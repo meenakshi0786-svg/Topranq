@@ -91,21 +91,53 @@ export default function KeywordPlannerPage() {
             Magic Keyword Planner
           </div>
           <h1 className="text-2xl font-bold tracking-tight mb-1">Keyword Gap &amp; Content Strategy</h1>
-          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+          <p className="text-sm mb-4" style={{ color: "var(--text-secondary)" }}>
             Analyze your domain vs competitors. Find missing keywords, cluster them into pillars, and get a complete content strategy with article titles and internal linking.
+          </p>
+        </div>
+
+        {/* What is this tool */}
+        <div className="card-static p-6 mb-6 fade-in" style={{ background: "linear-gradient(135deg, #4F6EF705, #7C5CFC05)", border: "1px solid #4F6EF720" }}>
+          <h3 className="text-sm font-bold mb-3" style={{ color: "var(--text-primary)" }}>What does the Magic Keyword Planner do?</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "#ef444415" }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+              </div>
+              <div>
+                <p className="text-xs font-semibold mb-0.5" style={{ color: "var(--text-primary)" }}>Find Keyword Gaps</p>
+                <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>Discovers keywords your competitors rank for but you don&apos;t — plus untapped topic clusters you&apos;re missing entirely.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "#4F6EF715" }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4F6EF7" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" /></svg>
+              </div>
+              <div>
+                <p className="text-xs font-semibold mb-0.5" style={{ color: "var(--text-primary)" }}>Build Content Strategy</p>
+                <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>Groups keywords into pillar-cluster strategies with prioritized article titles, word counts, and content angles — ready to generate.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "#22c55e15" }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><polyline points="13 17 18 12 13 7" /><polyline points="6 17 11 12 6 7" /></svg>
+              </div>
+              <div>
+                <p className="text-xs font-semibold mb-0.5" style={{ color: "var(--text-primary)" }}>Spot Quick Wins</p>
+                <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>Identifies low-competition keywords where you can rank fast — perfect for your first articles that drive traffic quickly.</p>
+              </div>
+            </div>
+          </div>
+          <p className="text-[11px] mt-4" style={{ color: "var(--text-muted)" }}>
+            <strong>How to use:</strong> Generate the plan below → review the pillar strategies → go to the <strong>Pillars</strong> page to create pillars from the suggested topics → generate articles for each cluster. The internal linking plan tells you exactly how to connect them.
           </p>
         </div>
 
         {!plan && !loading && (
           <div className="card-static p-8 text-center fade-in">
-            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5" style={{ background: "var(--accent-light)" }}>
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5">
-                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-              </svg>
-            </div>
-            <h2 className="text-lg font-bold mb-2" style={{ color: "var(--text-primary)" }}>Generate Your Keyword Strategy</h2>
+            <h2 className="text-lg font-bold mb-2" style={{ color: "var(--text-primary)" }}>Ready to find your keyword opportunities?</h2>
             <p className="text-sm mb-6 max-w-md mx-auto" style={{ color: "var(--text-secondary)" }}>
-              We&apos;ll analyze your GSC data, crawled pages, and competitor SERPs to find keyword gaps, cluster them into pillars, and create a prioritized content plan.
+              We&apos;ll analyze your GSC data, crawled pages, and competitor SERPs to build a prioritized content strategy.
             </p>
             <button onClick={generate} className="btn-primary cursor-pointer" style={{ padding: "16px 48px", fontSize: 16, fontWeight: 600, borderRadius: 14 }}>
               Generate Keyword Plan
