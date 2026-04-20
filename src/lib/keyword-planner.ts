@@ -180,11 +180,13 @@ Return STRICT JSON only (no markdown, no code fences):
 }
 
 RULES:
-- Minimum 3 pillars, each with 3-6 clusters
+- EXACTLY 3 pillars, each with EXACTLY 3 clusters (9 clusters total — no more)
+- Keep the JSON compact — short descriptions, max 3 keywords per cluster
 - Every cluster must have a unique article title
 - Priority scores must be realistic (not all 90+)
-- Quick wins must be genuinely low competition
-- Do NOT output raw keyword dumps — always cluster and prioritize`;
+- Quick wins: exactly 3 items
+- Do NOT output raw keyword dumps — always cluster and prioritize
+- KEEP THE RESPONSE UNDER 4000 TOKENS — be concise`;
 
   const models = [
     process.env.OPENROUTER_MODEL_SONNET,
@@ -198,7 +200,7 @@ RULES:
       const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
         headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ model, max_tokens: 5000, messages: [{ role: "user", content: prompt }] }),
+        body: JSON.stringify({ model, max_tokens: 8000, messages: [{ role: "user", content: prompt }] }),
       });
       if (!res.ok) { console.warn(`[keyword-planner] ${model} failed (${res.status})`); continue; }
       const data = await res.json();
