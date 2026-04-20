@@ -310,8 +310,8 @@ export async function runBlogWriter(
   //   2) pick 5 products most relevant to this article,
   //   3) composite their photos into a single hero image.
   // If that fails, fall back to the Pollinations AI hero.
-  const featuredImagePrompt = buildImagePrompt(metaTitle || title, config.topic, tone);
-  let featuredImageUrl = await generateFeaturedImageUrl(featuredImagePrompt);
+  const featuredImagePrompt = buildImagePrompt(metaTitle || title, config.topic, tone, config.language);
+  let featuredImageUrl = await generateFeaturedImageUrl(featuredImagePrompt, config.language);
 
   try {
     const domain = db.select().from(schema.domains).where(eq(schema.domains.id, domainId)).get();
@@ -954,8 +954,11 @@ async function hyperlinkProducts(markdown: string, domainId: string): Promise<st
       } else if (generatedImages < 3) {
         // Generate a lifestyle image (limit to 3 per article for cost/speed)
         try {
+          // Get domain language for cultural context in generated images
+          const domainLang = db.select().from(schema.domains).where(eq(schema.domains.id, domainId)).get()?.language;
           const imageUrl = await generateFeaturedImageUrl(
-            `${product.name}, lifestyle product photography, person using or wearing this product, editorial style, clean background`
+            `Person wearing or using ${product.name}, lifestyle editorial photography, natural setting, magazine quality`,
+            domainLang || undefined,
           );
           if (imageUrl) {
             imageMarkdown = `\n\n![${product.name}](${imageUrl})`;
