@@ -128,6 +128,11 @@ export default function PillarsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isPillar }),
       });
+      const contentType = res.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        alert("Server returned an unexpected response. The article may be taking too long to generate — please try again.");
+        return;
+      }
       if (!res.ok) {
         const data = await res.json();
         alert(data.error || "Generation failed");
