@@ -636,10 +636,10 @@ BEGIN NOW — first line must be a ## heading.`;
   let faqItems: Array<{ question: string; answer: string }> = [];
   let outline: Array<{ heading: string; summary: string; keyPoints: string[] }> = [];
 
-  // Extract FAQ
-  const faqMatch = response.match(/---FAQ_START---([\s\S]*?)---FAQ_END---/);
+  // Extract FAQ — flexible matching for AI variations
+  const faqMatch = response.match(/-+\s*FAQ[_\s]*START\s*-+\s*([\s\S]*?)\s*-+\s*(?:END[_\s]*FAQ|FAQ[_\s]*END)\s*-+/i);
   if (faqMatch) {
-    bodyMarkdown = bodyMarkdown.replace(/---FAQ_START---[\s\S]*?---FAQ_END---/, "").trim();
+    bodyMarkdown = bodyMarkdown.replace(/-+\s*FAQ[_\s]*START\s*-+[\s\S]*?-+\s*(?:END[_\s]*FAQ|FAQ[_\s]*END)\s*-+/i, "").trim();
     try {
       const jsonStr = faqMatch[1].trim().replace(/```json\n?/g, "").replace(/```/g, "").trim();
       faqItems = JSON.parse(jsonStr);
@@ -652,20 +652,29 @@ BEGIN NOW — first line must be a ## heading.`;
     }
   }
 
-  // Extract outline
-  const outlineMatch = response.match(/---OUTLINE_START---([\s\S]*?)---OUTLINE_END---/);
+  // Extract outline — flexible matching for AI variations like -OUTLINE_START---, ---END_OUTLINE---, etc.
+  const outlineMatch = response.match(/-+\s*OUTLINE[_\s]*START\s*-+\s*([\s\S]*?)\s*-+\s*(?:END[_\s]*OUTLINE|OUTLINE[_\s]*END)\s*-+/i);
   if (outlineMatch) {
-    bodyMarkdown = bodyMarkdown.replace(/---OUTLINE_START---[\s\S]*?---OUTLINE_END---/, "").trim();
+    bodyMarkdown = bodyMarkdown.replace(/-+\s*OUTLINE[_\s]*START\s*-+[\s\S]*?-+\s*(?:END[_\s]*OUTLINE|OUTLINE[_\s]*END)\s*-+/i, "").trim();
     try {
       const jsonStr = outlineMatch[1].trim().replace(/```json\n?/g, "").replace(/```/g, "").trim();
-      outline = JSON.parse(jsonStr);
+      // Handle multiple JSON arrays concatenated (AI sometimes outputs [{...}] [{...}] instead of one array)
+      const firstArray = jsonStr.match(/\[[\s\S]*?\](?=\s*\[|\s*$)/);
+      outline = JSON.parse(firstArray ? `[${jsonStr.replace(/\]\s*\[/g, ",")}]` : jsonStr);
+      if (!Array.isArray(outline)) outline = [outline];
     } catch {
-      // Extract outline from headings in the article
       outline = extractOutlineFromMarkdown(bodyMarkdown);
     }
   } else {
     outline = extractOutlineFromMarkdown(bodyMarkdown);
   }
+
+  // Final cleanup — remove any remaining outline/FAQ markers that slipped through
+  bodyMarkdown = bodyMarkdown
+    .replace(/-+\s*(?:OUTLINE|FAQ)[_\s]*(?:START|END)\s*-+/gi, "")
+    .replace(/-+\s*(?:END)[_\s]*(?:OUTLINE|FAQ)\s*-+/gi, "")
+    .replace(/\[\{\"heading\"[\s\S]*?\"keyPoints\"[\s\S]*?\}\]/g, "")
+    .trim();
 
   return { outline, bodyMarkdown, faqItems };
 }
