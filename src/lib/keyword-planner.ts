@@ -211,17 +211,18 @@ RULES:
 
   if (!responseText) throw new Error("All AI models failed for keyword planning");
 
-  // Parse JSON — strip markdown fences, sanitize control chars
+  // Parse JSON — the AI sometimes returns huge JSON that gets truncated or malformed.
+  // Strategy: strip fences, sanitize, fix trailing commas, truncate to valid JSON if needed.
   let jsonStr = responseText
     .replace(/^```(?:json)?\s*/i, "")
     .replace(/\s*```$/i, "")
     .trim();
 
   const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) throw new Error("Could not parse keyword plan");
+  if (!jsonMatch) throw new Error("Could not parse keyword plan — no JSON found in response");
 
   // Sanitize control characters inside JSON string values
-  const sanitized = jsonMatch[0].replace(
+  let sanitized = jsonMatch[0].replace(
     /"(?:[^"\\]|\\.)*"/g,
     (match: string) => match
       .replace(/(?<!\\)\n/g, "\\n")
@@ -230,18 +231,47 @@ RULES:
       .replace(/[\x00-\x1f]/g, (c: string) => `\\u${c.charCodeAt(0).toString(16).padStart(4, "0")}`),
   );
 
-  // Fix common AI JSON mistakes: trailing commas before ] or }
-  const fixed = sanitized
-    .replace(/,\s*\]/g, "]")
-    .replace(/,\s*\}/g, "}");
+  // Fix trailing commas
+  sanitized = sanitized.replace(/,\s*\]/g, "]").replace(/,\s*\}/g, "}");
 
   let plan: KeywordPlan;
   try {
-    plan = JSON.parse(fixed) as KeywordPlan;
-  } catch (err) {
-    console.error("[keyword-planner] JSON parse failed:", (err as Error).message);
-    console.error("[keyword-planner] Raw response (first 500):", fixed.slice(0, 500));
-    throw new Error("Failed to parse keyword plan — AI returned malformed JSON. Please try again.");
+    plan = JSON.parse(sanitized) as KeywordPlan;
+  } catch {
+    // JSON is truncated — try to repair by closing open brackets/braces
+    console.warn("[keyword-planner] JSON truncated, attempting repair...");
+    let repaired = sanitized;
+    // Count open vs close brackets
+    const openBrackets = (repaired.match(/\[/g) || []).length;
+    const closeBrackets = (repaired.match(/\]/g) || []).length;
+    const openBraces = (repaired.match(/\{/g) || []).length;
+    const closeBraces = (repaired.match(/\}/g) || []).length;
+
+    // Remove trailing incomplete elements (partial strings, dangling commas)
+    repaired = repaired.replace(/,\s*"[^"]*$/, "");
+    repaired = repaired.replace(/,\s*\{[^}]*$/, "");
+    repaired = repaired.replace(/,\s*$/, "");
+
+    // Close missing brackets/braces
+    for (let i = 0; i < openBrackets - closeBrackets; i++) repaired += "]";
+    for (let i = 0; i < openBraces - closeBraces; i++) repaired += "}";
+
+    // Fix trailing commas again after repair
+    repaired = repaired.replace(/,\s*\]/g, "]").replace(/,\s*\}/g, "}");
+
+    try {
+      plan = JSON.parse(repaired) as KeywordPlan;
+      console.log("[keyword-planner] JSON repair succeeded");
+    } catch (err2) {
+      console.error("[keyword-planner] JSON repair also failed:", (err2 as Error).message);
+      throw new Error("Keyword plan generation returned incomplete data. Please try again.");
+    }
   }
+
+  // Validate minimum structure
+  if (!plan.summary) plan.summary = { totalMissingKeywords: 0, totalClusters: 0, topOpportunity: "Analysis incomplete" };
+  if (!plan.pillars) plan.pillars = [];
+  if (!plan.quickWins) plan.quickWins = [];
+
   return plan;
 }
