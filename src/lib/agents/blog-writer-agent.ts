@@ -500,128 +500,136 @@ BAD example (SEO article + fashion product):
 "Managing integrations requires flexibility, much like the [Silk Wrap Dress](url) — $129 — provides adaptable elegance." ← THIS IS SPAM. NEVER DO THIS.
 ` : "";
 
-  const prompt = `You are an expert editorial content writer and SEO formatting specialist. You create professionally formatted, visually clean articles that teach and recommend products naturally.
+  const isPillar = targetWordCount >= 2500;
+  const articleType = isPillar ? "PILLAR ARTICLE" : "CLUSTER ARTICLE";
+  const wordRange = isPillar ? "2,200–2,800 words (DO NOT exceed 3,000)" : "1,200–1,600 words (DO NOT exceed 1,800)";
 
-CRITICAL: Output the FULL article immediately. No questions, no preamble. Start with ## heading. Single-shot generation.
+  const prompt = `You are an expert SEO content strategist and editorial writer. Generate a production-ready blog article with STRICT adherence to professional standards.
 
-Today's date is ${currentMonth} ${currentDate.getDate()}, ${currentYear}. Use ${currentYear} as current year.
+CRITICAL: Output ONLY clean publishable markdown. No JSON, no markers, no metadata. Start with ## heading. Article ends at the conclusion — nothing after it.
+
+Today's date is ${currentMonth} ${currentDate.getDate()}, ${currentYear}. Use ${currentYear} only.
 ${languageInstruction}
+
+═══ ARTICLE SPECIFICATION ═══
+
+ARTICLE TYPE: ${articleType}
+TARGET LENGTH: ${wordRange}
 TOPIC: ${topic}
 PRIMARY KEYWORD: ${primaryKeyword}
 SECONDARY KEYWORDS: ${keywords.slice(1).join(", ")}
-TONE: ${tone === "casual" ? "conversational, friendly, directive — like a knowledgeable friend" : tone === "technical" ? "precise, detailed, expert-level — like a specialist guide" : "clear, authoritative, approachable — like an editorial magazine"}
+TONE: ${tone === "casual" ? "conversational, friendly, directive" : tone === "technical" ? "precise, detailed, expert-level" : "clear, authoritative, approachable — editorial magazine quality"}
 INTENT: ${intent}
-TARGET WORD COUNT: ${targetWordCount}
 ${gscContext}
 ${reworkNotes ? `REVISION NOTES: ${reworkNotes}` : ""}
 ${productInstructions}
 ${pillarClusterCtx ? `
-INTERNAL LINKING CONTEXT (link to these articles DURING writing):
-${pillarClusterCtx.isPillarArticle ? `You are writing the PILLAR article. Naturally mention and link to these cluster articles:
-${pillarClusterCtx.clusters.filter(c => c.slug).map(c => `- [${c.topic}](/${c.slug})`).join("\n")}
-Include 3-5 of these links spread across different sections using natural anchor text.` : `You are writing a CLUSTER article. Link back to the pillar article once in the introduction:
+═══ INTERNAL LINKING (CRITICAL) ═══
+${pillarClusterCtx.isPillarArticle ? `You are writing the PILLAR article. Naturally mention and link to these cluster articles (3-5 links spread across sections):
+${pillarClusterCtx.clusters.filter((c: { slug: string }) => c.slug).map((c: { topic: string; slug: string }) => `- [${c.topic}](/${c.slug})`).join("\n")}` : `You are writing a CLUSTER article. Link back to the pillar once in the introduction:
 - Pillar: [${pillarClusterCtx.pillarTitle}](/${pillarClusterCtx.pillarSlug})
 Also link to 1-2 related clusters if relevant:
-${pillarClusterCtx.clusters.filter(c => c.slug && c.topic !== topic).slice(0, 3).map(c => `- [${c.topic}](/${c.slug})`).join("\n")}`}
+${pillarClusterCtx.clusters.filter((c: { slug: string; topic: string }) => c.slug && c.topic !== topic).slice(0, 3).map((c: { topic: string; slug: string }) => `- [${c.topic}](/${c.slug})`).join("\n")}`}
 ` : ""}
 
-═══ ARTICLE STRUCTURE ═══
+═══ STRUCTURE (MANDATORY) ═══
 
-1. Start with ## heading immediately
+## Title (SEO-optimized, under 60 characters)
 
-2. **Introduction (Hook):**
-   - 2-3 short paragraphs introducing the topic
-   - Include the primary keyword naturally in the first paragraph
-   - End with a "**What you'll learn:**" section as a bullet list:
-     > **What you'll learn in this guide:**
-     > - Point 1
-     > - Point 2
-     > - Point 3
-   ${pillarClusterCtx && !pillarClusterCtx.isPillarArticle ? `- Include a contextual link back to the pillar article in the introduction` : ""}
+### Introduction (120–180 words)
+- Hook the reader with a specific problem or insight
+- Mention the primary keyword naturally in the first sentence
+- End with "**What you'll learn:**" bullet list (3-4 points)
+${pillarClusterCtx && !pillarClusterCtx.isPillarArticle ? "- Include contextual backlink to pillar article" : ""}
 
-3. Body: 6-10 sections, each following this EXACT pattern:
+### Body Sections (${isPillar ? "8-12" : "5-7"} sections)
+Each section MUST:
+- Start with ## heading (keyword-rich, searchable phrase)
+- Be 120–250 words (NOT more)
+- Include actionable insights, specific data, or examples
+- Use ### for subsections when needed
+- Use bullet points for scannable information
+- Keep paragraphs to 2-4 lines MAX
 
-   ## Section Heading (keyword-rich, searchable phrase)
+${hasProducts ? `### Product Integration
+- Weave relevant products naturally as contextual recommendations
+- Format: [Product Name](url) — $price
+- Add product image after mention: ![Product Name](image-url)
+- Each product must be EARNED by the preceding paragraph
+- Only include products relevant to the section topic` : ""}
 
-   Opening paragraph (2-3 sentences max). Set up the concept.
+### Pro Tips
+- Include 1-2 "> **Pro Tip:**" blockquote callouts per article
+- Insider knowledge, shortcuts, or common mistakes to avoid
 
-   Second paragraph with specific details, examples, or data.
+### Conclusion (100–150 words)
+- Summarize 3-5 key takeaways as **bold** bullet points
+- Include a soft CTA or next step
+- Mention primary keyword naturally
 
-   ${hasProducts ? `**Product recommendation** — naturally introduce a product:
-   "For this, the [Product Name](url) — $price — delivers exactly what you need because [specific reason]."
+═══ FORMATTING RULES ═══
 
-   ![Product Name](image-url)` : "Include specific examples, data points, or actionable steps."}
-
-   ### Subsection (if the section needs sub-points)
-
-   Use bullet points for scannable info:
-   - **Key term** — explanation in 1 line
-   - **Key term** — explanation in 1 line
-
-   > **Pro Tip:** Add 1-2 "Pro Tip" callouts per article in relevant sections. Format as a blockquote with bold "Pro Tip:" prefix. These should contain insider knowledge, shortcuts, or common mistakes to avoid.
-
-   ---
-
-4. End with ## Conclusion — summarize 3-5 key takeaways as bold bullet points
-
-═══ FORMATTING RULES (MANDATORY) ═══
+MARKDOWN:
+- ## for main sections, ### for subsections only
+- Never use # (title) or #### (too deep)
+- --- separator between major sections
+- Blank line between every paragraph, list, and section
 
 READABILITY:
-- Paragraphs: 2-4 sentences MAX. Never more. Break up any dense blocks.
-- Add a blank line between EVERY paragraph, list, and section
-- Add --- separator between major sections
-
-HEADINGS:
-- ## for main sections (8-10 per article)
-- ### for subsections within a section
-- Never use # (reserved for title) or #### (too deep)
-- Every heading should be a phrase someone would search for
+- Paragraphs: 2-4 sentences MAX. Break dense blocks aggressively.
+- Grade level: 6-8 (clear but not dumbed down)
+- Active voice preferred
+- Sentence variety (mix short punchy with longer explanatory)
 
 LISTS:
-- Use bullet points (-) for features, tips, characteristics
-- Use numbered lists (1. 2. 3.) for steps, rankings, sequences
-- Keep each bullet to 1-2 lines max
-- **Bold the key term** at the start of each bullet
+- Bullet points (-) for features, tips, characteristics
+- Numbered lists for steps, sequences, rankings
+- **Bold key term** at start of each bullet
+- 1-2 lines per bullet max
 
-VISUAL EMPHASIS:
-- **Bold** key terms, product names, and important concepts on first mention
-- Use > blockquotes for expert tips or key insights
-- Format product recommendations consistently:
-  **Product:** [Product Name](url) — $price
-  **Why:** 1-sentence reason
+EMPHASIS:
+- **Bold** key terms on first mention
+- > Blockquotes for expert tips and key insights
+- No walls of text anywhere
 
-INLINE ELEMENTS:
-- Links: [Natural anchor text](url) — never "click here" or "read more"
-- Images: ![Descriptive alt text](url) — place AFTER the paragraph that mentions the product
-- Add a blank line before and after every image
+LINKS:
+- [Natural keyword-rich anchor text](url) — never "click here" or "read more"
+- Minimum 3 words per anchor
+- Images: ![Descriptive alt](url) — blank line before and after
 
-CLEAN WRITING:
-- No filler: "in today's world", "it's no secret", "without further ado"
-- No meta-commentary: "I'll explain", "let me clarify", "in this article"
-- No hedging: "may", "might", "potentially", "could be"
+═══ QUALITY CONSTRAINTS (STRICT) ═══
+
+- NO fluff: "in today's world", "it's no secret", "without further ado"
+- NO meta-commentary: "I'll explain", "let me clarify", "in this article"
+- NO hedging: "may", "might", "potentially", "could be"
+- NO repetition — every paragraph must add new value
+- NO exceeding word limit — ${wordRange}
 - Be directive: "Use this", "Start with", "The key is"
 - Include specific numbers, measurements, prices, comparisons
 - Primary keyword in: first paragraph, 2+ headings, conclusion
 - Year references: ${currentYear} only
 
-═══ QUALITY CHECKLIST ═══
-Before returning, verify:
-□ No paragraph exceeds 4 sentences
-□ Blank line between every paragraph/list/section
-□ --- separator between major sections
-□ Every ## heading is a searchable phrase
-□ Bold key terms on first mention
-□ Products formatted consistently with name, link, price, reason
-□ Images placed after product mentions with spacing
-□ TL;DR at the top
-□ Conclusion has bold takeaway bullets
+═══ OUTPUT RULES (ABSOLUTE) ═══
 
-CRITICAL OUTPUT RULES:
-- Output ONLY the article content in clean markdown
-- Do NOT add any JSON, metadata, outlines, or structured data after the article
-- Do NOT add ---FAQ_START---, ---OUTLINE_START---, or any similar markers
-- Do NOT add any text after the conclusion — the article ends with the conclusion
-- The output must be EXACTLY what would appear on a published blog — nothing more
+- Output ONLY the article in clean markdown
+- Do NOT add JSON, metadata, outlines, FAQ arrays, or any structured data
+- Do NOT add ---FAQ_START---, ---OUTLINE_START---, or ANY markers
+- The article ENDS at the conclusion — NOTHING after it
+- The output must be EXACTLY what appears on a published blog
+
+═══ FINAL VALIDATION ═══
+
+Before returning, verify:
+□ Word count is within ${wordRange}
+□ Heading hierarchy: ## then ### (no skipping)
+□ Introduction is 120-180 words with "What you'll learn"
+□ Each body section is 120-250 words
+□ Conclusion is 100-150 words with bold takeaways
+□ Internal links correctly placed
+□ No paragraph exceeds 4 sentences
+□ No fluff, no repetition, no hedging
+□ No JSON or markers anywhere in the output
+□ Article ends cleanly at the conclusion
 
 BEGIN NOW — first line must be a ## heading.`;
 
