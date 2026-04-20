@@ -6,6 +6,8 @@ import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { PublishModal } from "@/components/publish-modal";
 import { CopyButton } from "@/components/copy-button";
+import { usePageTitle } from "@/components/page-title";
+import { CardSkeleton } from "@/components/skeleton";
 
 interface Article {
   id: string;
@@ -30,6 +32,7 @@ export default function ArticlesPage() {
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState("all");
   const [publishingArticle, setPublishingArticle] = useState<Article | null>(null);
+  usePageTitle("Articles");
 
 
   useEffect(() => {
@@ -98,9 +101,7 @@ export default function ArticlesPage() {
 
         {/* Content */}
         {loading ? (
-          <div className="card-static p-16 text-center fade-in">
-            <p style={{ color: "var(--text-muted)" }}>Loading...</p>
-          </div>
+          <CardSkeleton count={4} />
         ) : filtered.length === 0 ? (
           <div className="card-static p-16 text-center fade-in">
             <div className="w-14 h-14 rounded-xl mx-auto mb-5 flex items-center justify-center" style={{ background: "var(--border-light)" }}>

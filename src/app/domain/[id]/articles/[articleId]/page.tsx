@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { CopyButton } from "@/components/copy-button";
 import { PublishModal } from "@/components/publish-modal";
+import { usePageTitle } from "@/components/page-title";
 
 interface Article {
   id: string;
@@ -49,6 +50,7 @@ export default function ArticleEditorPage() {
   const [h1, setH1] = useState("");
   const [slug, setSlug] = useState("");
   const [body, setBody] = useState("");
+  usePageTitle(metaTitle || h1 || "Article");
 
   const fetchArticle = useCallback(async () => {
     const res = await fetch(`/api/articles/${articleId}`);

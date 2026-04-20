@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
+import { usePageTitle } from "@/components/page-title";
 
 interface DomainSummary {
   id: string;
@@ -19,6 +20,7 @@ interface DomainSummary {
 }
 
 export default function DashboardPage() {
+  usePageTitle("Dashboard");
   const [domains, setDomains] = useState<DomainSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [credits, setCredits] = useState<{

@@ -34,8 +34,12 @@ async function askClaude(prompt: string, maxTokens = 4000): Promise<string> {
       });
 
       if (!res.ok) {
-        const err = await res.text().catch(() => "");
-        console.warn(`[blog-writer] ${model} failed (${res.status}), trying next model...`, err.slice(0, 150));
+        const errText = await res.text().catch(() => "");
+        const status = res.status;
+        if (status === 402) console.warn(`[blog-writer] ${model} — insufficient credits or free-tier limit. Trying next...`);
+        else if (status === 429) console.warn(`[blog-writer] ${model} — rate limited. Trying next...`);
+        else if (status === 401) console.warn(`[blog-writer] ${model} — invalid API key. Trying next...`);
+        else console.warn(`[blog-writer] ${model} failed (${status}), trying next...`, errText.slice(0, 150));
         continue;
       }
 
@@ -62,7 +66,7 @@ async function askClaude(prompt: string, maxTokens = 4000): Promise<string> {
     }
   }
 
-  throw new Error("All AI models failed — check OpenRouter credits and API key");
+  throw new Error("Article generation failed — all AI models returned errors. Please check your OpenRouter API key and credit balance at openrouter.ai/settings");
 }
 
 export interface BlogWriterConfig {

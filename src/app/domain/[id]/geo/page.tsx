@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
+import { usePageTitle } from "@/components/page-title";
 
 interface GEOReport {
   domain: { id: string; url: string };
@@ -44,6 +45,7 @@ export default function GEOPage() {
   const [expandedIssue, setExpandedIssue] = useState<number | null>(null);
   const [llmsDownloaded, setLlmsDownloaded] = useState(false);
   const [showUploadGuide, setShowUploadGuide] = useState(false);
+  usePageTitle("AI Readiness (GEO)");
 
   const fetchReport = useCallback(async () => {
     setLoading(true);
@@ -88,7 +90,7 @@ export default function GEOPage() {
             disabled={loading}
             className="btn-primary px-5 py-2 text-sm cursor-pointer disabled:opacity-40"
           >
-            {loading ? "Refreshing..." : "Re-run"}
+            {loading ? "Refreshing..." : "Refresh"}
           </button>
         </div>
       </header>
@@ -108,8 +110,24 @@ export default function GEOPage() {
         </div>
 
         {loading && (
-          <div className="card-static p-12 text-center">
-            <p className="text-sm" style={{ color: "var(--text-muted)" }}>Analyzing your pages...</p>
+          <div className="space-y-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {[1, 2].map((i) => (
+                <div key={i} className="card-static p-7 animate-pulse">
+                  <div className="w-24 h-3 rounded mb-4" style={{ background: "var(--border-light)" }} />
+                  <div className="w-20 h-8 rounded mb-2" style={{ background: "var(--border-light)" }} />
+                  <div className="w-40 h-3 rounded" style={{ background: "var(--border-light)" }} />
+                </div>
+              ))}
+            </div>
+            <div className="card-static p-7 animate-pulse">
+              <div className="w-32 h-3 rounded mb-4" style={{ background: "var(--border-light)" }} />
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="w-full h-12 rounded-lg" style={{ background: "var(--border-light)" }} />
+                ))}
+              </div>
+            </div>
           </div>
         )}
 

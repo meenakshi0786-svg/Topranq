@@ -5,6 +5,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { CubeLoader } from "@/components/cube-loader";
+import { usePageTitle } from "@/components/page-title";
 
 interface Cluster {
   id: string;
@@ -54,6 +55,7 @@ export default function PillarsPage() {
   const [gscKeywords, setGscKeywords] = useState<GSCKeyword[]>([]);
   const [suggestLoading, setSuggestLoading] = useState(false);
   const [suggestError, setSuggestError] = useState<string | null>(null);
+  usePageTitle("Pillars & Clusters");
 
   const fetchPillars = useCallback(async () => {
     setLoading(true);
@@ -320,8 +322,19 @@ export default function PillarsPage() {
 
         {/* Pillars list */}
         {loading ? (
-          <div className="card-static p-12 text-center">
-            <p className="text-sm" style={{ color: "var(--text-muted)" }}>Loading...</p>
+          <div className="space-y-4">
+            {[1, 2].map((i) => (
+              <div key={i} className="card-static p-6 animate-pulse">
+                <div className="w-16 h-4 rounded mb-3" style={{ background: "var(--border-light)" }} />
+                <div className="w-64 h-5 rounded mb-2" style={{ background: "var(--border-light)" }} />
+                <div className="w-96 h-3 rounded mb-5" style={{ background: "var(--border-light)" }} />
+                <div className="grid grid-cols-2 gap-3">
+                  {[1, 2, 3, 4].map((j) => (
+                    <div key={j} className="h-20 rounded-lg" style={{ background: "var(--border-light)" }} />
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         ) : pillars.length === 0 ? (
           <div className="card-static p-12 text-center">

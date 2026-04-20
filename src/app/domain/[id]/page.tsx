@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { CubeLoader } from "@/components/cube-loader";
 import { OnboardingPanel } from "@/components/onboarding-panel";
+import { usePageTitle } from "@/components/page-title";
 
 const LANGUAGES = [
   "English", "French", "Spanish", "German", "Italian", "Portuguese",
@@ -112,6 +113,7 @@ export default function DomainOverview() {
 
   const { domain, latestAudit, stats, recentActions } = data;
   const hostname = (() => { try { return new URL(domain.domainUrl).hostname; } catch { return domain.domainUrl; } })();
+  usePageTitle(`${hostname} — Dashboard`);
   const isRunning = latestAudit && !["complete", "failed"].includes(latestAudit.status);
 
   return (
