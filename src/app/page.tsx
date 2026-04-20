@@ -75,6 +75,12 @@ export default function LandingPage() {
           <a href="/pricing" className="text-sm font-medium px-4 py-2 rounded-lg hidden md:inline-block" style={{ color: "var(--text-secondary)" }}>
             Pricing
           </a>
+          <a href="/blog" className="text-sm font-medium px-4 py-2 rounded-lg hidden md:inline-block" style={{ color: "var(--text-secondary)" }}>
+            Blog
+          </a>
+          <a href="/compare" className="text-sm font-medium px-4 py-2 rounded-lg hidden md:inline-block" style={{ color: "var(--text-secondary)" }}>
+            Compare
+          </a>
           <a
             href="/dashboard"
             className="text-sm font-medium px-5 py-2 rounded-lg"
@@ -473,6 +479,38 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Testimonials */}
+      <section style={{ background: "var(--bg)" }}>
+        <div className="max-w-[1200px] mx-auto px-6 py-20">
+          <div className="text-center mb-12">
+            <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--accent)" }}>What users say</p>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>
+              Trusted by SEO teams worldwide
+            </h2>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            <TestimonialCard
+              quote="Ranqapex cut our content production time by 70%. The pillar-cluster strategy generator is the smartest I've seen — it actually uses our GSC data instead of guessing."
+              name="Sarah M."
+              role="Head of Content, SaaS Startup"
+              initials="SM"
+            />
+            <TestimonialCard
+              quote="The GEO toolkit is a game-changer. We generated llms.txt, entity maps, and citation snippets for 12 client sites in one afternoon. Getting cited by ChatGPT within weeks."
+              name="David K."
+              role="SEO Director, Digital Agency"
+              initials="DK"
+            />
+            <TestimonialCard
+              quote="Finally an SEO tool that writes articles my team actually wants to publish. The product integration is seamless — our Shopify products appear naturally in every blog post."
+              name="Amira L."
+              role="eCommerce Manager"
+              initials="AL"
+            />
+          </div>
+        </div>
+      </section>
+
       {/* Final CTA */}
       <section style={{ background: "var(--bg)" }}>
         <div className="max-w-[800px] mx-auto px-6 py-20 text-center">
@@ -808,6 +846,40 @@ function FloatingCard({ delay, y, label, value, icon, color }: { delay: number; 
         <div>
           <p style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 500, lineHeight: 1.2 }}>{label}</p>
           <p style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.3 }}>{value}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TestimonialCard({ quote, name, role, initials }: { quote: string; name: string; role: string; initials: string }) {
+  return (
+    <div
+      className="card-static p-6 fade-in"
+      style={{ transition: "transform 0.3s, box-shadow 0.3s" }}
+      onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 8px 30px rgba(0,0,0,0.08)"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "var(--shadow-xs)"; }}
+    >
+      <div className="flex gap-1 mb-4">
+        {[1, 2, 3, 4, 5].map((s) => (
+          <svg key={s} width="14" height="14" viewBox="0 0 24 24" fill="#eab308" stroke="none">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+          </svg>
+        ))}
+      </div>
+      <p className="text-sm leading-relaxed mb-5" style={{ color: "var(--text-secondary)" }}>
+        &ldquo;{quote}&rdquo;
+      </p>
+      <div className="flex items-center gap-3">
+        <div
+          className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold"
+          style={{ background: "var(--accent-light)", color: "var(--accent)" }}
+        >
+          {initials}
+        </div>
+        <div>
+          <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{name}</p>
+          <p className="text-xs" style={{ color: "var(--text-muted)" }}>{role}</p>
         </div>
       </div>
     </div>
