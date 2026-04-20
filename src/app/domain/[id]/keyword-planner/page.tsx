@@ -85,32 +85,9 @@ export default function KeywordPlannerPage() {
       </header>
 
       <div className="max-w-[1100px] mx-auto px-6 py-10">
-        {/* Animated Hero */}
-        <div className="relative mb-8 overflow-hidden" style={{ minHeight: 200 }}>
-          {/* Floating keyword bubbles */}
-          <div className="absolute inset-0 pointer-events-none" style={{ opacity: 0.5 }}>
-            {["SEO", "keywords", "ranking", "traffic", "content", "pillar", "cluster", "SERP", "backlinks", "authority"].map((word, i) => (
-              <span
-                key={word}
-                className="absolute text-[10px] font-medium rounded-full float-orb"
-                style={{
-                  left: `${8 + (i * 9) % 85}%`,
-                  top: `${15 + (i * 17) % 70}%`,
-                  padding: "4px 10px",
-                  background: i % 3 === 0 ? "#4F6EF710" : i % 3 === 1 ? "#7C5CFC10" : "#22c55e10",
-                  color: i % 3 === 0 ? "#4F6EF7" : i % 3 === 1 ? "#7C5CFC" : "#22c55e",
-                  border: `1px solid ${i % 3 === 0 ? "#4F6EF720" : i % 3 === 1 ? "#7C5CFC20" : "#22c55e20"}`,
-                  animationDelay: `${i * 0.8}s`,
-                  animationDuration: `${8 + i * 1.5}s`,
-                }}
-              >
-                {word}
-              </span>
-            ))}
-          </div>
-
-          {/* Main heading */}
-          <div className="relative fade-in" style={{ zIndex: 1 }}>
+        {/* Hero heading */}
+        <div className="mb-8">
+          <div className="fade-in">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-4" style={{ background: "linear-gradient(135deg, #4F6EF715, #7C5CFC15)", color: "var(--accent)", border: "1px solid #4F6EF730" }}>
               <span className="relative flex w-2 h-2">
                 <span className="absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping" style={{ background: "#22c55e" }} />
@@ -171,33 +148,58 @@ export default function KeywordPlannerPage() {
         </div>
 
         {!plan && !loading && (
-          <div className="card-static p-10 text-center fade-in" style={{ background: "linear-gradient(135deg, #4F6EF705, #7C5CFC05)", border: "1px solid #4F6EF720" }}>
-            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5 glow-pulse" style={{ background: "linear-gradient(135deg, #4F6EF720, #7C5CFC20)" }}>
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                <path d="M10 7v6m3-3H7" />
-              </svg>
+          <div className="relative card-static p-10 text-center fade-in overflow-hidden" style={{ background: "linear-gradient(135deg, #4F6EF705, #7C5CFC05)", border: "1px solid #4F6EF720" }}>
+            {/* Floating keyword bubbles — edges only, not overlapping center text */}
+            {["SEO", "keywords", "ranking", "traffic", "content", "pillar", "cluster", "SERP", "backlinks", "authority", "gaps", "strategy"].map((word, i) => (
+              <span
+                key={word}
+                className="absolute text-[10px] font-medium rounded-full float-orb pointer-events-none"
+                style={{
+                  left: i % 2 === 0 ? `${3 + (i * 3) % 15}%` : `${82 + (i * 3) % 15}%`,
+                  top: `${10 + (i * 13) % 75}%`,
+                  padding: "3px 9px",
+                  background: i % 3 === 0 ? "#4F6EF708" : i % 3 === 1 ? "#7C5CFC08" : "#22c55e08",
+                  color: i % 3 === 0 ? "#4F6EF750" : i % 3 === 1 ? "#7C5CFC50" : "#22c55e50",
+                  border: `1px solid ${i % 3 === 0 ? "#4F6EF715" : i % 3 === 1 ? "#7C5CFC15" : "#22c55e15"}`,
+                  animationDelay: `${i * 0.7}s`,
+                  animationDuration: `${7 + i * 1.2}s`,
+                  zIndex: 0,
+                }}
+              >
+                {word}
+              </span>
+            ))}
+
+            <div className="relative" style={{ zIndex: 1 }}>
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5 glow-pulse" style={{ background: "linear-gradient(135deg, #4F6EF720, #7C5CFC20)" }}>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  <path d="M10 7v6m3-3H7" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-bold mb-2" style={{ color: "var(--text-primary)" }}>Ready to find your keyword opportunities?</h2>
+              <p className="text-sm mb-6 max-w-md mx-auto" style={{ color: "var(--text-secondary)" }}>
+                We&apos;ll analyze your GSC data, crawled pages, and competitor SERPs to build a prioritized content strategy.
+              </p>
+              <button
+                onClick={generate}
+                className="btn-primary cursor-pointer"
+                style={{
+                  padding: "16px 48px",
+                  fontSize: 16,
+                  fontWeight: 600,
+                  borderRadius: 14,
+                  boxShadow: "0 4px 15px rgba(79, 110, 247, 0.3)",
+                  transition: "all 0.3s",
+                  position: "relative",
+                  zIndex: 2,
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 25px rgba(79, 110, 247, 0.4)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 15px rgba(79, 110, 247, 0.3)"; }}
+              >
+                Generate Keyword Plan
+              </button>
             </div>
-            <h2 className="text-xl font-bold mb-2" style={{ color: "var(--text-primary)" }}>Ready to find your keyword opportunities?</h2>
-            <p className="text-sm mb-6 max-w-md mx-auto" style={{ color: "var(--text-secondary)" }}>
-              We&apos;ll analyze your GSC data, crawled pages, and competitor SERPs to build a prioritized content strategy.
-            </p>
-            <button
-              onClick={generate}
-              className="btn-primary cursor-pointer"
-              style={{
-                padding: "16px 48px",
-                fontSize: 16,
-                fontWeight: 600,
-                borderRadius: 14,
-                boxShadow: "0 4px 15px rgba(79, 110, 247, 0.3)",
-                transition: "all 0.3s",
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 25px rgba(79, 110, 247, 0.4)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 15px rgba(79, 110, 247, 0.3)"; }}
-            >
-              Generate Keyword Plan
-            </button>
             {error && <p className="text-xs mt-4" style={{ color: "var(--critical)" }}>{error}</p>}
           </div>
         )}
