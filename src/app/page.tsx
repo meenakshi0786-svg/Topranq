@@ -205,19 +205,6 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Demo button */}
-            <div className="mt-5">
-              <a
-                href="/domain/b98a5766-9f4a-4a30-bf70-a0c6522c928b"
-                className="inline-flex items-center gap-2 text-sm font-medium px-5 py-2.5 rounded-xl cursor-pointer"
-                style={{ color: "var(--accent)", background: "var(--accent-light)", border: "1px solid var(--accent)", transition: "all 0.2s" }}
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polygon points="5 3 19 12 5 21 5 3" />
-                </svg>
-                Try Live Demo — No signup required
-              </a>
-            </div>
           </div>
 
           {/* Dashboard mockup centered below */}
