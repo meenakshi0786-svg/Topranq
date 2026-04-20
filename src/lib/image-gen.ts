@@ -9,19 +9,18 @@ const IMAGE_MODEL = "google/gemini-2.5-flash-image";
 const OUTPUT_DIR = path.join(process.cwd(), "data", "article-images");
 const POLLINATIONS_BASE = "https://image.pollinations.ai/prompt";
 
-// Map language to cultural context for image generation
-const CULTURAL_CONTEXT: Record<string, string> = {
-  French: "French woman, Parisian style, European fashion, warm Mediterranean lighting",
-  Spanish: "Spanish woman, Mediterranean style, warm natural lighting",
-  German: "German woman, Northern European style, clean Scandinavian lighting",
-  Italian: "Italian woman, Milan fashion style, golden hour Mediterranean lighting",
-  Japanese: "Japanese woman, Tokyo street style, soft ambient lighting",
-  Korean: "Korean woman, Seoul fashion style, soft natural lighting",
-  Chinese: "Chinese woman, modern Shanghai style, elegant ambient lighting",
-  Arabic: "Arab woman, elegant modest fashion, warm golden lighting",
-  Hindi: "Indian woman, modern Delhi style, vibrant warm lighting",
-  Turkish: "Turkish woman, Istanbul fashion, warm natural lighting",
-  Portuguese: "Brazilian woman, modern São Paulo style, tropical warm lighting",
+const CULTURAL_SUBJECT: Record<string, string> = {
+  French: "French woman in her late 20s, effortlessly chic Parisian style, natural beauty",
+  Spanish: "Spanish woman, Mediterranean features, warm confident expression",
+  German: "German woman, Northern European features, understated elegant style",
+  Italian: "Italian woman, Milan fashion sensibility, expressive and poised",
+  Japanese: "Japanese woman, contemporary Tokyo style, refined and minimal",
+  Korean: "Korean woman, modern Seoul aesthetic, clean and polished look",
+  Chinese: "Chinese woman, contemporary Shanghai style, sophisticated presence",
+  Arabic: "Arab woman, elegant modest fashion, graceful and composed",
+  Hindi: "Indian woman, modern professional style, vibrant and confident",
+  Turkish: "Turkish woman, Istanbul-inspired fashion, warm and stylish",
+  Portuguese: "Brazilian woman, modern São Paulo energy, natural and vibrant",
 };
 
 export async function generateFeaturedImageUrl(
@@ -34,32 +33,45 @@ export async function generateFeaturedImageUrl(
       const url = await generateWithNanoBanana(apiKey, prompt, language);
       if (url) return url;
     } catch (err) {
-      console.warn("[image-gen] Nano Banana via OpenRouter failed, falling back to Pollinations:", err);
+      console.warn("[image-gen] Nano Banana failed, falling back to Pollinations:", err);
     }
   }
   return generateWithPollinations(prompt);
 }
 
 async function generateWithNanoBanana(apiKey: string, prompt: string, language?: string): Promise<string | null> {
-  const cultural = language && language !== "English" ? CULTURAL_CONTEXT[language] || "" : "";
+  const subject = language && language !== "English"
+    ? CULTURAL_SUBJECT[language] || "stylish woman, natural and confident"
+    : "stylish woman, natural and confident";
 
-  const enriched = `Create a high-quality editorial lifestyle photograph for a fashion/lifestyle blog.
+  const enriched = `Create an editorial-style lifestyle photograph.
 
-SCENE: ${prompt}
-${cultural ? `CULTURAL CONTEXT: ${cultural}` : ""}
+Scene:
+${prompt}. A real, lived-in environment that feels authentic — not a studio set. Think magazine editorial shot on location.
 
-PHOTOGRAPHY STYLE:
-- Professional editorial photography, NOT stock photo
-- Shot on Canon EOS R5 with 85mm f/1.4 lens
-- Natural soft lighting, slightly warm tone
-- Shallow depth of field with subject in sharp focus
-- Clean, uncluttered background (neutral wall, studio, or elegant interior)
-- Model should look natural, confident, and editorial — NOT posed or artificial
-- Color palette: muted earth tones, soft pastels, warm neutrals
-- Composition: rule of thirds, slightly off-center subject
-- 16:9 aspect ratio, landscape orientation
-- High resolution, magazine quality
-- NO text, NO watermarks, NO logos, NO borders`;
+Subject:
+${subject}. Captured mid-moment doing something natural — not posing for camera. Expression is genuine: focused, calm, or softly smiling. Body language is relaxed and confident.
+
+Mood & Emotion:
+Aspirational but approachable. The viewer should think "I want that life" not "that's an ad." Warm, inviting, real.
+
+Lighting:
+Natural light as primary source — window light, golden hour, or soft overcast. Subtle warm tone. Soft shadows that add depth. No harsh flash, no ring light, no flat studio lighting.
+
+Composition:
+Rule of thirds. Slight depth of field with subject sharp and background gently blurred. Shot at eye level or slightly above. Leave breathing room in the frame — not tightly cropped.
+
+Aesthetic:
+Clean, modern, premium. Muted earth tones and soft pastels. Minimal clutter. Every element in frame is intentional. Magazine-quality editorial look.
+
+Details:
+Textures matter — fabric weave, natural materials, soft surfaces. Include 1-2 contextual props that tell a story (coffee cup, open book, draped fabric, plant). Background should complement, not compete.
+
+Avoid:
+Stock photo look, staged poses, overly polished skin, fake smiles, unnatural lighting, cluttered backgrounds, text overlays, watermarks, logos, borders, corporate feel.
+
+Style:
+Shot on DSLR with 85mm f/1.4 lens, realistic, high detail, cinematic depth of field. 16:9 landscape orientation.`;
 
   const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
@@ -112,7 +124,7 @@ PHOTOGRAPHY STYLE:
 }
 
 function generateWithPollinations(prompt: string): string {
-  const enriched = `${prompt}, editorial fashion photography, soft natural lighting, professional magazine quality, 16:9`;
+  const enriched = `${prompt}, editorial lifestyle photography, natural light, DSLR 85mm, cinematic depth of field, muted tones, magazine quality, 16:9`;
   const params = new URLSearchParams({
     width: "1200",
     height: "630",
@@ -131,14 +143,12 @@ export function buildImagePrompt(
 ): string {
   const cleanTitle = title.replace(/["']/g, "").slice(0, 120);
 
-  // Build a scene description, not just keywords
-  const cultural = language && language !== "English" ? CULTURAL_CONTEXT[language] || "" : "";
-  const style =
+  const environment =
     tone === "technical"
-      ? "professional workspace, minimalist desk setup, clean modern environment"
+      ? "Modern home office or co-working space. Clean desk with laptop, notebook, and coffee. Minimalist decor, natural wood and white surfaces"
       : tone === "casual"
-      ? "relaxed lifestyle setting, natural daylight, warm casual atmosphere"
-      : "elegant editorial setting, sophisticated interior, soft natural light";
+      ? "Bright café or sunlit living room. Relaxed atmosphere with plants, soft textiles, and warm natural light streaming through windows"
+      : "Elegant boutique interior or styled apartment. Curated details — fresh flowers, quality materials, soft neutral palette";
 
-  return `${cleanTitle}. ${topic}. ${style}${cultural ? `. Model: ${cultural}` : ""}`;
+  return `${cleanTitle}. Topic: ${topic}. Environment: ${environment}`;
 }
