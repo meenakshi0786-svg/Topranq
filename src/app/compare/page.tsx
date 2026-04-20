@@ -1,5 +1,6 @@
 "use client";
 
+import { Fragment } from "react";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { usePageTitle } from "@/components/page-title";
@@ -89,8 +90,8 @@ export default function ComparePage() {
             </thead>
             <tbody>
               {categories.map((cat) => (
-                <>
-                  <tr key={`cat-${cat}`} style={{ background: "var(--bg)" }}>
+                <Fragment key={cat}>
+                  <tr style={{ background: "var(--bg)" }}>
                     <td colSpan={3} className="px-5 py-2 text-xs font-bold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>{cat}</td>
                   </tr>
                   {features.filter((f) => f.category === cat).map((f) => (
@@ -112,7 +113,7 @@ export default function ComparePage() {
                       </td>
                     </tr>
                   ))}
-                </>
+                </Fragment>
               ))}
             </tbody>
           </table>
