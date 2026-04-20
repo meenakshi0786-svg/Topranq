@@ -83,8 +83,8 @@ export default function BlogPage() {
 
         <div className="space-y-4">
           {posts.map((post, i) => (
+            <Link href={`/blog/${post.slug}`} key={post.slug} className="block">
             <article
-              key={post.slug}
               className="card-static p-6 fade-in"
               style={{ animationDelay: `${i * 0.05}s`, transition: "transform 0.3s, box-shadow 0.3s" }}
               onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 25px rgba(0,0,0,0.06)"; }}
@@ -108,6 +108,7 @@ export default function BlogPage() {
                 </div>
               </div>
             </article>
+            </Link>
           ))}
         </div>
 

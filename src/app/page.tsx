@@ -204,6 +204,20 @@ export default function LandingPage() {
                 Results in 60s
               </div>
             </div>
+
+            {/* Demo button */}
+            <div className="mt-5">
+              <a
+                href="/domain/b98a5766-9f4a-4a30-bf70-a0c6522c928b"
+                className="inline-flex items-center gap-2 text-sm font-medium px-5 py-2.5 rounded-xl cursor-pointer"
+                style={{ color: "var(--accent)", background: "var(--accent-light)", border: "1px solid var(--accent)", transition: "all 0.2s" }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
+                Try Live Demo — No signup required
+              </a>
+            </div>
           </div>
 
           {/* Dashboard mockup centered below */}
@@ -251,22 +265,28 @@ export default function LandingPage() {
 
           <div className="grid md:grid-cols-3 gap-6">
             <BigFeatureCard
-              imageUrl="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80"
+              imageUrl=""
               title="Deep Technical Audit"
-              desc="47 checks covering technical SEO, on-page, content, performance, schema, E-E-A-T, and AI readiness."
+              desc="47 checks covering technical SEO, on-page, content, performance, schema, E-E-A-T, and AI readiness. Scored 0-100 per page."
               tag="Audit"
+              icon="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+              gradient="linear-gradient(135deg, #4F6EF720, #7C5CFC10)"
             />
             <BigFeatureCard
-              imageUrl="https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=800&q=80"
-              title="AI Blog Writer"
-              desc="Smart topic suggestions from your content gaps. Draft SEO-optimized articles with schema, FAQs, and internal links."
+              imageUrl=""
+              title="AI Article Writer"
+              desc="Pillar-cluster strategies from GSC data. Editorial articles with product links, images, and internal backlinking."
               tag="Content"
+              icon="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+              gradient="linear-gradient(135deg, #22c55e20, #4F6EF710)"
             />
             <BigFeatureCard
-              imageUrl="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80"
-              title="One-Click Publishing"
-              desc="Review via email, accept, and we push directly to Shopify — no copy-paste, no formatting fixes."
-              tag="Publish"
+              imageUrl=""
+              title="GEO Optimization"
+              desc="AI Readiness Score, llms.txt, entity maps, citation snippets. Get cited by ChatGPT, Claude, and Perplexity."
+              tag="GEO"
+              icon="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+              gradient="linear-gradient(135deg, #7C5CFC20, #4F6EF710)"
             />
           </div>
         </div>
@@ -702,11 +722,15 @@ function BigFeatureCard({
   title,
   desc,
   tag,
+  icon,
+  gradient,
 }: {
   imageUrl: string;
   title: string;
   desc: string;
   tag: string;
+  icon?: string;
+  gradient?: string;
 }) {
   return (
     <div
@@ -720,17 +744,15 @@ function BigFeatureCard({
       onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.boxShadow = "0 12px 40px rgba(79,110,247,0.12)"; }}
       onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.04)"; }}
     >
-      <div className="relative h-44 overflow-hidden" style={{ background: "linear-gradient(135deg, #4F6EF710, #7C5CFC10)" }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={imageUrl}
-          alt={title}
-          className="w-full h-full object-cover"
-          loading="lazy"
-          style={{ transition: "transform 0.6s ease" }}
-          onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.08)"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
-        />
+      <div className="relative h-44 overflow-hidden flex items-center justify-center" style={{ background: gradient || "linear-gradient(135deg, #4F6EF710, #7C5CFC10)" }}>
+        {imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={imageUrl} alt={title} className="w-full h-full object-cover" loading="lazy" style={{ transition: "transform 0.6s ease" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.08)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }} />
+        ) : icon ? (
+          <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.6 }}>
+            <path d={icon} />
+          </svg>
+        ) : null}
         <span
           className="absolute top-3 left-3 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md"
           style={{ background: "rgba(255,255,255,0.95)", color: "var(--accent)", backdropFilter: "blur(8px)" }}
