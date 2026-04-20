@@ -52,8 +52,10 @@ export default function DomainOverview() {
 
   const fetchData = useCallback(async () => {
     const res = await fetch(`/api/domains/${domainId}`);
-    if (res.ok) { setData(await res.json()); }
-    return (await res.json?.())?.latestAudit?.status;
+    if (!res.ok) return;
+    const d = await res.json();
+    setData(d);
+    return d?.latestAudit?.status;
   }, [domainId]);
 
   useEffect(() => {
