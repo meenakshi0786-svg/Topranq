@@ -161,6 +161,47 @@ export default function DomainOverview() {
 
       <div className="max-w-[1100px] mx-auto px-6 py-10">
 
+        {/* Audit failed banner */}
+        {latestAudit?.status === "failed" && (
+          <div className="p-5 rounded-xl mb-5 fade-in" style={{ background: "var(--critical-bg)", border: "1px solid var(--critical)" }}>
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm font-semibold mb-1" style={{ color: "var(--critical)" }}>Audit failed</p>
+                <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                  {(latestAudit as unknown as { errorMessage?: string })?.errorMessage || "The crawl encountered an error. This can happen if the site is unreachable, blocks crawlers, or has an unusual structure."}
+                </p>
+              </div>
+              <button
+                onClick={async () => {
+                  await fetch(`/api/domains/${domainId}/crawl`, { method: "POST" });
+                  window.location.reload();
+                }}
+                className="px-4 py-2 rounded-lg text-xs font-semibold text-white cursor-pointer shrink-0"
+                style={{ background: "var(--critical)" }}
+              >
+                Retry Audit
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* No audit yet */}
+        {!latestAudit && (
+          <div className="card-static p-10 text-center mb-5 fade-in">
+            <p className="text-sm font-semibold mb-2" style={{ color: "var(--text-primary)" }}>No audit yet</p>
+            <p className="text-xs mb-4" style={{ color: "var(--text-muted)" }}>Click &quot;Re-run Audit&quot; to crawl this site and generate your SEO report.</p>
+            <button
+              onClick={async () => {
+                await fetch(`/api/domains/${domainId}/crawl`, { method: "POST" });
+                window.location.reload();
+              }}
+              className="btn-primary px-5 py-2.5 text-sm cursor-pointer"
+            >
+              Start Audit
+            </button>
+          </div>
+        )}
+
         {/* Onboarding (Connect GSC + Add Products) — lives above the score */}
         {latestAudit?.status === "complete" && (
           <OnboardingPanel

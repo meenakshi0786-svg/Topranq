@@ -29,17 +29,20 @@ export async function POST(request: NextRequest) {
     .where(eq(schema.storeProducts.domainId, domainId))
     .run();
 
-  // Insert new products
+  // Insert new products — skip entries without a name or with broken data
   let imported = 0;
+  let skipped = 0;
   for (const p of products) {
-    if (!p.name) continue;
+    if (!p.name || p.name.length < 3) { skipped++; continue; }
+    // Validate URL — skip products with null/empty URLs (they cause broken links in articles)
+    const url = p.url && p.url.length > 3 ? p.url : null;
     db.insert(schema.storeProducts)
       .values({
         domainId,
-        name: p.name,
-        url: p.url || null,
+        name: p.name.slice(0, 200),
+        url,
         price: p.price || null,
-        description: p.description || null,
+        description: p.description ? p.description.slice(0, 500) : null,
         category: p.category || null,
         imageUrl: p.imageUrl || null,
       })
@@ -47,7 +50,7 @@ export async function POST(request: NextRequest) {
     imported++;
   }
 
-  return NextResponse.json({ imported, total: products.length });
+  return NextResponse.json({ imported, skipped, total: products.length });
 }
 
 /**

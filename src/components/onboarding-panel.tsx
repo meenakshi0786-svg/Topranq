@@ -69,7 +69,26 @@ export function OnboardingPanel({ domainId, domainUrl, justConnectedGsc }: Props
     return () => clearInterval(t);
   }, [gscFetching]);
 
-  if (gscConnected === null) return null; // loading
+  if (gscConnected === null) {
+    // Loading skeleton while checking onboarding status
+    return (
+      <div className="card-static p-7 mb-5 fade-in">
+        <div className="h-4 w-24 rounded mb-5 animate-pulse" style={{ background: "var(--border-light)" }} />
+        <div className="space-y-3">
+          {[1, 2].map((i) => (
+            <div key={i} className="flex items-start gap-4 p-4 rounded-lg" style={{ background: "var(--bg)", border: "1px solid var(--border-light)" }}>
+              <div className="w-8 h-8 rounded-full animate-pulse" style={{ background: "var(--border-light)" }} />
+              <div className="flex-1">
+                <div className="h-3.5 w-48 rounded mb-2 animate-pulse" style={{ background: "var(--border-light)" }} />
+                <div className="h-3 w-64 rounded animate-pulse" style={{ background: "var(--border-light)" }} />
+              </div>
+              <div className="w-20 h-8 rounded-lg animate-pulse" style={{ background: "var(--border-light)" }} />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
   const allDone = gscConnected && hasProducts;
 
   const gscStatus: StepStatus = gscFetching ? "doing" : gscConnected ? "done" : "todo";

@@ -175,7 +175,8 @@ export default function ArticleEditorPage() {
               onClick={() => {
                 if (!confirm("Delete this article? This cannot be undone.")) return;
                 fetch(`/api/articles/${articleId}`, { method: "DELETE" })
-                  .then(() => router.push(`/domain/${domainId}/articles`));
+                  .then((res) => { if (res.ok) router.push(`/domain/${domainId}/articles`); else alert("Failed to delete article"); })
+                  .catch(() => alert("Failed to delete article — check your connection"));
               }}
               className="px-4 py-1.5 rounded-lg text-xs font-medium cursor-pointer"
               style={{ background: "var(--critical-bg)", color: "var(--critical)" }}

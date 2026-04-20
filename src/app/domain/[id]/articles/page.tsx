@@ -196,7 +196,8 @@ export default function ArticlesPage() {
                         e.stopPropagation();
                         if (!confirm("Delete this article? This cannot be undone.")) return;
                         fetch(`/api/articles/${article.id}`, { method: "DELETE" })
-                          .then(() => setArticles((prev) => prev.filter((a) => a.id !== article.id)));
+                          .then((res) => { if (res.ok) setArticles((prev) => prev.filter((a) => a.id !== article.id)); else alert("Failed to delete article"); })
+                          .catch(() => alert("Failed to delete article — check your connection"));
                       }}
                       className="px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer"
                       style={{ background: "var(--critical-bg)", color: "var(--critical)" }}
