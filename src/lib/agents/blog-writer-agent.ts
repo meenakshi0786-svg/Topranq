@@ -616,14 +616,12 @@ Before returning, verify:
 □ TL;DR at the top
 □ Conclusion has bold takeaway bullets
 
-After the article, add:
----FAQ_START---
-[{"question":"...", "answer":"..."}] (4-6 items, 2-3 sentence answers)
----FAQ_END---
-
----OUTLINE_START---
-[{"heading":"...", "summary":"...", "keyPoints":["...","...","..."]}]
----OUTLINE_END---
+CRITICAL OUTPUT RULES:
+- Output ONLY the article content in clean markdown
+- Do NOT add any JSON, metadata, outlines, or structured data after the article
+- Do NOT add ---FAQ_START---, ---OUTLINE_START---, or any similar markers
+- Do NOT add any text after the conclusion — the article ends with the conclusion
+- The output must be EXACTLY what would appear on a published blog — nothing more
 
 BEGIN NOW — first line must be a ## heading.`;
 
@@ -631,50 +629,32 @@ BEGIN NOW — first line must be a ## heading.`;
   const estimatedTokens = Math.ceil(targetWordCount * 1.5) + 2000;
   const response = await askClaude(prompt, Math.max(4000, estimatedTokens));
 
-  // Parse the response
-  let bodyMarkdown = response;
-  let faqItems: Array<{ question: string; answer: string }> = [];
-  let outline: Array<{ heading: string; summary: string; keyPoints: string[] }> = [];
-
-  // Extract FAQ — flexible matching for AI variations
-  const faqMatch = response.match(/-+\s*FAQ[_\s]*START\s*-+\s*([\s\S]*?)\s*-+\s*(?:END[_\s]*FAQ|FAQ[_\s]*END)\s*-+/i);
-  if (faqMatch) {
-    bodyMarkdown = bodyMarkdown.replace(/-+\s*FAQ[_\s]*START\s*-+[\s\S]*?-+\s*(?:END[_\s]*FAQ|FAQ[_\s]*END)\s*-+/i, "").trim();
-    try {
-      const jsonStr = faqMatch[1].trim().replace(/```json\n?/g, "").replace(/```/g, "").trim();
-      faqItems = JSON.parse(jsonStr);
-    } catch {
-      faqItems = [
-        { question: `What is ${topic}?`, answer: `${cap(topic)} is a key concept that encompasses strategies and best practices for achieving results in this domain.` },
-        { question: `Why is ${primaryKeyword} important?`, answer: `${cap(primaryKeyword)} directly impacts your success by improving efficiency, visibility, and outcomes.` },
-        { question: `How do I get started with ${topic}?`, answer: `Start by understanding the fundamentals, then implement step-by-step following the practices outlined in this guide.` },
-      ];
-    }
-  }
-
-  // Extract outline — flexible matching for AI variations like -OUTLINE_START---, ---END_OUTLINE---, etc.
-  const outlineMatch = response.match(/-+\s*OUTLINE[_\s]*START\s*-+\s*([\s\S]*?)\s*-+\s*(?:END[_\s]*OUTLINE|OUTLINE[_\s]*END)\s*-+/i);
-  if (outlineMatch) {
-    bodyMarkdown = bodyMarkdown.replace(/-+\s*OUTLINE[_\s]*START\s*-+[\s\S]*?-+\s*(?:END[_\s]*OUTLINE|OUTLINE[_\s]*END)\s*-+/i, "").trim();
-    try {
-      const jsonStr = outlineMatch[1].trim().replace(/```json\n?/g, "").replace(/```/g, "").trim();
-      // Handle multiple JSON arrays concatenated (AI sometimes outputs [{...}] [{...}] instead of one array)
-      const firstArray = jsonStr.match(/\[[\s\S]*?\](?=\s*\[|\s*$)/);
-      outline = JSON.parse(firstArray ? `[${jsonStr.replace(/\]\s*\[/g, ",")}]` : jsonStr);
-      if (!Array.isArray(outline)) outline = [outline];
-    } catch {
-      outline = extractOutlineFromMarkdown(bodyMarkdown);
-    }
-  } else {
-    outline = extractOutlineFromMarkdown(bodyMarkdown);
-  }
-
-  // Final cleanup — remove any remaining outline/FAQ markers that slipped through
-  bodyMarkdown = bodyMarkdown
-    .replace(/-+\s*(?:OUTLINE|FAQ)[_\s]*(?:START|END)\s*-+/gi, "")
-    .replace(/-+\s*(?:END)[_\s]*(?:OUTLINE|FAQ)\s*-+/gi, "")
-    .replace(/\[\{\"heading\"[\s\S]*?\"keyPoints\"[\s\S]*?\}\]/g, "")
+  // The article is now CLEAN — no markers, no JSON, just publishable markdown.
+  // Strip any accidental markers the AI might still add (safety net).
+  let bodyMarkdown = response
+    .replace(/-+\s*(?:FAQ|OUTLINE|END)[_\s]*(?:START|END|FAQ|OUTLINE)\s*-+/gi, "")
+    .replace(/```json[\s\S]*?```/g, "")
+    .replace(/\[\{\"(?:question|heading)\"[\s\S]*?\}\]/g, "")
     .trim();
+
+  // Generate FAQ separately (fast, small call)
+  let faqItems: Array<{ question: string; answer: string }> = [];
+  try {
+    const faqResponse = await askClaude(
+      `Based on this article topic: "${topic}" (primary keyword: "${primaryKeyword}"), generate 4-6 FAQ items. Return ONLY a JSON array, no other text:\n[{"question":"...","answer":"..."}]`,
+      500,
+    );
+    const faqJson = faqResponse.match(/\[[\s\S]*\]/);
+    if (faqJson) faqItems = JSON.parse(faqJson[0]);
+  } catch {
+    faqItems = [
+      { question: `What is ${topic}?`, answer: `${cap(topic)} encompasses key strategies and best practices for achieving results in this domain.` },
+      { question: `Why is ${primaryKeyword} important?`, answer: `${cap(primaryKeyword)} directly impacts success by improving efficiency, visibility, and outcomes.` },
+    ];
+  }
+
+  // Extract outline from the article's actual headings (no AI call needed)
+  const outline = extractOutlineFromMarkdown(bodyMarkdown);
 
   return { outline, bodyMarkdown, faqItems };
 }
