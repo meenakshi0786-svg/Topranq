@@ -1,11 +1,8 @@
-import type { Metadata } from "next";
+"use client";
+
 import Link from "next/link";
 import { Logo } from "@/components/logo";
-
-export const metadata: Metadata = {
-  title: "Blog — Ranqapex | SEO, GEO & AI Content Strategy",
-  description: "Learn about Generative Engine Optimization (GEO), AI-powered SEO strategies, llms.txt best practices, pillar-cluster content architecture, and how to get cited by ChatGPT, Claude, and Perplexity.",
-};
+import { usePageTitle } from "@/components/page-title";
 
 const posts = [
   {
@@ -59,6 +56,7 @@ const posts = [
 ];
 
 export default function BlogPage() {
+  usePageTitle("Blog — SEO, GEO & AI Content Strategy");
   return (
     <div className="min-h-screen" style={{ background: "var(--bg)" }}>
       <nav className="px-6 py-5 flex items-center justify-between max-w-[1200px] mx-auto w-full">

@@ -1,11 +1,8 @@
-import type { Metadata } from "next";
+"use client";
+
 import Link from "next/link";
 import { Logo } from "@/components/logo";
-
-export const metadata: Metadata = {
-  title: "Ranqapex vs SEO45 — Feature Comparison 2026",
-  description: "Compare Ranqapex vs SEO45 for SEO automation. See the differences in auditing, GEO optimization, content strategy, article generation, publishing, and pricing.",
-};
+import { usePageTitle } from "@/components/page-title";
 
 const features = [
   { category: "Site Audit", feature: "Technical SEO audit with scoring", ranqapex: true, seo45: false },
@@ -37,6 +34,7 @@ const features = [
 ];
 
 export default function ComparePage() {
+  usePageTitle("Ranqapex vs SEO45 — Feature Comparison 2026");
   const categories = [...new Set(features.map((f) => f.category))];
   const ranqapexCount = features.filter((f) => f.ranqapex).length;
   const seo45Count = features.filter((f) => f.seo45).length;
