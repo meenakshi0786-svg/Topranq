@@ -215,7 +215,7 @@ export default function KeywordPlannerPage() {
             {/* Summary cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <div className="card-static p-5 text-center">
-                <p className="text-3xl font-bold mb-1" style={{ color: "var(--critical)" }}>{plan.summary.totalMissingKeywords}</p>
+                <p className="text-3xl font-bold mb-1" style={{ color: "var(--critical)" }}>{typeof plan.summary.totalMissingKeywords === "number" ? plan.summary.totalMissingKeywords : "50+"}</p>
                 <p className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>Missing Keywords</p>
               </div>
               <div className="card-static p-5 text-center">

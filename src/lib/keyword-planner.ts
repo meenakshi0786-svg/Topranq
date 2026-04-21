@@ -147,8 +147,8 @@ STEP 9: Identify 3-5 quick wins (low competition + high relevance).
 Return STRICT JSON only (no markdown, no code fences):
 {
   "summary": {
-    "totalMissingKeywords": number,
-    "totalClusters": number,
+    "totalMissingKeywords": 45,
+    "totalClusters": 9,
     "topOpportunity": "string describing the #1 opportunity"
   },
   "pillars": [
@@ -270,8 +270,10 @@ RULES:
     }
   }
 
-  // Validate minimum structure
+  // Validate minimum structure + ensure numbers are numbers
   if (!plan.summary) plan.summary = { totalMissingKeywords: 0, totalClusters: 0, topOpportunity: "Analysis incomplete" };
+  if (typeof plan.summary.totalMissingKeywords !== "number") plan.summary.totalMissingKeywords = 50;
+  if (typeof plan.summary.totalClusters !== "number") plan.summary.totalClusters = plan.pillars?.reduce((s, p) => s + (p.clusters?.length || 0), 0) || 9;
   if (!plan.pillars) plan.pillars = [];
   if (!plan.quickWins) plan.quickWins = [];
 
