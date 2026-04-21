@@ -34,7 +34,18 @@ const CATEGORY_LABELS: Record<Category, string> = {
   social: "Social & Rich Results",
 };
 
-const SEVERITY_DEDUCTIONS: Record<Severity, number> = {
+// Base deduction for the FIRST occurrence of an issue type at this severity.
+// Additional pages with the same issue deduct diminishing amounts
+// so a well-structured site with many pages doesn't get punished unfairly.
+const SEVERITY_BASE: Record<Severity, number> = {
+  critical: 20,
+  high: 10,
+  medium: 5,
+  low: 2,
+};
+
+// Max deduction per issue TYPE (e.g. "missing_schema" across all pages)
+const MAX_DEDUCTION_PER_TYPE: Record<Severity, number> = {
   critical: 25,
   high: 15,
   medium: 8,
@@ -54,28 +65,36 @@ export function calculateScores(issues: SEOIssue[]): AuditScores {
   const categoryScores: CategoryScore[] = categories.map((category) => {
     const categoryIssues = issues.filter((i) => i.category === category);
 
-    let deduction = 0;
     let criticalCount = 0;
     let highCount = 0;
     let mediumCount = 0;
     let lowCount = 0;
 
     for (const issue of categoryIssues) {
-      deduction += SEVERITY_DEDUCTIONS[issue.severity];
       switch (issue.severity) {
-        case "critical":
-          criticalCount++;
-          break;
-        case "high":
-          highCount++;
-          break;
-        case "medium":
-          mediumCount++;
-          break;
-        case "low":
-          lowCount++;
-          break;
+        case "critical": criticalCount++; break;
+        case "high": highCount++; break;
+        case "medium": mediumCount++; break;
+        case "low": lowCount++; break;
       }
+    }
+
+    // Group issues by checkId (type) and apply capped deductions per type
+    const byType = new Map<string, SEOIssue[]>();
+    for (const issue of categoryIssues) {
+      const list = byType.get(issue.checkId) || [];
+      list.push(issue);
+      byType.set(issue.checkId, list);
+    }
+
+    let deduction = 0;
+    for (const [, typeIssues] of byType) {
+      const severity = typeIssues[0].severity;
+      const base = SEVERITY_BASE[severity];
+      const cap = MAX_DEDUCTION_PER_TYPE[severity];
+      // First occurrence gets base, extras add 1 each, capped at max
+      const typeDeduction = Math.min(cap, base + (typeIssues.length - 1));
+      deduction += typeDeduction;
     }
 
     const score = Math.max(0, 100 - deduction);

@@ -73,39 +73,39 @@ export class AuditorAgent extends BaseAgent {
       });
     }
 
-    // Missing meta descriptions
-    for (const page of preScan.missingMeta) {
+    // Missing meta descriptions — consolidated
+    if (preScan.missingMeta.length > 0) {
       allIssues.push({
         checkId: "missing_meta_description",
         category: "on_page",
-        severity: "low",
+        severity: preScan.missingMeta.length > pages.length * 0.5 ? "medium" : "low",
         impactArea: "ctr",
-        message: `Missing meta description: ${page.url}`,
-        details: { url: page.url },
+        message: `${preScan.missingMeta.length} page(s) missing meta description`,
+        details: { urls: preScan.missingMeta.slice(0, 5).map(p => p.url) },
       });
     }
 
-    // Thin content
-    for (const page of preScan.thinContent) {
+    // Thin content — consolidated
+    if (preScan.thinContent.length > 0) {
       allIssues.push({
         checkId: "thin_content",
         category: "content",
-        severity: "medium",
+        severity: preScan.thinContent.length > 5 ? "medium" : "low",
         impactArea: "rankings",
-        message: `Thin content (${page.wordCount} words): ${page.url}`,
-        details: { url: page.url, wordCount: page.wordCount },
+        message: `${preScan.thinContent.length} page(s) with thin content (<300 words)`,
+        details: { urls: preScan.thinContent.slice(0, 5).map(p => p.url) },
       });
     }
 
-    // Orphan pages
-    for (const page of preScan.orphanPages) {
+    // Orphan pages — consolidated
+    if (preScan.orphanPages.length > 0) {
       allIssues.push({
         checkId: "orphan_page",
         category: "structure",
-        severity: "medium",
+        severity: preScan.orphanPages.length > 5 ? "medium" : "low",
         impactArea: "crawl_efficiency",
-        message: `Orphan page (0 inbound internal links): ${page.url}`,
-        details: { url: page.url },
+        message: `${preScan.orphanPages.length} orphan page(s) with no inbound internal links`,
+        details: { urls: preScan.orphanPages.slice(0, 5).map(p => p.url) },
       });
     }
 
@@ -121,15 +121,24 @@ export class AuditorAgent extends BaseAgent {
       });
     }
 
-    // Missing schema
-    for (const page of preScan.missingSchema) {
+    // Missing schema — only flag if NO pages have schema at all (site-level issue)
+    if (preScan.missingSchema.length > 0 && preScan.missingSchema.length === pages.filter(p => p.statusCode === 200).length) {
       allIssues.push({
         checkId: "missing_schema",
         category: "on_page",
-        severity: "high",
+        severity: "medium",
         impactArea: "ctr",
-        message: `No structured data: ${page.url}`,
-        details: { url: page.url },
+        message: `No structured data found on any page (${preScan.missingSchema.length} pages)`,
+        details: { urls: preScan.missingSchema.slice(0, 5).map(p => p.url) },
+      });
+    } else if (preScan.missingSchema.length > 0) {
+      allIssues.push({
+        checkId: "missing_schema",
+        category: "on_page",
+        severity: "low",
+        impactArea: "ctr",
+        message: `${preScan.missingSchema.length} page(s) missing structured data`,
+        details: { urls: preScan.missingSchema.slice(0, 5).map(p => p.url) },
       });
     }
 
@@ -198,17 +207,19 @@ export class AuditorAgent extends BaseAgent {
         }
       }
 
-      // Missing canonical
-      if (!page.canonicalUrl) {
-        allIssues.push({
-          checkId: "missing_canonical",
-          category: "technical",
-          severity: "medium",
-          impactArea: "rankings",
-          message: `Missing canonical tag: ${page.url}`,
-          details: { url: page.url },
-        });
-      }
+    }
+
+    // Missing canonical — consolidate into one issue
+    const missingCanonicalPages = pages.filter(p => !p.canonicalUrl && p.statusCode === 200);
+    if (missingCanonicalPages.length > 0) {
+      allIssues.push({
+        checkId: "missing_canonical",
+        category: "technical",
+        severity: "low",
+        impactArea: "rankings",
+        message: `${missingCanonicalPages.length} page(s) missing canonical tag`,
+        details: { urls: missingCanonicalPages.slice(0, 5).map(p => p.url) },
+      });
     }
 
     // ── Site-level checks ─────────────────────────────────────────
