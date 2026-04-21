@@ -36,4 +36,4 @@ COPY . .
 RUN npm run build
 
 EXPOSE 3000
-CMD ["npm", "start"]
+CMD ["sh", "-c", "npx tsx src/lib/db/migrate.ts && npm start"]
