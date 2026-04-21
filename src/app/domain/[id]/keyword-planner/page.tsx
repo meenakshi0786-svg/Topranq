@@ -149,28 +149,7 @@ export default function KeywordPlannerPage() {
 
         {!plan && !loading && (
           <div className="relative card-static p-10 text-center fade-in overflow-hidden" style={{ background: "linear-gradient(135deg, #4F6EF705, #7C5CFC05)", border: "1px solid #4F6EF720" }}>
-            {/* Floating keyword bubbles — edges only, not overlapping center text */}
-            {["SEO", "keywords", "ranking", "traffic", "content", "pillar", "cluster", "SERP", "backlinks", "authority", "gaps", "strategy"].map((word, i) => (
-              <span
-                key={word}
-                className="absolute text-[10px] font-medium rounded-full float-orb pointer-events-none"
-                style={{
-                  left: i % 2 === 0 ? `${3 + (i * 3) % 15}%` : `${82 + (i * 3) % 15}%`,
-                  top: `${10 + (i * 13) % 75}%`,
-                  padding: "3px 9px",
-                  background: i % 3 === 0 ? "#4F6EF708" : i % 3 === 1 ? "#7C5CFC08" : "#22c55e08",
-                  color: i % 3 === 0 ? "#4F6EF750" : i % 3 === 1 ? "#7C5CFC50" : "#22c55e50",
-                  border: `1px solid ${i % 3 === 0 ? "#4F6EF715" : i % 3 === 1 ? "#7C5CFC15" : "#22c55e15"}`,
-                  animationDelay: `${i * 0.7}s`,
-                  animationDuration: `${7 + i * 1.2}s`,
-                  zIndex: 0,
-                }}
-              >
-                {word}
-              </span>
-            ))}
-
-            <div className="relative" style={{ zIndex: 1 }}>
+            <div className="relative">
               <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5 glow-pulse" style={{ background: "linear-gradient(135deg, #4F6EF720, #7C5CFC20)" }}>
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
