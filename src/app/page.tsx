@@ -100,20 +100,6 @@ export default function LandingPage() {
         <div className="absolute top-40 right-1/4 w-[300px] h-[250px] rounded-full pointer-events-none float-orb" style={{ background: "radial-gradient(ellipse, #22c55e, transparent 70%)", filter: "blur(90px)", opacity: 0.08 }} />
 
         <div className="max-w-[1200px] mx-auto px-6 pt-6 pb-20 relative">
-          {/* Floating AI feature cards — left side, aligned with dashboard mockup */}
-          <div className="absolute" style={{ left: -10, top: 340, width: 210, display: "var(--float-cards-display, none)" }}>
-            <FloatingCard delay={0} y={0} label="AI Readiness" value="85/100" icon="M9 12l2 2 4-4M21 12a9 9 0 11-18 0 9 9 0 0118 0z" color="#22c55e" />
-            <FloatingCard delay={1.5} y={130} label="Keywords Found" value="3,247" icon="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" color="#4F6EF7" />
-            <FloatingCard delay={3} y={260} label="Articles Generated" value="24" icon="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5" color="#7C5CFC" />
-          </div>
-
-          {/* Floating AI feature cards — right side, aligned with dashboard mockup */}
-          <div className="absolute" style={{ right: -10, top: 340, width: 210, display: "var(--float-cards-display, none)" }}>
-            <FloatingCard delay={0.8} y={0} label="llms.txt Score" value="92/100" icon="M9 17v-2a4 4 0 014-4h4" color="#7C5CFC" />
-            <FloatingCard delay={2.3} y={130} label="Citations" value="148" icon="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" color="#eab308" />
-            <FloatingCard delay={3.8} y={260} label="Pillar Strategies" value="3" icon="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0H5" color="#22c55e" />
-          </div>
-
           {/* Centered hero copy */}
           <div className="text-center fade-in max-w-3xl mx-auto">
             <div
@@ -815,54 +801,6 @@ function RotatingText({ words }: { words: string[] }) {
   );
 }
 
-function FloatingCard({ delay, y, label, value, icon, color }: { delay: number; y: number; label: string; value: string; icon: string; color: string }) {
-  return (
-    <div
-      className="fade-in"
-      style={{
-        position: "absolute",
-        top: y,
-        width: "100%",
-        animationDelay: `${delay}s`,
-        animation: `float-orb 8s ease-in-out infinite ${delay}s`,
-      }}
-    >
-      <div
-        style={{
-          background: "var(--bg-white)",
-          border: "1px solid var(--border-light)",
-          borderRadius: 14,
-          padding: "14px 16px",
-          boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-        }}
-      >
-        <div
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 10,
-            background: `${color}15`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
-          }}
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d={icon} />
-          </svg>
-        </div>
-        <div>
-          <p style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 500, lineHeight: 1.2 }}>{label}</p>
-          <p style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.3 }}>{value}</p>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function TestimonialCard({ quote, name, role, initials }: { quote: string; name: string; role: string; initials: string }) {
   return (
@@ -936,12 +874,6 @@ function AnimatedStat({ target, suffix, label }: { target: number; suffix: strin
 }
 
 function GeoMockup() {
-  const engines = [
-    { name: "ChatGPT", color: "#10A37F", initial: "C" },
-    { name: "Perplexity", color: "#20808D", initial: "P" },
-    { name: "Google AI", color: "#4285F4", initial: "G" },
-    { name: "Claude", color: "#D97757", initial: "A" },
-  ];
   return (
     <div style={{ position: "relative", paddingTop: 28, paddingBottom: 32 }}>
       {/* Main card: AI search result */}
@@ -1019,74 +951,6 @@ function GeoMockup() {
         </div>
       </div>
 
-      {/* Floating: AI Readiness Score */}
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          right: -12,
-          padding: "12px 16px",
-          borderRadius: 12,
-          background: "rgba(255,255,255,0.97)",
-          boxShadow: "0 20px 40px -10px rgba(0,0,0,0.4)",
-        }}
-      >
-        <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#64748b", margin: "0 0 4px" }}>
-          AI Readiness
-        </p>
-        <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
-          <span style={{ fontSize: 26, fontWeight: 700, color: "#22c55e" }}>92</span>
-          <span style={{ fontSize: 12, color: "#94a3b8" }}>/100</span>
-        </div>
-      </div>
-
-      {/* Floating: cited by row */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: 0,
-          left: 24,
-          right: 24,
-          padding: "12px 16px",
-          borderRadius: 12,
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          background: "rgba(255,255,255,0.97)",
-          boxShadow: "0 20px 40px -10px rgba(0,0,0,0.4)",
-        }}
-      >
-        <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#64748b", flexShrink: 0 }}>
-          Cited by
-        </span>
-        <div style={{ display: "flex", alignItems: "center" }}>
-          {engines.map((e, i) => (
-            <div
-              key={e.name}
-              title={e.name}
-              style={{
-                width: 26,
-                height: 26,
-                borderRadius: 999,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#fff",
-                fontSize: 11,
-                fontWeight: 700,
-                background: e.color,
-                border: "2px solid #fff",
-                marginLeft: i === 0 ? 0 : -8,
-              }}
-            >
-              {e.initial}
-            </div>
-          ))}
-        </div>
-        <span style={{ fontSize: 12, marginLeft: "auto", fontWeight: 600, color: "#22c55e", flexShrink: 0 }}>
-          +247 mentions
-        </span>
-      </div>
     </div>
   );
 }
