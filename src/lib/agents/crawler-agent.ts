@@ -56,10 +56,11 @@ export class CrawlerAgent extends BaseAgent {
       .where(eq(schema.pages.domainId, domainId))
       .run();
 
-    // Crawl — seed with sitemap URLs so we don't rely only on link discovery
+    // Crawl — seed with sitemap URLs, ignore robots.txt for audit purposes
+    // (SEO auditors need to see all pages, even those blocked from generic bots)
     const crawlResults = await crawlSite(
       startUrl,
-      { maxPages: input.maxPages },
+      { maxPages: input.maxPages, respectRobotsTxt: false },
       (progress) => {
         db.update(schema.auditRuns)
           .set({ pagesFound: progress.pagesFound, pagesCrawled: progress.pagesCrawled })
