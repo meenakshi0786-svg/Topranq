@@ -59,15 +59,16 @@ export async function GET(request: NextRequest) {
     }
 
     // Transfer domain ownership from demo user to the signed-in user
-    if (domainId) {
+    if (domainId && domainId !== "undefined" && domainId !== "null") {
       db.update(schema.domains)
         .set({ userId: user.id })
         .where(eq(schema.domains.id, domainId))
         .run();
     }
 
-    // Set auth cookie with user ID
-    const redirectUrl = domainId
+    // Set auth cookie with user ID — only redirect to domain if we have a valid ID
+    const hasValidDomain = domainId && domainId !== "undefined" && domainId !== "null" && domainId.length > 10;
+    const redirectUrl = hasValidDomain
       ? `${APP_URL}/domain/${domainId}?autoaudit=true`
       : `${APP_URL}/dashboard`;
     const response = NextResponse.redirect(redirectUrl);

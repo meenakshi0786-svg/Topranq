@@ -50,6 +50,7 @@ export default function LandingPage() {
   }
 
   function signInWithGoogle() {
+    if (!domainId) return;
     window.location.href = `/api/auth/google?domainId=${domainId}`;
   }
 
