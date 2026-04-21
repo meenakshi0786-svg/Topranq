@@ -106,8 +106,13 @@ export async function generateKeywordPlan(domainId: string): Promise<KeywordPlan
     : pages.map((p) => p.title || "").filter(Boolean).slice(0, 20).join("\n");
 
   // ── Step 3-9: AI Analysis ──
-  const prompt = `You are an advanced AI SEO strategist. Analyze this domain and generate a complete Keyword Gap → Content Strategy Plan.
+  const currentYear = new Date().getFullYear();
+  const language = domain.language || "English";
 
+  const prompt = `You are an advanced AI SEO strategist. Analyze this domain and generate a Keyword Gap → Content Strategy Plan.
+
+CURRENT YEAR: ${currentYear} — all trend references and article titles MUST use ${currentYear}, never 2024 or 2025.
+SITE LANGUAGE: ${language} — all article titles, keywords, and content angles MUST be in ${language}.
 DOMAIN: ${domain.domainUrl}
 
 USER'S EXISTING PAGES:
@@ -122,71 +127,75 @@ EXECUTE THESE STEPS:
 
 STEP 1: Understand what topics the user already covers. Identify strengths and gaps.
 
-STEP 2: From competitor data + PAA + related searches, build a keyword universe. Remove duplicates.
+STEP 2: From competitor data + PAA + related searches, build a keyword universe.
 
-STEP 3: Classify keywords into:
-- Missing Keywords (competitors rank, user does not)
-- Weak Keywords (user ranks position 10+)
-- Untapped Topics (entire clusters missing)
+STEP 3: Classify into missing keywords, weak keywords (pos 10+), and untapped topics.
 
-STEP 4: Group ALL keywords into Pillars (broad) and Clusters (specific subtopics). Each cluster = 1 article.
+STEP 4: Group into 3 Pillars with 3 Clusters each. Each cluster = 1 article.
 
-STEP 5: Assign intent: informational / commercial / transactional / navigational
+STEP 5: Assign intent — CRITICAL: include a MIX of intents across the 9 clusters:
+- At least 4 informational (guides, how-tos, tutorials)
+- At least 2 commercial (comparisons, best-of, reviews)
+- At least 1 transactional (buying guides, product-focused)
+- Navigational only if relevant
+An eCommerce site MUST have commercial and transactional clusters, not just informational.
 
-STEP 6: Score each cluster 1-100 based on: traffic potential, ranking difficulty, relevance, monetization potential.
-- High Priority: 80-100
-- Medium Priority: 50-79
-- Low Priority: below 50
+STEP 6: Score each cluster 1-100. Spread realistically: some 60s, some 70s, some 80-90s.
 
-STEP 7: For each cluster generate: article title, target keywords, word count, content angle.
+STEP 7: For each cluster generate:
+- articleTitle: in ${language}, under 60 chars, include ${currentYear} where relevant
+- keywords: 3 keywords in ${language}
+- wordCount: 900-1800
+- contentAngle: 1 sentence (under 80 chars) explaining what makes it unique
 
-STEP 8: For each cluster suggest: parent pillar link + 2-3 related cluster links with natural anchor text.
+STEP 8: Internal linking — EACH cluster links to ITS OWN pillar (not all to the same pillar):
+- Pillar 1 clusters link to Pillar 1 name
+- Pillar 2 clusters link to Pillar 2 name
+- Pillar 3 clusters link to Pillar 3 name
+- Plus 2 related clusters from ANY pillar
 
-STEP 9: Identify 3-5 quick wins (low competition + high relevance).
+STEP 9: Identify exactly 3 quick wins.
 
 Return STRICT JSON only (no markdown, no code fences):
 {
   "summary": {
     "totalMissingKeywords": 45,
     "totalClusters": 9,
-    "topOpportunity": "string describing the #1 opportunity"
+    "topOpportunity": "1 sentence describing the #1 opportunity"
   },
   "pillars": [
     {
-      "pillarName": "Broad pillar topic",
+      "pillarName": "Pillar topic in ${language}",
       "clusters": [
         {
-          "clusterName": "Specific subtopic",
+          "clusterName": "Subtopic in ${language}",
           "priorityScore": 85,
-          "intent": "informational",
-          "keywords": ["keyword 1", "keyword 2", "keyword 3"],
-          "articleTitle": "SEO-optimized title under 60 chars",
+          "intent": "commercial",
+          "keywords": ["kw1", "kw2", "kw3"],
+          "articleTitle": "Title in ${language} under 60 chars",
           "wordCount": 1500,
-          "contentAngle": "What makes this article unique vs competitors",
+          "contentAngle": "Under 80 chars, what makes this unique",
           "internalLinks": {
-            "pillar": "suggested anchor text for pillar link",
-            "relatedClusters": ["related cluster 1", "related cluster 2"]
+            "pillar": "THIS cluster's own pillar name",
+            "relatedClusters": ["cluster from another pillar", "another related"]
           }
         }
       ]
     }
   ],
   "quickWins": [
-    {
-      "keyword": "low competition keyword",
-      "reason": "why this is a quick win"
-    }
+    {"keyword": "keyword in ${language}", "reason": "under 60 chars"}
   ]
 }
 
-RULES:
-- EXACTLY 3 pillars, each with EXACTLY 3 clusters (9 clusters total — no more)
-- Keep the JSON compact — short descriptions, max 3 keywords per cluster
-- Every cluster must have a unique article title
-- Priority scores must be realistic (not all 90+)
-- Quick wins: exactly 3 items
-- Do NOT output raw keyword dumps — always cluster and prioritize
-- KEEP THE RESPONSE UNDER 4000 TOKENS — be concise`;
+STRICT RULES:
+- EXACTLY 3 pillars × 3 clusters = 9 total
+- totalMissingKeywords MUST be a number (integer), never text
+- Intent MIX: at least 4 informational + 2 commercial + 1 transactional
+- Each cluster links to ITS OWN pillar name, NOT all to the same pillar
+- All titles/keywords in ${language}, all years as ${currentYear}
+- contentAngle under 80 chars, reason under 60 chars
+- KEEP RESPONSE UNDER 4000 TOKENS — be concise`;
 
   const models = [
     process.env.OPENROUTER_MODEL_SONNET,
