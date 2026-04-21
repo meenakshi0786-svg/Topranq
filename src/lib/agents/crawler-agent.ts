@@ -48,7 +48,15 @@ export class CrawlerAgent extends BaseAgent {
       }
     } catch { /* no sitemap */ }
 
-    // Crawl
+    // Delete old pages and links for this domain before re-crawling
+    db.delete(schema.internalLinks)
+      .where(eq(schema.internalLinks.domainId, domainId))
+      .run();
+    db.delete(schema.pages)
+      .where(eq(schema.pages.domainId, domainId))
+      .run();
+
+    // Crawl — seed with sitemap URLs so we don't rely only on link discovery
     const crawlResults = await crawlSite(
       startUrl,
       { maxPages: input.maxPages },
@@ -57,7 +65,8 @@ export class CrawlerAgent extends BaseAgent {
           .set({ pagesFound: progress.pagesFound, pagesCrawled: progress.pagesCrawled })
           .where(eq(schema.auditRuns.id, input.auditRunId))
           .run();
-      }
+      },
+      sitemapUrls
     );
 
     // Store pages in knowledge graph

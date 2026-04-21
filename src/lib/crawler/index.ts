@@ -41,7 +41,8 @@ export interface CrawlProgress {
 export async function crawlSite(
   startUrl: string,
   options: Partial<CrawlOptions> = {},
-  onProgress?: (progress: CrawlProgress) => void
+  onProgress?: (progress: CrawlProgress) => void,
+  seedUrls?: string[]
 ): Promise<CrawlResult[]> {
   const opts = { ...DEFAULT_OPTIONS, ...options };
   const results: CrawlResult[] = [];
@@ -50,7 +51,7 @@ export async function crawlSite(
 
   // Normalize start URL
   const parsedStart = new URL(startUrl);
-  const baseDomain = parsedStart.hostname;
+  let baseDomain = parsedStart.hostname;
   const baseOrigin = parsedStart.origin;
 
   // Check robots.txt
@@ -71,18 +72,45 @@ export async function crawlSite(
     }
   }
 
-  // Seed the queue
+  // Seed the queue with start URL + sitemap URLs
   queue.push({ url: normalizeUrl(startUrl), depth: 0 });
+  if (seedUrls && seedUrls.length > 0) {
+    const seeded = new Set<string>([normalizeUrl(startUrl)]);
+    for (const sUrl of seedUrls) {
+      try {
+        const parsed = new URL(sUrl);
+        // Only add same-domain URLs from sitemap
+        const host = parsed.hostname;
+        const isSameDomain =
+          host === baseDomain ||
+          host === `www.${baseDomain}` ||
+          baseDomain === `www.${host}`;
+        if (!isSameDomain) continue;
+        const norm = normalizeUrl(sUrl);
+        if (!seeded.has(norm)) {
+          queue.push({ url: norm, depth: 1 });
+          seeded.add(norm);
+        }
+      } catch { /* skip invalid sitemap URLs */ }
+    }
+    console.log(`[crawler] Seeded queue with ${seeded.size - 1} sitemap URLs`);
+  }
+
+  console.log(`[crawler] Starting crawl: ${startUrl} (maxPages=${opts.maxPages}, maxDepth=${opts.maxDepth})`);
 
   while (queue.length > 0 && results.length < opts.maxPages) {
     const item = queue.shift()!;
     const normalizedUrl = normalizeUrl(item.url);
 
     if (visited.has(normalizedUrl)) continue;
-    if (item.depth > opts.maxDepth) continue;
+    if (item.depth > opts.maxDepth) {
+      console.log(`[crawler] Skipping (depth ${item.depth} > ${opts.maxDepth}): ${normalizedUrl}`);
+      continue;
+    }
 
     // Check robots.txt
     if (robots && !robots.isAllowed(normalizedUrl, opts.userAgent)) {
+      console.log(`[crawler] Blocked by robots.txt: ${normalizedUrl}`);
       continue;
     }
 
@@ -96,9 +124,23 @@ export async function crawlSite(
 
     try {
       const result = await fetchPage(normalizedUrl, item.depth, opts);
-      if (!result) continue;
+      if (!result) {
+        console.log(`[crawler] Fetch returned null: ${normalizedUrl}`);
+        continue;
+      }
 
       results.push(result);
+      console.log(`[crawler] ✓ Crawled (${results.length}/${opts.maxPages}) depth=${item.depth}: ${result.url} [${result.statusCode}] html=${result.html.length} chars`);
+
+      // After the first page, update baseDomain if the site redirected
+      // (e.g. example.com → www.example.com or vice versa)
+      if (results.length === 1) {
+        const actualDomain = new URL(result.url).hostname;
+        if (actualDomain !== baseDomain) {
+          console.log(`[crawler] Domain redirected: ${baseDomain} → ${actualDomain}`);
+          baseDomain = actualDomain;
+        }
+      }
 
       // Only extract links from HTML pages
       if (
@@ -110,23 +152,27 @@ export async function crawlSite(
           result.url,
           baseDomain
         );
+        let added = 0;
         for (const link of newLinks) {
           const norm = normalizeUrl(link);
           if (!visited.has(norm)) {
             queue.push({ url: norm, depth: item.depth + 1 });
+            added++;
           }
         }
+        console.log(`[crawler] Found ${newLinks.length} internal links on ${result.url}, ${added} new added to queue (queue size: ${queue.length})`);
       }
 
       // Polite delay between requests
       if (opts.delayMs > 0) {
         await sleep(opts.delayMs);
       }
-    } catch {
-      // Page fetch failed — skip it silently
+    } catch (err) {
+      console.error(`[crawler] Error fetching ${normalizedUrl}:`, (err as Error).message);
     }
   }
 
+  console.log(`[crawler] Done. Crawled ${results.length} pages, visited ${visited.size} URLs`);
   return results;
 }
 
@@ -182,8 +228,10 @@ async function fetchPage(
 
     // Fallback to Playwright if HTML looks JS-only (empty SPA shell)
     if (looksLikeJsRendered(html)) {
+      console.log(`[crawler] JS-rendered detected for ${url} (html=${html.length} chars), trying Playwright...`);
       const pw = await fetchPageWithPlaywright(url, opts.userAgent, opts.timeoutMs);
       if (pw && pw.html.length > html.length) {
+        console.log(`[crawler] Playwright got ${pw.html.length} chars (was ${html.length})`);
         html = pw.html;
         finalUrl = pw.url;
         finalStatus = pw.statusCode;
@@ -238,8 +286,13 @@ export function extractInternalLinks(
     try {
       const resolved = new URL(href, pageUrl);
 
-      // Only follow internal links
-      if (resolved.hostname !== baseDomain) return;
+      // Only follow internal links (handle www/non-www variants)
+      const host = resolved.hostname;
+      const isInternal =
+        host === baseDomain ||
+        host === `www.${baseDomain}` ||
+        baseDomain === `www.${host}`;
+      if (!isInternal) return;
 
       // Skip non-http protocols, anchors, mailto, tel, javascript
       if (!resolved.protocol.startsWith("http")) return;
@@ -307,10 +360,16 @@ export function extractAllLinks(
 
       const rel = ($el.attr("rel") || "").toLowerCase();
 
+      const host = resolved.hostname;
+      const isInt =
+        host === baseDomain ||
+        host === `www.${baseDomain}` ||
+        baseDomain === `www.${host}`;
+
       linkList.push({
         href: resolved.href,
         anchor: $el.text().trim(),
-        isInternal: resolved.hostname === baseDomain,
+        isInternal: isInt,
         isNofollow: rel.includes("nofollow"),
       });
     } catch {

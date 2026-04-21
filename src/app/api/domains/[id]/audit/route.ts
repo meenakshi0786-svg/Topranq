@@ -61,7 +61,7 @@ export async function POST(
       id: auditRunId,
       domainId: id,
       status: "queued",
-      maxPages: 25,
+      maxPages: 50,
       agentVersion: "1.0.0",
     })
     .run();
