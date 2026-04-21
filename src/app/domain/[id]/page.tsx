@@ -263,33 +263,6 @@ export default function DomainOverview() {
               </div>
             </div>
 
-            {/* Category scores */}
-            <div className="card-static p-7 mb-5 fade-in">
-              <h2 className="text-sm font-bold uppercase tracking-wider mb-5" style={{ color: "var(--text-muted)" }}>
-                Category Breakdown
-              </h2>
-              <div className="space-y-4">
-                {latestAudit.scoresJson.categories.map((cat) => (
-                  <div key={cat.category} className="flex items-center gap-4">
-                    <span className="text-sm w-40 shrink-0" style={{ color: "var(--text-secondary)" }}>
-                      {cat.label}
-                    </span>
-                    <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: "var(--border-light)" }}>
-                      <div
-                        className="h-full rounded-full transition-all duration-700"
-                        style={{ width: `${cat.score}%`, background: getScoreColor(cat.score) }}
-                      />
-                    </div>
-                    <span className="text-sm font-bold w-9 text-right tabular-nums" style={{ color: getScoreColor(cat.score) }}>
-                      {cat.score}
-                    </span>
-                    <span className="text-xs w-16 text-right" style={{ color: "var(--text-muted)" }}>
-                      {cat.issueCount} issue{cat.issueCount !== 1 ? "s" : ""}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
           </>
         )}
 
