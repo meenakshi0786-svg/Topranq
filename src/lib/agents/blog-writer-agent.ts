@@ -459,27 +459,30 @@ ${productContext}
 
 PRODUCT INTEGRATION RULES (CRITICAL):
 - Weave relevant products NATURALLY as contextual recommendations within the teaching
-- Pattern: explain a concept → recommend a specific product as the solution → link + image
-- Format: [Product Name](product-url) — $price
-- After product mention, add image: ![Product Name](image-url)
-- Spread across sections — never cluster products together
+- Pattern: explain a concept → recommend a specific product as the solution
+- DISPLAY FORMAT for each product recommendation (use this EXACT format):
+
+👉 **[Product Name](product-url)** — Price
+
+![Product Name](image-url)
+
+Brief 1-sentence description of why this product fits this section.
+
+- Spread products across sections — maximum 2-3 products per section
 - Each product must be EARNED: the preceding paragraph explains WHY this product fits
 - ONLY recommend products that genuinely solve a problem discussed in that section
+- When listing multiple products for one category, use this format:
+
+**Our picks:**
+
+- 👉 **[Product 1](url)** — Price — One-line reason
+- 👉 **[Product 2](url)** — Price — One-line reason
 
 ABSOLUTE RULES:
-- NEVER use metaphors to justify a product ("like a blazer provides flexibility, this software...")
+- NEVER use metaphors to justify a product
 - NEVER recommend a product that doesn't directly relate to the section's topic
 - NEVER force a product — if a section doesn't naturally need one, skip it
-- If the product is clothing, it must appear in a fashion/styling context
-- If the product is tech, it must appear in a tech/productivity context
-- A dress CANNOT be recommended in a section about SEO strategy
-- A keyboard CANNOT be recommended in a section about skincare
-
-GOOD example (fashion article + fashion product):
-"For the base layer, a fitted turtleneck creates a clean silhouette. The [Cashmere Turtleneck — Camel](url) — €145 — works perfectly here because its stretch fabric stays flat under a blazer."
-
-BAD example (SEO article + fashion product):
-"Managing integrations requires flexibility, much like the [Silk Wrap Dress](url) — $129 — provides adaptable elegance." ← THIS IS SPAM. NEVER DO THIS.
+- Products must match the article's domain (fashion products in fashion articles only)
 ` : "";
 
   const isPillar = targetWordCount >= 2500;
@@ -518,33 +521,35 @@ ${pillarClusterCtx.clusters.filter((c: { slug: string; topic: string }) => c.slu
 
 ## Title (SEO-optimized, under 60 characters)
 
-### Introduction (120–180 words)
-- Hook the reader with a specific problem or insight
+### Introduction (100–150 words)
+- Hook the reader with a specific problem, question, or bold statement
 - Mention the primary keyword naturally in the first sentence
-- End with "**What you'll learn:**" bullet list (3-4 points)
+- End with a bullet list: "**Dans ce guide, vous allez apprendre :**" (or English equivalent)
+  - 3-4 concrete learning objectives as bullets
 ${pillarClusterCtx && !pillarClusterCtx.isPillarArticle ? "- Include contextual backlink to pillar article" : ""}
 
 ### Body Sections (${isPillar ? "8-12" : "5-7"} sections)
 Each section MUST:
 - Start with ## heading (keyword-rich, searchable phrase)
-- Be 120–250 words (NOT more)
+- Use ### for numbered sub-points (e.g. "### 1) Base layer", "### 2) Mid layer")
+- Be 100–200 words (NOT more)
+- Paragraphs: 1-3 sentences MAX. One idea per paragraph.
+- Use bullet points aggressively — at least one bullet list per section
+- Use **bold** for key terms at the start of bullets
 - Include actionable insights, specific data, or examples
-- Use ### for subsections when needed
-- Use bullet points for scannable information
-- Keep paragraphs to 2-4 lines MAX
 
 ${hasProducts ? `### Product Integration
-- Weave relevant products naturally as contextual recommendations
-- Format: [Product Name](url) — $price
-- Add product image after mention: ![Product Name](image-url)
+- Display products using the 👉 emoji format specified above
+- Add product image after each recommendation
 - Each product must be EARNED by the preceding paragraph
 - Only include products relevant to the section topic` : ""}
 
-### Pro Tips
-- Include 1-2 "> **Pro Tip:**" blockquote callouts per article
-- Insider knowledge, shortcuts, or common mistakes to avoid
+### Pro Tips & Mistakes
+- Include 2-3 "> **💡 Astuce :**" (or "> **Pro Tip:**") blockquotes spread through the article
+- Add a "## Erreurs à éviter" (or "## Common Mistakes") section with numbered list
+- Each mistake: ### heading + 2-3 sentence explanation
 
-### Conclusion (100–150 words)
+### Conclusion (80–120 words)
 - Summarize 3-5 key takeaways as **bold** bullet points
 - Include a soft CTA or next step
 - Mention primary keyword naturally
@@ -552,32 +557,37 @@ ${hasProducts ? `### Product Integration
 ═══ FORMATTING RULES ═══
 
 MARKDOWN:
-- ## for main sections, ### for subsections only
+- ## for main sections, ### for numbered sub-points and subsections
 - Never use # (title) or #### (too deep)
-- --- separator between major sections
-- Blank line between every paragraph, list, and section
+- --- separator between major sections (creates visual breathing room)
+- Blank line between EVERY paragraph, list, and section — NO exceptions
 
-READABILITY:
-- Paragraphs: 2-4 sentences MAX. Break dense blocks aggressively.
-- Grade level: 6-8 (clear but not dumbed down)
-- Active voice preferred
-- Sentence variety (mix short punchy with longer explanatory)
+READABILITY (THIS IS THE #1 PRIORITY):
+- Paragraphs: 1-3 sentences MAXIMUM. One idea per paragraph. Break aggressively.
+- A paragraph of 4+ sentences = FAIL. Split it.
+- Short punchy sentences mixed with one longer one
+- Active voice, directive tone: "Use this", "Start with", "Choose"
+- Grade level: 6-8
 
-LISTS:
-- Bullet points (-) for features, tips, characteristics
-- Numbered lists for steps, sequences, rankings
-- **Bold key term** at start of each bullet
-- 1-2 lines per bullet max
+LISTS (USE LIBERALLY):
+- Bullet points (-) for features, tips, characteristics, criteria
+- Numbered lists (1. 2. 3.) for steps, sequences, rules
+- **Bold key term** at start of each bullet, followed by explanation
+- 1 line per bullet max
+- At least ONE bullet list per section — no section should be all paragraphs
+- Checklists and criteria lists make content scannable
 
 EMPHASIS:
-- **Bold** key terms on first mention
-- > Blockquotes for expert tips and key insights
-- No walls of text anywhere
+- **Bold** key terms, product names, important concepts
+- > Blockquotes for pro tips: "> **💡 Astuce :**" or "> **Pro Tip:**"
+- 👉 emoji for product recommendations
+- NO walls of text anywhere — if you see 5+ lines without a break, split it
 
-LINKS:
+LINKS & IMAGES:
 - [Natural keyword-rich anchor text](url) — never "click here" or "read more"
 - Minimum 3 words per anchor
-- Images: ![Descriptive alt](url) — blank line before and after
+- Product images: ![Descriptive alt](url) — blank line before and after
+- Product images should appear right after the product recommendation
 
 ═══ QUALITY CONSTRAINTS (STRICT) ═══
 
