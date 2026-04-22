@@ -791,32 +791,9 @@ date: "${new Date().toISOString().split("T")[0]}"
 // ── Markdown to HTML ──────────────────────────────────────────────────
 
 function markdownToHtml(md: string): string {
-  let html = md;
-  // Headings
-  html = html.replace(/^### (.+)$/gm, "<h3>$1</h3>");
-  html = html.replace(/^## (.+)$/gm, "<h2>$1</h2>");
-  html = html.replace(/^# (.+)$/gm, "<h1>$1</h1>");
-  // Bold
-  html = html.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-  // Italic
-  html = html.replace(/\*(.+?)\*/g, "<em>$1</em>");
-  // Links
-  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
-  // Blockquotes
-  html = html.replace(/^> (.+)$/gm, "<blockquote>$1</blockquote>");
-  // Comments (remove)
-  html = html.replace(/<!--.*?-->/g, "");
-  // Paragraphs: wrap non-tag lines
-  html = html
-    .split("\n\n")
-    .map((block) => {
-      const trimmed = block.trim();
-      if (!trimmed) return "";
-      if (/^<[a-z]/.test(trimmed)) return trimmed;
-      return `<p>${trimmed}</p>`;
-    })
-    .join("\n");
-  return html;
+  const { marked } = require("marked");
+  marked.setOptions({ breaks: true, gfm: true });
+  return marked.parse(md) as string;
 }
 
 // ── Quality Checks ────────────────────────────────────────────────────

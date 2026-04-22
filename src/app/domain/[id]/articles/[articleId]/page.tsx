@@ -355,25 +355,10 @@ export default function ArticleEditorPage() {
             <div className="flex justify-end mb-3">
               <CopyButton text={body} label="Copy article" />
             </div>
-            <div>
-              {article.bodyHtml ? (
-                <div
-                  className="prose prose-sm max-w-none text-sm leading-relaxed article-body"
-                  style={{ color: "var(--text-secondary)" }}
-                  dangerouslySetInnerHTML={{ __html: article.bodyHtml }}
-                />
-              ) : (
-                <div className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                  {body.split("\n").map((line, i) => {
-                    if (line.startsWith("## ")) return <h2 key={i} className="text-xl font-bold mt-6 mb-2" style={{ color: "var(--text-primary)" }}>{line.slice(3)}</h2>;
-                    if (line.startsWith("### ")) return <h3 key={i} className="text-lg font-semibold mt-4 mb-1" style={{ color: "var(--text-primary)" }}>{line.slice(4)}</h3>;
-                    if (line.startsWith("- ")) return <li key={i} className="ml-4">{line.slice(2)}</li>;
-                    if (line.trim() === "") return <br key={i} />;
-                    return <p key={i} className="mb-2">{line}</p>;
-                  })}
-                </div>
-              )}
-            </div>
+            <div
+              className="article-body max-w-none"
+              dangerouslySetInnerHTML={{ __html: article.bodyHtml || body.replace(/\n/g, "<br>") }}
+            />
           </div>
         )}
 
