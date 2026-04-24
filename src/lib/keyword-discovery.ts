@@ -209,6 +209,28 @@ export async function discoverKeywords(domainId: string): Promise<DiscoveredKeyw
     ).join("\n")
     : "";
 
+  // Extract top competitor domains for deeper analysis
+  const competitorDomains = new Map<string, { domain: string; titles: string[]; count: number }>();
+  for (const s of serpResults) {
+    for (const o of s.organic) {
+      try {
+        const host = new URL(o.link).hostname.replace("www.", "");
+        const siteHost = new URL(domain.domainUrl).hostname.replace("www.", "");
+        if (host === siteHost) continue; // skip own domain
+        const existing = competitorDomains.get(host);
+        if (existing) {
+          existing.titles.push(o.title);
+          existing.count++;
+        } else {
+          competitorDomains.set(host, { domain: host, titles: [o.title], count: 1 });
+        }
+      } catch { /* invalid URL */ }
+    }
+  }
+  const topCompetitors = [...competitorDomains.values()]
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+
   const serpContext = serpResults.map(s => {
     const competitorSummary = s.organic.slice(0, 5).map((o: { title: string; link: string }, i: number) =>
       `  ${i + 1}. ${o.title} — ${o.link}`
@@ -219,6 +241,14 @@ ${competitorSummary}
 PAA: ${s.paa.join(" | ")}
 Related: ${s.related.join(", ")}`;
   }).join("\n\n");
+
+  const competitorContext = topCompetitors.length > 0
+    ? `═══ TOP COMPETITOR WEBSITES (rank most frequently for your keywords) ═══
+${topCompetitors.map(c => `${c.domain} — appears ${c.count} times in SERPs
+  Their page titles: ${c.titles.slice(0, 5).join(" | ")}`).join("\n")}
+
+IMPORTANT: Analyze what topics these competitors cover in their titles. Find keywords they rank for that YOUR site does NOT cover — these are COMPETITOR GAPS. Mark them as source: "competitor_gap" with the competitor domain in sourceDetail.`
+    : "";
 
   const productContext = products.length > 0
     ? `PRODUCT CATEGORIES: ${[...new Set(products.map(p => p.category).filter(Boolean))].join(", ")}
@@ -244,6 +274,8 @@ ${weakContext ? `═══ WEAK KEYWORDS (Position 8-30, high impressions — EA
 ${serpContext || "No SERP data available"}
 
 ${productContext ? `═══ PRODUCT CONTEXT ═══\n${productContext}` : ""}
+
+${competitorContext}
 
 ═══ YOUR TASK ═══
 
@@ -285,7 +317,7 @@ PRIORITIZE:
 EXCLUDE:
 - Brand name keywords (competitor brand names)
 - Keywords the site already ranks #1-5 for
-- Keywords with relevancy below 70
+- Keywords with relevancy below 85 — every keyword MUST be highly relevant to this specific website
 - Single-word generic terms
 
 ═══ OUTPUT FORMAT ═══
@@ -306,7 +338,7 @@ Return STRICT JSON array only (no markdown, no fences, no prose):
 RULES:
 - Exactly 20 keywords
 - All keywords in ${language}
-- relevancyScore must be 70-100 (no irrelevant keywords)
+- relevancyScore must be 85-100 (ONLY highly relevant keywords — if it doesn't directly relate to the website's niche, products, or services, DO NOT include it)
 - Mix of difficulties: at least 8 Low, 6-8 Medium, 2-4 High
 - Mix of intents: at least 8 informational, 4 commercial, 2 transactional
 - Mix of sources: include at least 3 competitor_gap, 3 paa, 3 related
@@ -326,6 +358,8 @@ RULES:
     if (typeof k.relevancyScore !== "number") k.relevancyScore = 75;
     k.relevancyScore = Math.max(0, Math.min(100, Math.round(k.relevancyScore)));
     if (!["competitor_gap", "paa", "related", "gsc_weak", "gsc_opportunity"].includes(k.source)) k.source = "related";
+    // Enforce minimum 85% relevancy
+    if (k.relevancyScore < 85) return false;
     return true;
   });
 
