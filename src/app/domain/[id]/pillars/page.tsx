@@ -544,20 +544,10 @@ export default function PillarsPage() {
 
                 {/* Internal Linking CTA */}
                 <div className="mt-5 p-4 rounded-lg" style={{
-                  background: allArticlesGenerated(pillar) ? "linear-gradient(135deg, #f0fdf4, #ecfdf5)" : "#fefce8",
-                  border: `1px ${allArticlesGenerated(pillar) ? "solid #22c55e40" : "dashed #eab30840"}`,
+                  background: "linear-gradient(135deg, #f0fdf4, #ecfdf5)",
+                  border: "1px solid #22c55e40",
                 }}>
-                  {!allArticlesGenerated(pillar) ? (
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "#eab30815" }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#eab308" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01" /></svg>
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-xs font-bold" style={{ color: "#854d0e" }}>Internal Linking Pending</p>
-                        <p className="text-[11px]" style={{ color: "#a16207" }}>Generate all articles to enable smart internal linking between pillar and clusters.</p>
-                      </div>
-                    </div>
-                  ) : interlinkSuggestions[pillar.id] ? (
+                  {interlinkSuggestions[pillar.id] ? (
                     /* Suggestions loaded — show them */
                     <div>
                       <div className="flex items-center justify-between mb-3">
@@ -630,20 +620,19 @@ export default function PillarsPage() {
                       </div>
                     </div>
                   ) : (
-                    /* All articles generated — show CTA to get suggestions */
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "#22c55e15" }}>
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" /></svg>
                         </div>
                         <div>
-                          <p className="text-xs font-bold" style={{ color: "#166534" }}>Internal Linking Ready</p>
-                          <p className="text-[11px]" style={{ color: "#15803d" }}>All articles generated. Get AI suggestions for internal links between pillar and clusters.</p>
+                          <p className="text-xs font-bold" style={{ color: "#166534" }}>Internal Linking</p>
+                          <p className="text-[11px]" style={{ color: "#15803d" }}>Get AI suggestions to interlink your pillar and cluster articles.</p>
                         </div>
                       </div>
                       <button
                         onClick={() => fetchInterlinkSuggestions(pillar.id)}
-                        disabled={interlinkLoading === pillar.id}
+                        disabled={interlinkLoading === pillar.id || ((pillar.pillarArticleId ? 1 : 0) + pillar.clusters.filter(c => c.articleId).length) < 2}
                         className="text-xs font-semibold px-4 py-2 rounded-lg text-white cursor-pointer disabled:opacity-40 shrink-0"
                         style={{ background: "#22c55e" }}
                       >
