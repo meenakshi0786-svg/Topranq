@@ -93,6 +93,7 @@ export function OnboardingPanel({ domainId, domainUrl, justConnectedGsc }: Props
 
   const gscStatus: StepStatus = gscFetching ? "doing" : gscConnected ? "done" : "todo";
   const productStatus: StepStatus = hasProducts ? "done" : "todo";
+  const strategyStatus: StepStatus = "todo";
 
   return (
     <div className="card-static p-7 mb-5 fade-in">
@@ -133,6 +134,14 @@ export function OnboardingPanel({ domainId, domainUrl, justConnectedGsc }: Props
             });
             refresh();
           } : undefined}
+        />
+        <StepCard
+          number={3}
+          status={strategyStatus}
+          title="Now let's plan a strategy for you"
+          description="Discover low-hanging keywords, find competitor gaps, and build your content pipeline."
+          actionLabel="Magic Keyword Planner"
+          onAction={() => { window.location.href = `/domain/${domainId}/keyword-planner`; }}
         />
       </div>
 
