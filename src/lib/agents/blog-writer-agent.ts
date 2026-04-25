@@ -6,16 +6,22 @@ import { generateFeaturedImageUrl, buildImagePrompt } from "../image-gen";
 import { pickRelevantProducts } from "../product-cta";
 import { fetchProductsFromDomain } from "../product-source";
 import { composeProductHero } from "../product-composite";
-async function askClaude(prompt: string, maxTokens = 4000): Promise<string> {
+async function askClaude(prompt: string, maxTokens = 4000, preferredModel?: "sonnet" | "opus"): Promise<string> {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new Error("OPENROUTER_API_KEY is not set");
 
-  // Article generation: Sonnet first → Gemini Flash → Haiku
-  const models = [
-    process.env.OPENROUTER_MODEL_SONNET,
-    "google/gemini-2.5-flash",
-    process.env.OPENROUTER_MODEL || "anthropic/claude-3.5-haiku",
-  ].filter(Boolean) as string[];
+  // Model selection based on plan: opus for $5, sonnet for $1/free
+  const models = preferredModel === "opus"
+    ? [
+        process.env.OPENROUTER_MODEL_OPUS,
+        process.env.OPENROUTER_MODEL_SONNET,
+        "google/gemini-2.5-flash",
+      ].filter(Boolean) as string[]
+    : [
+        process.env.OPENROUTER_MODEL_SONNET,
+        "google/gemini-2.5-flash",
+        process.env.OPENROUTER_MODEL || "anthropic/claude-3.5-haiku",
+      ].filter(Boolean) as string[];
 
   for (const model of models) {
     try {
@@ -72,6 +78,7 @@ export interface BlogWriterConfig {
   topic: string;
   keywords: string[];
   tone: "professional" | "casual" | "technical";
+  preferredModel?: "sonnet" | "opus";
   wordCount: number;
   language?: string;
   intent?: string;
@@ -279,7 +286,7 @@ export async function runBlogWriter(
     topic, keywords, tone, targetWordCount, intent, primaryKeyword,
     gscContext + (competitorBrief ? `\n\n${competitorBrief}` : ""),
     productCatalog, config.pillarClusterContext,
-    config.reworkNotes, config.language,
+    config.reworkNotes, config.language, config.preferredModel,
   );
 
   // Post-process: hyperlink any product names mentioned in the article
@@ -438,6 +445,7 @@ async function generateFullArticle(
   pillarClusterCtx?: BlogWriterConfig["pillarClusterContext"],
   reworkNotes?: string,
   language?: string,
+  preferredModel?: "sonnet" | "opus",
 ): Promise<{
   outline: Array<{ heading: string; summary: string; keyPoints: string[] }>;
   bodyMarkdown: string;
@@ -627,7 +635,7 @@ BEGIN NOW — first line must be a ## heading.`;
 
   // 1 word ≈ 1.5 tokens. Article + FAQ JSON + outline JSON need headroom.
   const estimatedTokens = Math.ceil(targetWordCount * 1.5) + 2000;
-  const response = await askClaude(prompt, Math.max(4000, estimatedTokens));
+  const response = await askClaude(prompt, Math.max(4000, estimatedTokens), preferredModel);
 
   // The article is now CLEAN — no markers, no JSON, just publishable markdown.
   // Strip any accidental markers the AI might still add (safety net).
