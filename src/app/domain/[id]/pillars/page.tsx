@@ -542,105 +542,106 @@ export default function PillarsPage() {
                   ))}
                 </div>
 
-                {/* Internal Linking CTA */}
-                <div className="mt-5 p-4 rounded-lg" style={{
-                  background: "linear-gradient(135deg, #f0fdf4, #ecfdf5)",
-                  border: "1px solid #22c55e40",
-                }}>
-                  {interlinkSuggestions[pillar.id] ? (
-                    /* Suggestions loaded — show them */
-                    <div>
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" /></svg>
-                          <p className="text-xs font-bold" style={{ color: "#166534" }}>
-                            {interlinkSuggestions[pillar.id].length} Link Suggestions
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>
-                            {selectedSuggestions.size} selected
-                          </span>
-                          <button
-                            onClick={() => applySelectedSuggestions(pillar.id)}
-                            disabled={applyingLinks || selectedSuggestions.size === 0}
-                            className="text-[11px] font-semibold px-3 py-1.5 rounded-lg text-white cursor-pointer disabled:opacity-40"
-                            style={{ background: "#22c55e" }}
-                          >
-                            {applyingLinks ? "Applying..." : "Apply Selected"}
-                          </button>
-                        </div>
+                {/* Internal Linking — single button */}
+                {interlinkSuggestions[pillar.id] ? (
+                  /* Suggestions loaded — show them */
+                  <div className="mt-5 p-4 rounded-lg" style={{ background: "linear-gradient(135deg, #f0fdf4, #ecfdf5)", border: "1px solid #22c55e40" }}>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" /></svg>
+                        <p className="text-xs font-bold" style={{ color: "#166534" }}>
+                          {interlinkSuggestions[pillar.id].length} Link Suggestions
+                        </p>
                       </div>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 300, overflowY: "auto" }}>
-                        {interlinkSuggestions[pillar.id].map(s => (
-                          <div
-                            key={s.id}
-                            className="cursor-pointer"
-                            onClick={() => toggleSuggestion(s.id)}
-                            style={{
-                              padding: "10px 12px",
-                              borderRadius: 8,
-                              background: selectedSuggestions.has(s.id) ? "#dcfce7" : "var(--bg-white)",
-                              border: `1px solid ${selectedSuggestions.has(s.id) ? "#22c55e40" : "var(--border-light)"}`,
-                            }}
-                          >
-                            <div className="flex items-start gap-2">
-                              <span style={{
-                                width: 16, height: 16, borderRadius: 4, flexShrink: 0, marginTop: 2,
-                                border: selectedSuggestions.has(s.id) ? "none" : "1.5px solid var(--border)",
-                                background: selectedSuggestions.has(s.id) ? "#22c55e" : "transparent",
-                                display: "flex", alignItems: "center", justifyContent: "center",
-                              }}>
-                                {selectedSuggestions.has(s.id) && (
-                                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>
-                                )}
-                              </span>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded" style={{
-                                    background: s.direction === "pillar→cluster" ? "#4F6EF715" : s.direction === "cluster→pillar" ? "#7C5CFC15" : "#22c55e15",
-                                    color: s.direction === "pillar→cluster" ? "#4F6EF7" : s.direction === "cluster→pillar" ? "#7C5CFC" : "#22c55e",
-                                  }}>
-                                    {s.direction}
-                                  </span>
-                                  <span className="text-[10px] font-medium" style={{ color: "var(--text-secondary)" }}>
-                                    in &ldquo;{s.articleTitle.slice(0, 40)}&rdquo;
-                                  </span>
-                                </div>
-                                <p className="text-[11px] mb-1" style={{ color: "var(--text-muted)" }}>
-                                  <span style={{ textDecoration: "line-through", color: "var(--critical)" }}>{s.find.slice(0, 60)}</span>
-                                </p>
-                                <p className="text-[11px]" style={{ color: "#166534" }}>
-                                  → {s.replace.slice(0, 80)}
-                                </p>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>
+                          {interlinkSuggestions[pillar.id].filter(s => selectedSuggestions.has(s.id)).length} selected
+                        </span>
+                        <button
+                          onClick={() => applySelectedSuggestions(pillar.id)}
+                          disabled={applyingLinks || interlinkSuggestions[pillar.id].filter(s => selectedSuggestions.has(s.id)).length === 0}
+                          className="text-[11px] font-semibold px-3 py-1.5 rounded-lg text-white cursor-pointer disabled:opacity-40"
+                          style={{ background: "#22c55e" }}
+                        >
+                          {applyingLinks ? "Applying..." : "Apply Selected"}
+                        </button>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 300, overflowY: "auto" }}>
+                      {interlinkSuggestions[pillar.id].map(s => (
+                        <div
+                          key={s.id}
+                          className="cursor-pointer"
+                          onClick={() => toggleSuggestion(s.id)}
+                          style={{
+                            padding: "10px 12px",
+                            borderRadius: 8,
+                            background: selectedSuggestions.has(s.id) ? "#dcfce7" : "var(--bg-white)",
+                            border: `1px solid ${selectedSuggestions.has(s.id) ? "#22c55e40" : "var(--border-light)"}`,
+                          }}
+                        >
+                          <div className="flex items-start gap-2">
+                            <span style={{
+                              width: 16, height: 16, borderRadius: 4, flexShrink: 0, marginTop: 2,
+                              border: selectedSuggestions.has(s.id) ? "none" : "1.5px solid var(--border)",
+                              background: selectedSuggestions.has(s.id) ? "#22c55e" : "transparent",
+                              display: "flex", alignItems: "center", justifyContent: "center",
+                            }}>
+                              {selectedSuggestions.has(s.id) && (
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>
+                              )}
+                            </span>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded" style={{
+                                  background: s.direction === "pillar→cluster" ? "#4F6EF715" : s.direction === "cluster→pillar" ? "#7C5CFC15" : "#22c55e15",
+                                  color: s.direction === "pillar→cluster" ? "#4F6EF7" : s.direction === "cluster→pillar" ? "#7C5CFC" : "#22c55e",
+                                }}>
+                                  {s.direction}
+                                </span>
+                                <span className="text-[10px] font-medium" style={{ color: "var(--text-secondary)" }}>
+                                  in &ldquo;{s.articleTitle.slice(0, 40)}&rdquo;
+                                </span>
                               </div>
+                              <p className="text-[11px] mb-1" style={{ color: "var(--text-muted)" }}>
+                                <span style={{ textDecoration: "line-through", color: "var(--critical)" }}>{s.find.slice(0, 60)}</span>
+                              </p>
+                              <p className="text-[11px]" style={{ color: "#166534" }}>
+                                → {s.replace.slice(0, 80)}
+                              </p>
                             </div>
                           </div>
-                        ))}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "#22c55e15" }}>
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" /></svg>
                         </div>
-                        <div>
-                          <p className="text-xs font-bold" style={{ color: "#166534" }}>Internal Linking</p>
-                          <p className="text-[11px]" style={{ color: "#15803d" }}>Get AI suggestions to interlink your pillar and cluster articles.</p>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => fetchInterlinkSuggestions(pillar.id)}
-                        disabled={interlinkLoading === pillar.id}
-                        className="text-xs font-semibold px-4 py-2 rounded-lg text-white cursor-pointer disabled:opacity-40 shrink-0"
-                        style={{ background: "#22c55e" }}
-                      >
-                        {interlinkLoading === pillar.id ? "Analyzing..." : "Get Link Suggestions"}
-                      </button>
+                      ))}
                     </div>
-                  )}
-                </div>
+                  </div>
+                ) : (
+                  /* Single button */
+                  <div className="mt-5">
+                    <button
+                      onClick={() => {
+                        if (allArticlesGenerated(pillar)) {
+                          fetchInterlinkSuggestions(pillar.id);
+                        } else {
+                          alert("Please generate all articles (pillar + all clusters) first to get internal link suggestions.");
+                        }
+                      }}
+                      disabled={interlinkLoading === pillar.id}
+                      className="w-full py-3 rounded-lg text-sm font-semibold cursor-pointer disabled:opacity-50"
+                      style={{
+                        background: allArticlesGenerated(pillar) ? "#22c55e" : "var(--bg)",
+                        color: allArticlesGenerated(pillar) ? "#fff" : "var(--text-secondary)",
+                        border: allArticlesGenerated(pillar) ? "none" : "1px dashed var(--border)",
+                      }}
+                    >
+                      {interlinkLoading === pillar.id
+                        ? "Analyzing articles for link suggestions..."
+                        : allArticlesGenerated(pillar)
+                          ? "Get Internal Link Suggestions"
+                          : "Generate all articles to proceed"}
+                    </button>
+                  </div>
+                )}
 
               </div>
             ))}
