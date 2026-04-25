@@ -276,6 +276,165 @@ If ANY cluster is missing from the pillar's links, go back and add it before ret
   return { updatedArticles: updatedCount, linksInserted: totalLinks, details };
 }
 
+// ══════════════════════════════════════════════════════════════════════
+// Suggestions mode: return link suggestions without applying them
+// ══════════════════════════════════════════════════════════════════════
+
+export interface InterlinkSuggestion {
+  id: string;
+  articleId: string;
+  articleTitle: string;
+  find: string;
+  replace: string;
+  targetSlug: string;
+  targetTitle: string;
+  direction: "pillar→cluster" | "cluster→pillar" | "cluster↔cluster";
+}
+
+export async function getInterlinkSuggestions(pillarId: string): Promise<InterlinkSuggestion[]> {
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  if (!apiKey) throw new Error("OPENROUTER_API_KEY is not set");
+
+  const pillar = db.select().from(schema.pillars).where(eq(schema.pillars.id, pillarId)).get();
+  if (!pillar) throw new Error("Pillar not found");
+
+  const pillarArticle = pillar.pillarArticleId
+    ? db.select().from(schema.articles).where(eq(schema.articles.id, pillar.pillarArticleId)).get()
+    : null;
+
+  const clusters = db
+    .select()
+    .from(schema.pillarClusters)
+    .where(eq(schema.pillarClusters.pillarId, pillarId))
+    .all();
+
+  const clusterArticles: ArticleRef[] = [];
+  for (const c of clusters) {
+    if (!c.articleId) continue;
+    const art = db.select().from(schema.articles).where(eq(schema.articles.id, c.articleId)).get();
+    if (art && art.bodyMarkdown) {
+      clusterArticles.push({
+        id: art.id,
+        slug: art.slug,
+        title: art.metaTitle || art.h1 || c.clusterTopic,
+        bodyMarkdown: art.bodyMarkdown,
+      });
+    }
+  }
+
+  if (clusterArticles.length === 0) return [];
+
+  const pillarRef: ArticleRef | null = pillarArticle?.bodyMarkdown
+    ? { id: pillarArticle.id, slug: pillarArticle.slug, title: pillarArticle.metaTitle || pillarArticle.h1 || pillar.topic, bodyMarkdown: pillarArticle.bodyMarkdown }
+    : null;
+
+  const articleSummary = buildArticleSummary(pillarRef, clusterArticles);
+
+  // Use the same prompt as interlinkPillarCluster but ask for suggestions
+  const prompt = `You are an expert in SEO internal linking. Analyze these articles and suggest precise internal links.
+
+${articleSummary}
+
+TASK: For each article, find phrases where another article should be linked. Return find/replace suggestions.
+
+RULES:
+- Every cluster MUST be linked from the pillar at least once
+- Every cluster MUST link back to the pillar once
+- Anchor text: 3-6 words, keyword-rich, descriptive (NOT "click here" or "read more")
+- Never repeat the exact same anchor for the same target
+- Max 1 link per 150-200 words
+- Never 2 links in the same sentence
+- Links must read naturally in context
+
+Return STRICT JSON only:
+{
+  "suggestions": [
+    {
+      "articleId": "source-article-id",
+      "find": "exact phrase from the article (verbatim)",
+      "replace": "[linked phrase](/target-slug)",
+      "targetSlug": "/target-slug",
+      "direction": "pillar→cluster"
+    }
+  ]
+}`;
+
+  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: process.env.OPENROUTER_MODEL || "anthropic/claude-3.5-haiku",
+      max_tokens: 4000,
+      messages: [{ role: "user", content: prompt }],
+    }),
+  });
+
+  if (!res.ok) throw new Error(`AI error: ${res.status}`);
+  const data = await res.json();
+  const text = data.choices?.[0]?.message?.content || "";
+
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error("Could not parse suggestions");
+
+  const sanitized = jsonMatch[0].replace(
+    /"(?:[^"\\]|\\.)*"/g,
+    (match: string) => match
+      .replace(/(?<!\\)\n/g, "\\n")
+      .replace(/(?<!\\)\r/g, "\\r")
+      .replace(/(?<!\\)\t/g, "\\t")
+      .replace(/[\x00-\x1f]/g, (c: string) => `\\u${c.charCodeAt(0).toString(16).padStart(4, "0")}`),
+  );
+
+  let parsed: { suggestions?: Array<{ articleId: string; find: string; replace: string; targetSlug: string; direction: string }> };
+  try {
+    parsed = JSON.parse(sanitized);
+  } catch {
+    throw new Error("Invalid JSON in suggestions response");
+  }
+
+  if (!parsed.suggestions || !Array.isArray(parsed.suggestions)) return [];
+
+  const allArticles = [pillarRef, ...clusterArticles].filter(Boolean) as ArticleRef[];
+
+  return parsed.suggestions
+    .filter(s => s.find && s.replace && s.articleId)
+    .map((s, i) => {
+      const sourceArt = allArticles.find(a => a.id === s.articleId);
+      const targetArt = allArticles.find(a => a.slug && s.targetSlug?.includes(a.slug));
+      return {
+        id: `suggestion-${i}`,
+        articleId: s.articleId,
+        articleTitle: sourceArt?.title || "Unknown",
+        find: s.find,
+        replace: s.replace,
+        targetSlug: s.targetSlug || "",
+        targetTitle: targetArt?.title || s.targetSlug || "",
+        direction: (s.direction || "pillar→cluster") as InterlinkSuggestion["direction"],
+      };
+    });
+}
+
+export async function applyInterlinkSuggestions(suggestions: Array<{ articleId: string; find: string; replace: string }>): Promise<{ applied: number }> {
+  let applied = 0;
+  for (const s of suggestions) {
+    const article = db.select().from(schema.articles).where(eq(schema.articles.id, s.articleId)).get();
+    if (!article || !article.bodyMarkdown) continue;
+    if (!article.bodyMarkdown.includes(s.find)) continue;
+
+    const updated = article.bodyMarkdown.replace(s.find, s.replace);
+    const { marked } = require("marked");
+    marked.setOptions({ breaks: true, gfm: true });
+    const html = marked.parse(updated) as string;
+
+    db.update(schema.articles)
+      .set({ bodyMarkdown: updated, bodyHtml: html })
+      .where(eq(schema.articles.id, s.articleId))
+      .run();
+    applied++;
+  }
+  return { applied };
+}
+
 /**
  * Build a summary of articles for the prompt — titles, slugs, and FIRST 500 chars only.
  * NEVER send full content to Claude (it would return truncated versions).
