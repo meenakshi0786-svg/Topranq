@@ -172,6 +172,69 @@ export default function PillarsPage() {
     }
   }
 
+  const [generatingAll, setGeneratingAll] = useState<string | null>(null); // pillarId
+  const [generatingAllProgress, setGeneratingAllProgress] = useState("");
+
+  async function generateAllArticles(pillar: Pillar) {
+    setGeneratingAll(pillar.id);
+    const missing: Array<{ clusterId: string | null; isPillar: boolean; label: string }> = [];
+
+    // Queue pillar article first if missing
+    if (!pillar.pillarArticleId) {
+      missing.push({ clusterId: null, isPillar: true, label: "Pillar: " + pillar.topic.slice(0, 30) });
+    }
+
+    // Queue missing cluster articles
+    for (const c of pillar.clusters) {
+      if (!c.articleId) {
+        missing.push({ clusterId: c.id, isPillar: false, label: "Cluster: " + c.clusterTopic.slice(0, 30) });
+      }
+    }
+
+    if (missing.length === 0) {
+      // All done — fetch link suggestions
+      setGeneratingAll(null);
+      fetchInterlinkSuggestions(pillar.id);
+      return;
+    }
+
+    for (let i = 0; i < missing.length; i++) {
+      const item = missing[i];
+      setGeneratingAllProgress(`Generating ${i + 1} of ${missing.length}: ${item.label}...`);
+
+      try {
+        const res = await fetch(`/api/pillars/${pillar.id}/clusters/${item.clusterId || "none"}/generate`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ isPillar: item.isPillar }),
+        });
+
+        const contentType = res.headers.get("content-type") || "";
+        if (!contentType.includes("application/json")) continue;
+        if (!res.ok) continue;
+
+        const result = await res.json();
+
+        // Update UI immediately
+        setPillars((prev) => prev.map((p) => {
+          if (p.id !== pillar.id) return p;
+          if (item.isPillar) return { ...p, pillarArticleId: result.articleId };
+          return {
+            ...p,
+            clusters: p.clusters.map((c) =>
+              c.id === item.clusterId ? { ...c, articleId: result.articleId } : c
+            ),
+          };
+        }));
+      } catch {
+        // Continue with next article even if one fails
+      }
+    }
+
+    setGeneratingAll(null);
+    setGeneratingAllProgress("");
+  }
+
   async function deletePillar(pillarId: string) {
     if (!confirm("Delete this pillar and all its clusters?")) return;
     await fetch(`/api/domains/${domainId}/pillars?pillarId=${pillarId}`, { method: "DELETE" });
@@ -623,22 +686,24 @@ export default function PillarsPage() {
                         if (allArticlesGenerated(pillar)) {
                           fetchInterlinkSuggestions(pillar.id);
                         } else {
-                          alert("Please generate all articles (pillar + all clusters) first to get internal link suggestions.");
+                          generateAllArticles(pillar);
                         }
                       }}
-                      disabled={interlinkLoading === pillar.id}
+                      disabled={interlinkLoading === pillar.id || generatingAll === pillar.id}
                       className="w-full py-3 rounded-lg text-sm font-semibold cursor-pointer disabled:opacity-50"
                       style={{
-                        background: allArticlesGenerated(pillar) ? "#22c55e" : "var(--bg)",
-                        color: allArticlesGenerated(pillar) ? "#fff" : "var(--text-secondary)",
-                        border: allArticlesGenerated(pillar) ? "none" : "1px dashed var(--border)",
+                        background: allArticlesGenerated(pillar) ? "#22c55e" : "#4F6EF7",
+                        color: "#fff",
+                        border: "none",
                       }}
                     >
-                      {interlinkLoading === pillar.id
-                        ? "Analyzing articles for link suggestions..."
-                        : allArticlesGenerated(pillar)
-                          ? "Get Internal Link Suggestions"
-                          : "Generate all articles to proceed"}
+                      {generatingAll === pillar.id
+                        ? generatingAllProgress || "Generating articles..."
+                        : interlinkLoading === pillar.id
+                          ? "Analyzing articles for link suggestions..."
+                          : allArticlesGenerated(pillar)
+                            ? "Get Internal Link Suggestions"
+                            : "Generate all articles to proceed"}
                     </button>
                   </div>
                 )}
