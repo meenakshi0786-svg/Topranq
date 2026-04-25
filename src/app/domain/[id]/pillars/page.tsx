@@ -632,7 +632,7 @@ export default function PillarsPage() {
                       </div>
                       <button
                         onClick={() => fetchInterlinkSuggestions(pillar.id)}
-                        disabled={interlinkLoading === pillar.id || ((pillar.pillarArticleId ? 1 : 0) + pillar.clusters.filter(c => c.articleId).length) < 2}
+                        disabled={interlinkLoading === pillar.id}
                         className="text-xs font-semibold px-4 py-2 rounded-lg text-white cursor-pointer disabled:opacity-40 shrink-0"
                         style={{ background: "#22c55e" }}
                       >
