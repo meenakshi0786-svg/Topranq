@@ -16,44 +16,48 @@ const PLANS = [
     name: "$1 Plan",
     planKey: "dollar1" as const,
     price: "$1",
-    period: "/mo",
+    period: "",
+    periodLabel: "one-time",
     model: "Sonnet",
     pages: 25,
     articles: 10,
+    validity: "30 days",
     features: [
+      "10 articles (one-time credit pack)",
+      "Valid for 30 days from purchase",
       "Full site audit (25 pages)",
       "Magic Keyword Planner",
-      "10 articles/month",
       "AI model: Sonnet",
       "Pillar-cluster content strategy",
       "Auto internal linking suggestions",
       "Product CSV integration",
       "GEO toolkit (llms.txt, entity map)",
-      "Copy & export articles",
     ],
-    cta: "Get Started",
+    cta: "Buy Now",
     highlighted: false,
   },
   {
     name: "$5 Plan",
     planKey: "dollar5" as const,
     price: "$5",
-    period: "/mo",
+    period: "",
+    periodLabel: "one-time",
     model: "Opus",
     pages: 50,
     articles: 15,
+    validity: "30 days",
     features: [
+      "15 articles (one-time credit pack)",
+      "Valid for 30 days from purchase",
       "Everything in $1 Plan",
       "Full site audit (50 pages)",
-      "15 articles/month",
       "AI model: Opus (premium quality)",
       "Deeper competitor analysis",
-      "Priority article generation",
       "Advanced editorial formatting",
       "Hero image generation",
       "Google Search Console integration",
     ],
-    cta: "Get Started",
+    cta: "Buy Now",
     highlighted: true,
   },
 ];
@@ -194,11 +198,16 @@ export default function PricingPage() {
               <h2 className="text-xl font-bold mb-1" style={{ color: "var(--text-primary)" }}>{plan.name}</h2>
               <div className="mb-1">
                 <span className="text-4xl font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>{plan.price}</span>
-                <span className="text-sm" style={{ color: "var(--text-muted)" }}>{plan.period}</span>
+                <span className="text-sm" style={{ color: "var(--text-muted)" }}> {plan.periodLabel}</span>
               </div>
-              <p className="text-xs mb-5" style={{ color: "var(--text-muted)" }}>
-                AI Model: <span style={{ fontWeight: 600, color: plan.model === "Opus" ? "#7C5CFC" : "#4F6EF7" }}>{plan.model}</span>
-              </p>
+              <div className="flex items-center gap-3 mb-5">
+                <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: "#dbeafe", color: "#1e40af" }}>
+                  Valid for {plan.validity}
+                </span>
+                <span className="text-xs" style={{ color: "var(--text-muted)" }}>
+                  AI: <span style={{ fontWeight: 600, color: plan.model === "Opus" ? "#7C5CFC" : "#4F6EF7" }}>{plan.model}</span>
+                </span>
+              </div>
 
               {/* Stats row */}
               <div className="flex gap-3 mb-5">
@@ -243,6 +252,15 @@ export default function PricingPage() {
         <div className="card-static p-6 fade-in">
           <div className="space-y-3">
             <div className="flex items-start gap-3">
+              <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ background: "#dcfce7" }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#166534" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
+              </div>
+              <div>
+                <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>One-time purchase, no subscription</p>
+                <p className="text-xs" style={{ color: "var(--text-muted)" }}>Pay once, use your credits within 30 days. No auto-renewal, no recurring charges. Need more? Purchase another pack anytime.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
               <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ background: "#fef9c3" }}>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#854d0e" strokeWidth="2.5"><path d="M12 9v4M12 17h.01" /></svg>
               </div>
@@ -257,7 +275,7 @@ export default function PricingPage() {
               </div>
               <div>
                 <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>Separate charges for article regeneration</p>
-                <p className="text-xs" style={{ color: "var(--text-muted)" }}>The 10 articles/month quota covers new articles. Regenerating or rewriting an existing article will incur additional charges.</p>
+                <p className="text-xs" style={{ color: "var(--text-muted)" }}>Your credit pack covers new articles. Regenerating or rewriting an existing article will incur additional charges.</p>
               </div>
             </div>
           </div>
