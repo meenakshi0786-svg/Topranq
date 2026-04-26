@@ -23,7 +23,7 @@ const PLANS = [
     articles: 10,
     validity: "30 days",
     features: [
-      "10 articles (one-time credit pack)",
+      "10 Articles",
       "Valid for 30 days from purchase",
       "Full site audit (25 pages)",
       "Magic Keyword Planner",
@@ -47,7 +47,7 @@ const PLANS = [
     articles: 15,
     validity: "30 days",
     features: [
-      "15 articles (one-time credit pack)",
+      "15 Articles",
       "Valid for 30 days from purchase",
       "Everything in $1 Plan",
       "Full site audit (50 pages)",
@@ -217,7 +217,7 @@ export default function PricingPage() {
                 </div>
                 <div className="flex-1 p-3 rounded-lg text-center" style={{ background: "var(--bg)", border: "1px solid var(--border-light)" }}>
                   <p className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>{plan.articles}</p>
-                  <p className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>Articles/mo</p>
+                  <p className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>Articles</p>
                 </div>
               </div>
 
@@ -275,7 +275,7 @@ export default function PricingPage() {
               </div>
               <div>
                 <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>Separate charges for article regeneration</p>
-                <p className="text-xs" style={{ color: "var(--text-muted)" }}>Your credit pack covers new articles. Regenerating or rewriting an existing article will incur additional charges.</p>
+                <p className="text-xs" style={{ color: "var(--text-muted)" }}>Your pack covers new articles. Regenerating or rewriting an existing article counts towards your article limit.</p>
               </div>
             </div>
           </div>
