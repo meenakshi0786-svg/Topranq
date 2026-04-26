@@ -65,12 +65,6 @@ export default function ArticlesPage() {
       <div className="max-w-[1100px] mx-auto px-6 py-10">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold tracking-tight">Articles</h1>
-          <Link
-            href={`/domain/${domainId}/agents`}
-            className="btn-primary px-5 py-2 text-sm"
-          >
-            Create with AI Agent
-          </Link>
         </div>
 
         {/* Filters */}
@@ -114,15 +108,15 @@ export default function ArticlesPage() {
             </p>
             <p className="text-sm mb-5" style={{ color: "var(--text-secondary)" }}>
               {articles.length === 0
-                ? "Deploy the Blog Writer agent to generate SEO-optimized articles."
+                ? "Go to Pillars to generate articles from your content strategy."
                 : "Try selecting a different status filter."}
             </p>
             {articles.length === 0 && (
               <Link
-                href={`/domain/${domainId}/agents`}
+                href={`/domain/${domainId}/pillars`}
                 className="btn-primary inline-block px-5 py-2 text-sm"
               >
-                Go to Strategy AI Agents
+                Go to Pillars
               </Link>
             )}
           </div>
