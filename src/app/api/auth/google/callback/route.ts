@@ -10,8 +10,6 @@ export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get("code");
   const domainId = request.nextUrl.searchParams.get("state") || "";
 
-  console.log("[auth/callback] code present:", !!code, "domainId from state:", JSON.stringify(domainId));
-
   if (!code) {
     return NextResponse.redirect(`${APP_URL}?error=google_auth_failed`);
   }
@@ -73,7 +71,6 @@ export async function GET(request: NextRequest) {
     const redirectUrl = hasValidDomain
       ? `${APP_URL}/domain/${domainId}?autoaudit=true`
       : `${APP_URL}/dashboard`;
-    console.log("[auth/callback] hasValidDomain:", hasValidDomain, "redirecting to:", redirectUrl);
     const response = NextResponse.redirect(redirectUrl);
     response.cookies.set("user_id", user.id, {
       httpOnly: true,

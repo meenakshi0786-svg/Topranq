@@ -370,13 +370,13 @@ export default function GEOPage() {
                     onClick={() => downloadAsset("llms-txt")}
                     guide={{
                       whatItIs: "The standard file AI crawlers look for — like robots.txt but for LLMs. Contains your site summary, grouped page index, key topics, capabilities, and use cases.",
-                      whereToUpload: "Root of your website → yoursite.com/llms.txt (same directory as robots.txt and sitemap.xml).",
+                      whereToUpload: "Root of your website → your-domain.com/llms.txt (same directory as robots.txt and sitemap.xml).",
                       howToUploadWP: [
                         "Go to your WordPress admin panel",
                         "Install and activate the File Manager plugin (or use FTP / cPanel)",
                         "Navigate to the root directory where wp-config.php lives",
                         "Upload the downloaded llms.txt file",
-                        "Verify by visiting yoursite.com/llms.txt",
+                        "Verify by visiting your-domain.com/llms.txt",
                       ],
                       howToUploadShopify: [
                         "Go to Shopify Admin → Online Store → Themes",
@@ -385,7 +385,7 @@ export default function GEOPage() {
                         "Create a page template named llms-txt",
                         "Paste your llms.txt content into the template",
                         "Go to Pages → Add page, set URL handle to llms.txt and assign the template",
-                        "Verify at yourstore.com/pages/llms.txt",
+                        "Verify at your-domain.com/pages/llms.txt",
                       ],
                       whoReadsIt: "GPTBot (ChatGPT), ClaudeBot (Claude), PerplexityBot (Perplexity), Google-Extended (AI Overviews), and any LLM crawler that checks for it.",
                       impact: "Baseline for AI discovery. Without it, AI engines guess what your site is about. With it, you control the narrative.",
@@ -398,14 +398,14 @@ export default function GEOPage() {
                     onClick={() => downloadAsset("llms-full")}
                     guide={{
                       whatItIs: "Extended semantic profile with full page descriptions, topical authority map, content architecture, relationship graph, and 20-30 semantic tags. The deep-context version of llms.txt.",
-                      whereToUpload: "Root of your website → yoursite.com/llms-full.txt. Add a reference in your llms.txt: '> Full version: /llms-full.txt'.",
+                      whereToUpload: "Root of your website → your-domain.com/llms-full.txt. Add a reference in your llms.txt: '> Full version: /llms-full.txt'.",
                       howToUploadWP: [
                         "Go to your WordPress admin panel",
                         "Open File Manager plugin or connect via FTP",
                         "Navigate to the root directory (where wp-config.php lives)",
                         "Upload llms-full.txt alongside your llms.txt",
                         "Open your llms.txt and add a line: > Full version: /llms-full.txt",
-                        "Verify at yoursite.com/llms-full.txt",
+                        "Verify at your-domain.com/llms-full.txt",
                       ],
                       howToUploadShopify: [
                         "Go to Shopify Admin → Online Store → Themes → Edit code",
@@ -414,7 +414,7 @@ export default function GEOPage() {
                         "Go to Pages → Add page, set URL handle to llms-full.txt",
                         "Assign the llms-full-txt template",
                         "Update your llms.txt page to reference: > Full version: /pages/llms-full.txt",
-                        "Verify at yourstore.com/pages/llms-full.txt",
+                        "Verify at your-domain.com/pages/llms-full.txt",
                       ],
                       whoReadsIt: "Perplexity and Claude follow links within llms.txt and read the full version. Google AI Overviews benefits from richer context when generating detailed answers.",
                       impact: "When an AI writes a detailed answer and needs to cite a source, the full version gives enough context to cite YOUR page over a competitor's.",
@@ -427,7 +427,7 @@ export default function GEOPage() {
                     onClick={() => downloadAsset("entity-map")}
                     guide={{
                       whatItIs: "A JSON-LD knowledge graph — the same structured data format Google uses for Knowledge Panels. Maps your organization, pages, products, and topics with typed relationships.",
-                      whereToUpload: "Two places: (1) yoursite.com/entity-map.jsonld as a file, and (2) embedded in your homepage HTML inside a <script type='application/ld+json'> tag for maximum impact.",
+                      whereToUpload: "Two places: (1) your-domain.com/entity-map.jsonld as a file, and (2) embedded in your homepage HTML inside a <script type='application/ld+json'> tag for maximum impact.",
                       howToUploadWP: [
                         "Install the 'Insert Headers and Footers' plugin (or WPCode)",
                         "Go to the plugin settings → Header section",
@@ -456,7 +456,7 @@ export default function GEOPage() {
                     onClick={() => downloadAsset("citation-snippets")}
                     guide={{
                       whatItIs: "Pre-written, factual, quotable summaries for each important page plus FAQ Q&A pairs. Designed so AI models can quote them verbatim when citing your site.",
-                      whereToUpload: "Three strategies: (1) yoursite.com/ai-citation-snippets.md, (2) embed each snippet as its page's first paragraph + og:description, (3) create a /for-ai page with all snippets.",
+                      whereToUpload: "Three strategies: (1) your-domain.com/ai-citation-snippets.md, (2) embed each snippet as its page's first paragraph + og:description, (3) create a /for-ai page with all snippets.",
                       howToUploadWP: [
                         "Upload ai-citation-snippets.md to your root via File Manager / FTP",
                         "For each important page, copy its 'Quotable summary' from the file",
@@ -515,7 +515,7 @@ export default function GEOPage() {
                                 <li><span className="font-bold" style={{ color: "var(--text-primary)" }}>2.</span> Install the <strong>File Manager</strong> plugin (or use FTP / cPanel)</li>
                                 <li><span className="font-bold" style={{ color: "var(--text-primary)" }}>3.</span> Go to the root directory where <code style={{ background: "var(--bg-white)", padding: "1px 4px", borderRadius: 3, fontSize: 11 }}>wp-config.php</code> lives</li>
                                 <li><span className="font-bold" style={{ color: "var(--text-primary)" }}>4.</span> Upload the <code style={{ background: "var(--bg-white)", padding: "1px 4px", borderRadius: 3, fontSize: 11 }}>llms.txt</code> file</li>
-                                <li><span className="font-bold" style={{ color: "var(--text-primary)" }}>5.</span> Verify at <code style={{ background: "var(--bg-white)", padding: "1px 4px", borderRadius: 3, fontSize: 11 }}>yoursite.com/llms.txt</code></li>
+                                <li><span className="font-bold" style={{ color: "var(--text-primary)" }}>5.</span> Verify at <code style={{ background: "var(--bg-white)", padding: "1px 4px", borderRadius: 3, fontSize: 11 }}>your-domain.com/llms.txt</code></li>
                               </ol>
                             </div>
 
@@ -532,7 +532,7 @@ export default function GEOPage() {
                                 <li><span className="font-bold" style={{ color: "var(--text-primary)" }}>4.</span> Paste your llms.txt content into the template</li>
                                 <li><span className="font-bold" style={{ color: "var(--text-primary)" }}>5.</span> Go to <strong>Pages</strong> &rarr; <strong>Add page</strong></li>
                                 <li><span className="font-bold" style={{ color: "var(--text-primary)" }}>6.</span> Set URL handle to <code style={{ background: "var(--bg-white)", padding: "1px 4px", borderRadius: 3, fontSize: 11 }}>llms.txt</code> and assign the template</li>
-                                <li><span className="font-bold" style={{ color: "var(--text-primary)" }}>7.</span> Verify at <code style={{ background: "var(--bg-white)", padding: "1px 4px", borderRadius: 3, fontSize: 11 }}>yourstore.com/pages/llms.txt</code></li>
+                                <li><span className="font-bold" style={{ color: "var(--text-primary)" }}>7.</span> Verify at <code style={{ background: "var(--bg-white)", padding: "1px 4px", borderRadius: 3, fontSize: 11 }}>your-domain.com/pages/llms.txt</code></li>
                               </ol>
                             </div>
                           </div>

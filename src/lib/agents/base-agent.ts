@@ -83,24 +83,28 @@ export abstract class BaseAgent {
   }
 
   private async checkCredits(_domainId: string): Promise<boolean> {
-    // For MVP: always allow (no billing enforced yet)
-    // TODO: check credit_ledger balance >= this.creditCost
+    // Credits are managed via plan limits, not a balance system
     return true;
   }
 
   private async deductCredits(domainId: string, credits: number) {
-    // Get domain's user
     const domain = await db.query.domains.findFirst({
       where: eq(schema.domains.id, domainId),
     });
     if (!domain) return;
+
+    // Calculate remaining balance from ledger
+    const ledger = db.select().from(schema.creditLedger)
+      .where(eq(schema.creditLedger.userId, domain.userId)).all();
+    const totalUsed = ledger.reduce((sum, row) => sum + (row.creditsUsed || 0), 0);
+    const balanceAfter = Math.max(0, 100 - totalUsed - credits);
 
     db.insert(schema.creditLedger)
       .values({
         userId: domain.userId,
         action: this.agentName,
         creditsUsed: credits,
-        balanceAfter: 0, // TODO: calculate real balance
+        balanceAfter,
         agent: this.agentName,
       })
       .run();

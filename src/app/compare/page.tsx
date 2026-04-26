@@ -62,6 +62,9 @@ export default function ComparePage() {
           <p className="text-base" style={{ color: "var(--text-secondary)" }}>
             Full feature comparison for SEO automation in 2026
           </p>
+          <p className="text-xs mt-2" style={{ color: "var(--text-muted)" }}>
+            Last updated: April 2026
+          </p>
         </div>
 
         {/* Score summary */}
