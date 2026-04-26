@@ -41,11 +41,11 @@ const PLANS = [
     period: "/mo",
     model: "Opus",
     pages: 50,
-    articles: 10,
+    articles: 15,
     features: [
       "Everything in $1 Plan",
       "Full site audit (50 pages)",
-      "10 articles/month",
+      "15 articles/month",
       "AI model: Opus (premium quality)",
       "Deeper competitor analysis",
       "Priority article generation",
