@@ -4,6 +4,27 @@ import { cookies } from "next/headers";
 
 const DEFAULT_USER_EMAIL = "demo@ranqapex.com";
 
+const ADMIN_EMAILS = [
+  "majidyusufi@gmail.com",
+  "meenakshi.dubey@syvora.com",
+  "katapariscontact@gmail.com",
+  "meenakshi0786@gmail.com",
+  "meesyvora@gmail.com",
+];
+
+export function isAdmin(email: string): boolean {
+  return ADMIN_EMAILS.includes(email.toLowerCase());
+}
+
+export function canGenerateArticles(user: { email: string; plan: string }): boolean {
+  // Admins always have access
+  if (isAdmin(user.email)) return true;
+  // Paid users have access
+  if (user.plan === "dollar1" || user.plan === "dollar5") return true;
+  // Free users cannot generate
+  return false;
+}
+
 export async function getOrCreateUser(): Promise<typeof schema.users.$inferSelect> {
   // Check for logged-in user via cookie
   const cookieStore = await cookies();

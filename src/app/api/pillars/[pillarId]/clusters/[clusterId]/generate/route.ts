@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db, schema } from "@/lib/db";
 import { eq } from "drizzle-orm";
 import { runBlogWriter } from "@/lib/agents/blog-writer-agent";
-import { getOrCreateUser } from "@/lib/auth";
+import { getOrCreateUser, isAdmin, canGenerateArticles } from "@/lib/auth";
 import { PLAN_LIMITS } from "@/lib/agents/orchestrator";
 
 // POST /api/pillars/:pillarId/clusters/:clusterId/generate
@@ -74,11 +74,23 @@ export async function POST(
     }),
   };
 
-  // Detect user's plan to choose AI model
+  // Check if user can generate articles
   const user = await getOrCreateUser();
-  const planKey = (user.plan || "free") as keyof typeof PLAN_LIMITS;
-  const planConfig = PLAN_LIMITS[planKey] || PLAN_LIMITS.free;
-  const preferredModel = ("model" in planConfig ? planConfig.model : "sonnet") as "sonnet" | "opus";
+
+  if (!canGenerateArticles(user)) {
+    return NextResponse.json(
+      { error: "Please purchase a plan to generate articles. Visit the Pricing page to get started." },
+      { status: 403 }
+    );
+  }
+
+  // Admins always use Sonnet. Paid users get model based on plan.
+  let preferredModel: "sonnet" | "opus" = "sonnet";
+  if (!isAdmin(user.email)) {
+    const planKey = (user.plan || "free") as keyof typeof PLAN_LIMITS;
+    const planConfig = PLAN_LIMITS[planKey] || PLAN_LIMITS.free;
+    preferredModel = ("model" in planConfig ? planConfig.model : "sonnet") as "sonnet" | "opus";
+  }
 
   try {
     const output = await runBlogWriter(pillar.domainId, {
