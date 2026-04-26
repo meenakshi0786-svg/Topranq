@@ -16,14 +16,14 @@ export function isAdmin(email: string): boolean {
   return ADMIN_EMAILS.includes(email.toLowerCase());
 }
 
-export function canGenerateArticles(user: { email: string; plan: string }): boolean {
-  // Admins always have access
+export function isPaidUser(user: { email: string; plan: string }): boolean {
   if (isAdmin(user.email)) return true;
-  // Paid users have access
   if (user.plan === "dollar1" || user.plan === "dollar5") return true;
-  // Free users cannot generate
   return false;
 }
+
+// Alias for backward compatibility
+export const canGenerateArticles = isPaidUser;
 
 export async function getOrCreateUser(): Promise<typeof schema.users.$inferSelect> {
   // Check for logged-in user via cookie

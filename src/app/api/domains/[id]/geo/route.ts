@@ -3,6 +3,7 @@ import { db, schema } from "@/lib/db";
 import { eq } from "drizzle-orm";
 import { buildGEOReport, generateLlmsTxt } from "@/lib/geo/score";
 import { generateLlmsFullTxt, generateEntityMap, generateCitationSnippets } from "@/lib/geo/ai-assets";
+import { getOrCreateUser, isPaidUser } from "@/lib/auth";
 
 async function fetchRobotsTxt(domainUrl: string): Promise<string | null> {
   try {
@@ -99,6 +100,14 @@ export async function GET(
 ) {
   const { id } = await params;
   const action = request.nextUrl.searchParams.get("action");
+
+  // GEO score is free, but asset downloads require paid plan
+  if (action && ["llms-txt", "llms-full", "entity-map", "citations"].includes(action)) {
+    const user = await getOrCreateUser();
+    if (!isPaidUser(user)) {
+      return NextResponse.json({ error: "Please purchase a plan to download GEO assets." }, { status: 403 });
+    }
+  }
 
   const domain = await db.query.domains.findFirst({
     where: eq(schema.domains.id, id),

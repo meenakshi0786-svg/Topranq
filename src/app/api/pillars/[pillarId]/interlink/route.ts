@@ -1,11 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getInterlinkSuggestions, applyInterlinkSuggestions } from "@/lib/interlinker";
+import { getOrCreateUser, isPaidUser } from "@/lib/auth";
 
 // GET /api/pillars/:pillarId/interlink — get suggestions without applying
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ pillarId: string }> },
 ) {
+  const user = await getOrCreateUser();
+  if (!isPaidUser(user)) {
+    return NextResponse.json({ error: "Please purchase a plan." }, { status: 403 });
+  }
   const { pillarId } = await params;
   try {
     const suggestions = await getInterlinkSuggestions(pillarId);

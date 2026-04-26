@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db, schema } from "@/lib/db";
 import { eq, desc } from "drizzle-orm";
 import { generatePillarPlan } from "@/lib/pillars";
+import { getOrCreateUser, isPaidUser } from "@/lib/auth";
 
 // GET /api/domains/:id/pillars — list all pillars for the domain (with clusters)
 export async function GET(
@@ -40,6 +41,10 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const user = await getOrCreateUser();
+  if (!isPaidUser(user)) {
+    return NextResponse.json({ error: "Please purchase a plan to create pillars." }, { status: 403 });
+  }
   const { id } = await params;
   const body = await request.json();
   const { seedTopic } = body as { seedTopic?: string };

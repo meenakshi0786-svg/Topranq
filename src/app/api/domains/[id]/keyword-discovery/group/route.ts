@@ -2,12 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { db, schema } from "@/lib/db";
 import { eq } from "drizzle-orm";
 import { groupKeywordsIntoPillars, type DiscoveredKeyword } from "@/lib/keyword-discovery";
+import { getOrCreateUser, isPaidUser } from "@/lib/auth";
 
 // POST /api/domains/:id/keyword-discovery/group — group selected keywords into pillars
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const user = await getOrCreateUser();
+  if (!isPaidUser(user)) {
+    return NextResponse.json({ error: "Please purchase a plan." }, { status: 403 });
+  }
   const { id } = await params;
   const body = await request.json();
   const keywords = body.keywords as DiscoveredKeyword[];
