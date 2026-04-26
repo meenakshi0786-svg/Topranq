@@ -29,7 +29,7 @@ const PLANS = [
       "Auto internal linking suggestions",
       "Product CSV integration",
       "GEO toolkit (llms.txt, entity map)",
-      "Publish to Shopify & WordPress",
+      "Copy & export articles",
     ],
     cta: "Get Started",
     highlighted: false,

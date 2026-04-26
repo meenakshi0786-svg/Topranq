@@ -309,7 +309,6 @@ export default function DomainOverview() {
                 { label: "Generate Pillars", done: false, href: `/domain/${domainId}/pillars` },
                 { label: "Write Articles", done: false, href: `/domain/${domainId}/pillars` },
                 { label: "Interlink", done: false, href: `/domain/${domainId}/pillars` },
-                { label: "Publish", done: false, href: `/domain/${domainId}/articles` },
               ].map((step, i) => (
                 <span key={step.label} className="flex items-center gap-2">
                   {step.href ? (

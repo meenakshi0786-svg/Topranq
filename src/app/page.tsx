@@ -121,7 +121,7 @@ export default function LandingPage() {
               <RotatingText words={["SEO content", "AI articles", "pillar strategies", "GEO assets", "citation snippets"]} /> — on autopilot
             </h1>
             <p className="text-base md:text-lg mb-8 max-w-xl mx-auto leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-              Enter your URL, sign in with Google, and we&rsquo;ll crawl your site, find content gaps, and draft blog articles ready to publish to Shopify.
+              Enter your URL, sign in with Google, and we&rsquo;ll crawl your site, find content gaps, and generate SEO-optimized articles.
             </p>
 
             <form onSubmit={addDomain} className="relative max-w-xl mx-auto">
@@ -204,7 +204,7 @@ export default function LandingPage() {
                 { step: "1", title: "Audit your site", desc: "We crawl up to 50 pages, check technical SEO, meta tags, schema, and content quality.", icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" },
                 { step: "2", title: "Discover keywords", desc: "AI finds low-hanging keywords from competitor gaps, PAA questions, and SERP weaknesses.", icon: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" },
                 { step: "3", title: "Generate articles", desc: "Sonnet or Opus writes editorial-quality articles with your products woven in naturally.", icon: "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" },
-                { step: "4", title: "Publish & interlink", desc: "Push to Shopify or WordPress with one click. AI suggests internal links between articles.", icon: "M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101" },
+                { step: "4", title: "Interlink & export", desc: "AI suggests internal links between articles. Copy or export your content anytime.", icon: "M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101" },
               ].map((item) => (
                 <div key={item.step} className="text-center p-5 rounded-xl" style={{ background: "var(--bg-white)", border: "1px solid var(--border-light)" }}>
                   <div className="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3" style={{ background: "var(--accent)", color: "#fff", fontSize: 14, fontWeight: 700 }}>
@@ -227,13 +227,13 @@ export default function LandingPage() {
       <section style={{ background: "var(--bg-white)", borderTop: "1px solid var(--border-light)", borderBottom: "1px solid var(--border-light)", overflow: "hidden" }}>
         <div className="py-8">
           <p className="text-center text-xs font-semibold uppercase tracking-widest mb-5" style={{ color: "var(--text-muted)" }}>
-            Optimized for AI engines &amp; publishes to
+            Optimized for AI engines
           </p>
           <div style={{ overflow: "hidden", width: "100%" }}>
             <div style={{ display: "flex", width: "max-content", animation: "marquee 20s linear infinite" }}>
               {[0, 1, 2].map((set) => (
                 <div key={set} style={{ display: "flex", alignItems: "center", gap: 12, paddingRight: 12 }}>
-                  {["ChatGPT", "Claude", "Perplexity", "Google AI Overviews", "Shopify", "WordPress", "Webflow", "GPTBot", "ClaudeBot", "PerplexityBot"].map((name) => (
+                  {["ChatGPT", "Claude", "Perplexity", "Google AI Overviews", "GPTBot", "ClaudeBot", "PerplexityBot"].map((name) => (
                     <span key={`${set}-${name}`} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 20px", borderRadius: 999, fontSize: 13, fontWeight: 500, background: "var(--bg)", color: "var(--text-secondary)", border: "1px solid var(--border-light)", whiteSpace: "nowrap" }}>
                       <span style={{ width: 7, height: 7, borderRadius: "50%", background: ["ChatGPT", "Claude", "Perplexity", "Google AI Overviews", "GPTBot", "ClaudeBot", "PerplexityBot"].includes(name) ? "#22c55e" : "#4F6EF7" }} />
                       {name}
@@ -252,10 +252,10 @@ export default function LandingPage() {
           <div className="text-center mb-14 max-w-2xl mx-auto">
             <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--accent)" }}>Everything you need</p>
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4" style={{ color: "var(--text-primary)" }}>
-              From audit to published article, in one flow
+              From audit to article, in one flow
             </h2>
             <p className="text-base" style={{ color: "var(--text-secondary)" }}>
-              No more juggling tools. Ranqapex crawls, analyzes, drafts, and publishes.
+              No more juggling tools. Ranqapex crawls, analyzes, and generates content.
             </p>
           </div>
 
@@ -449,7 +449,7 @@ export default function LandingPage() {
               { step: "01", title: "Enter your URL", desc: "Paste any website address and sign in with Google.", icon: "M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" },
               { step: "02", title: "We crawl", desc: "Our bots scan up to 25 pages of your site in seconds.", icon: "M22 12h-4l-3 9L9 3l-3 9H2" },
               { step: "03", title: "Get insights", desc: "47 checks, prioritized fixes, and AI-suggested blog topics.", icon: "M9 11H1l8-8 8 8h-8v10" },
-              { step: "04", title: "Publish", desc: "Review articles via email and publish to Shopify with one click.", icon: "M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" },
+              { step: "04", title: "Interlink", desc: "AI suggests internal links between your pillar and cluster articles.", icon: "M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" },
             ].map((item, i) => (
               <div key={item.step} className="relative fade-in" style={{ animationDelay: `${i * 0.08}s` }}>
                 <div
@@ -518,7 +518,7 @@ export default function LandingPage() {
               initials="DK"
             />
             <TestimonialCard
-              quote="Finally an SEO tool that writes articles my team actually wants to publish. The product integration is seamless — our Shopify products appear naturally in every blog post."
+              quote="Finally an SEO tool that writes articles my team actually wants to use. The product integration is seamless — our products appear naturally in every blog post."
               name="Amira L."
               role="eCommerce Manager"
               initials="AL"
