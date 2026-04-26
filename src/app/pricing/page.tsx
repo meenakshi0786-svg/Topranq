@@ -1,11 +1,20 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Logo } from "@/components/logo";
+
+declare global {
+  interface Window {
+    Razorpay: new (options: Record<string, unknown>) => { open: () => void };
+  }
+}
 
 const PLANS = [
   {
     name: "$1 Plan",
+    planKey: "dollar1" as const,
     price: "$1",
     period: "/mo",
     model: "Sonnet",
@@ -27,6 +36,7 @@ const PLANS = [
   },
   {
     name: "$5 Plan",
+    planKey: "dollar5" as const,
     price: "$5",
     period: "/mo",
     model: "Opus",
@@ -49,6 +59,97 @@ const PLANS = [
 ];
 
 export default function PricingPage() {
+  const router = useRouter();
+  const [loading, setLoading] = useState<string | null>(null);
+  const [scriptLoaded, setScriptLoaded] = useState(false);
+
+  // Load Razorpay script
+  function loadRazorpayScript(): Promise<void> {
+    if (scriptLoaded || typeof window !== "undefined" && window.Razorpay) {
+      return Promise.resolve();
+    }
+    return new Promise((resolve) => {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => { setScriptLoaded(true); resolve(); };
+      document.body.appendChild(script);
+    });
+  }
+
+  async function handlePayment(planKey: "dollar1" | "dollar5") {
+    setLoading(planKey);
+
+    try {
+      // Load Razorpay script
+      await loadRazorpayScript();
+
+      // Create order
+      const res = await fetch("/api/payments/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan: planKey }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || "Failed to create order");
+        return;
+      }
+
+      const order = await res.json();
+
+      // Open Razorpay checkout
+      const options = {
+        key: order.keyId,
+        amount: order.amount,
+        currency: order.currency,
+        name: "Ranqapex",
+        description: planKey === "dollar1" ? "$1 Plan — Sonnet" : "$5 Plan — Opus",
+        order_id: order.orderId,
+        prefill: {
+          name: order.userName,
+          email: order.userEmail,
+        },
+        theme: {
+          color: "#4F6EF7",
+        },
+        handler: async function (response: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) {
+          // Verify payment
+          const verifyRes = await fetch("/api/payments/verify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              plan: planKey,
+            }),
+          });
+
+          const result = await verifyRes.json();
+          if (result.success) {
+            alert(`Payment successful! You're now on the ${planKey === "dollar1" ? "$1" : "$5"} Plan.`);
+            router.push("/dashboard");
+          } else {
+            alert("Payment verification failed. Please contact support.");
+          }
+        },
+        modal: {
+          ondismiss: function () {
+            setLoading(null);
+          },
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Payment failed");
+    } finally {
+      setLoading(null);
+    }
+  }
+
   return (
     <div className="min-h-screen">
       <header style={{ background: "var(--bg-white)", borderBottom: "1px solid var(--border-light)" }}>
@@ -123,14 +224,16 @@ export default function PricingPage() {
               </div>
 
               <button
-                className="w-full py-3 rounded-xl text-sm font-semibold cursor-pointer"
+                onClick={() => handlePayment(plan.planKey)}
+                disabled={loading === plan.planKey}
+                className="w-full py-3 rounded-xl text-sm font-semibold cursor-pointer disabled:opacity-50"
                 style={{
                   background: plan.highlighted ? "var(--accent)" : "transparent",
                   color: plan.highlighted ? "white" : "var(--accent)",
                   border: plan.highlighted ? "none" : "2px solid var(--accent)",
                 }}
               >
-                {plan.cta}
+                {loading === plan.planKey ? "Processing..." : plan.cta}
               </button>
             </div>
           ))}

@@ -6,7 +6,7 @@ export const users = sqliteTable("users", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   email: text("email").notNull().unique(),
   name: text("name"),
-  plan: text("plan", { enum: ["free", "starter", "growth", "agency"] }).notNull().default("free"),
+  plan: text("plan", { enum: ["free", "dollar1", "dollar5", "starter", "growth", "agency"] }).notNull().default("free"),
   stripeCustomerId: text("stripe_customer_id"),
   createdAt: text("created_at").default(sql`(datetime('now'))`),
 });
