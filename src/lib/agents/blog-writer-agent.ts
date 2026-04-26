@@ -386,21 +386,22 @@ function generateSlug(topic: string, keyword: string): string {
 // ── AI-Powered Title ──────────────────────────────────────────────────
 
 async function generateTitleAI(topic: string, keyword: string, tone: string, intent: string, gscContext: string): Promise<string> {
-  const prompt = `Generate ONE blog post title for this topic.
+  const prompt = `Optimize this blog post title for SEO while keeping its original meaning.
 
 Today's date: ${new Date().toISOString().split("T")[0]}. Current year: ${new Date().getFullYear()}.
 
-Topic: ${topic}
+Original topic/title: ${topic}
 Primary keyword: ${keyword}
 Tone: ${tone}
 Intent: ${intent}
 ${gscContext}
 
 Rules:
+- KEEP the core topic the same — do NOT change the subject matter
+- The title must still be about "${topic}" — just make it more compelling
 - 50-60 characters max
 - Include the primary keyword near the beginning
-- Make it compelling and click-worthy
-- No generic titles like "Complete Guide to..." unless truly appropriate
+- If the original topic is already good (under 60 chars, has keyword), use it as-is or with minor tweaks only
 - Match the search intent (informational = how-to/guide, commercial = comparison/best, transactional = setup/get started)
 - If including a year, use ${new Date().getFullYear()} — NEVER 2024 or 2025
 
