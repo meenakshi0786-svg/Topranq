@@ -37,19 +37,41 @@ export async function POST(request: NextRequest) {
       .where(eq(schema.domains.userId, user.id))
       .all();
 
+    // Check if this domain already exists for this user (prevent duplicates)
+    const existingDomain = existingDomains.find((d) => {
+      try {
+        const existingHost = new URL(d.domainUrl).hostname.replace("www.", "");
+        const newHost = parsedUrl.hostname.replace("www.", "");
+        return existingHost === newHost;
+      } catch { return false; }
+    });
+    if (existingDomain) {
+      return NextResponse.json({ domainId: existingDomain.id, existing: true });
+    }
+
+    // Also check ALL domains in DB (not just this user's) — transfer ownership if found
+    const allDomains = db.select().from(schema.domains).all();
+    const orphanDomain = allDomains.find((d) => {
+      try {
+        const existingHost = new URL(d.domainUrl).hostname.replace("www.", "");
+        const newHost = parsedUrl.hostname.replace("www.", "");
+        return existingHost === newHost && d.userId !== user.id;
+      } catch { return false; }
+    });
+    if (orphanDomain) {
+      // Transfer domain to current user
+      db.update(schema.domains)
+        .set({ userId: user.id })
+        .where(eq(schema.domains.id, orphanDomain.id))
+        .run();
+      return NextResponse.json({ domainId: orphanDomain.id, existing: true });
+    }
+
     if (existingDomains.length >= limits.domains) {
-      // Check if this domain already exists
-      const existing = existingDomains.find(
-        (d) => new URL(d.domainUrl).hostname === parsedUrl.hostname
+      return NextResponse.json(
+        { error: `Domain limit reached (${limits.domains} on ${plan} plan). Upgrade to add more.` },
+        { status: 403 }
       );
-      if (!existing) {
-        return NextResponse.json(
-          { error: `Domain limit reached (${limits.domains} on ${plan} plan). Upgrade to add more.` },
-          { status: 403 }
-        );
-      }
-      // Return existing domain
-      return NextResponse.json(existing);
     }
 
     // Auto-detect language from the homepage's <html lang="..."> attribute

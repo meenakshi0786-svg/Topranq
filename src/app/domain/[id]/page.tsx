@@ -296,6 +296,40 @@ export default function DomainOverview() {
           {/* <NavCard href={`/domain/${domainId}/connectors`} icon="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101M10.172 13.828a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" title="Connectors" desc="Publish to CMS" /> */}
         </div>
 
+        {/* Guided flow for new users */}
+        {!latestAudit || latestAudit.status !== "complete" ? null : (
+          <div className="card-static p-5 mb-8 fade-in" style={{ background: "linear-gradient(135deg, #4F6EF705, #7C5CFC05)", border: "1px solid #4F6EF720" }}>
+            <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: "var(--accent)" }}>
+              Recommended next steps
+            </p>
+            <div className="flex items-center gap-2 flex-wrap text-[11px]" style={{ color: "var(--text-muted)" }}>
+              {[
+                { label: "Audit", done: true },
+                { label: "Keyword Planner", done: false, href: `/domain/${domainId}/keyword-planner` },
+                { label: "Generate Pillars", done: false, href: `/domain/${domainId}/pillars` },
+                { label: "Write Articles", done: false, href: `/domain/${domainId}/pillars` },
+                { label: "Interlink", done: false, href: `/domain/${domainId}/pillars` },
+                { label: "Publish", done: false, href: `/domain/${domainId}/articles` },
+              ].map((step, i) => (
+                <span key={step.label} className="flex items-center gap-2">
+                  {step.href ? (
+                    <a href={step.href} className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full font-medium" style={{ background: "var(--bg-white)", border: "1px solid var(--border-light)", color: "var(--accent)" }}>
+                      <span className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold" style={{ background: "var(--border-light)", color: "var(--text-muted)" }}>{i + 1}</span>
+                      {step.label}
+                    </a>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full font-medium" style={{ background: "#dcfce7", border: "1px solid #22c55e40", color: "#166534" }}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#166534" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>
+                      {step.label}
+                    </span>
+                  )}
+                  {i < 5 && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--border)" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Recent activity */}
         {recentActions.length > 0 && (
           <div className="card-static p-7 fade-in">

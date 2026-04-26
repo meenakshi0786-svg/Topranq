@@ -194,6 +194,32 @@ export default function LandingPage() {
 
           </div>
 
+          {/* Product preview — how it works steps */}
+          <div className="mt-16 max-w-3xl mx-auto fade-in">
+            <p className="text-center text-xs font-bold uppercase tracking-widest mb-8" style={{ color: "var(--text-muted)" }}>
+              How Ranqapex works
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {[
+                { step: "1", title: "Audit your site", desc: "We crawl up to 50 pages, check technical SEO, meta tags, schema, and content quality.", icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" },
+                { step: "2", title: "Discover keywords", desc: "AI finds low-hanging keywords from competitor gaps, PAA questions, and SERP weaknesses.", icon: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" },
+                { step: "3", title: "Generate articles", desc: "Sonnet or Opus writes editorial-quality articles with your products woven in naturally.", icon: "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" },
+                { step: "4", title: "Publish & interlink", desc: "Push to Shopify or WordPress with one click. AI suggests internal links between articles.", icon: "M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101" },
+              ].map((item) => (
+                <div key={item.step} className="text-center p-5 rounded-xl" style={{ background: "var(--bg-white)", border: "1px solid var(--border-light)" }}>
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3" style={{ background: "var(--accent)", color: "#fff", fontSize: 14, fontWeight: 700 }}>
+                    {item.step}
+                  </div>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center mx-auto mb-3" style={{ background: "#4F6EF710" }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d={item.icon} /></svg>
+                  </div>
+                  <p className="text-sm font-bold mb-1" style={{ color: "var(--text-primary)" }}>{item.title}</p>
+                  <p className="text-xs" style={{ color: "var(--text-muted)", lineHeight: 1.5 }}>{item.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
         </div>
       </section>
 

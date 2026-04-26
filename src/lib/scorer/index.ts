@@ -38,18 +38,18 @@ const CATEGORY_LABELS: Record<Category, string> = {
 // Additional pages with the same issue deduct diminishing amounts
 // so a well-structured site with many pages doesn't get punished unfairly.
 const SEVERITY_BASE: Record<Severity, number> = {
-  critical: 20,
-  high: 10,
-  medium: 5,
-  low: 2,
+  critical: 15,
+  high: 7,
+  medium: 3,
+  low: 1,
 };
 
 // Max deduction per issue TYPE (e.g. "missing_schema" across all pages)
 const MAX_DEDUCTION_PER_TYPE: Record<Severity, number> = {
-  critical: 25,
-  high: 15,
-  medium: 8,
-  low: 3,
+  critical: 18,
+  high: 10,
+  medium: 5,
+  low: 2,
 };
 
 export function calculateScores(issues: SEOIssue[]): AuditScores {

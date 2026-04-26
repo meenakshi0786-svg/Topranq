@@ -70,7 +70,13 @@ export default function PillarsPage() {
   const [gscKeywords, setGscKeywords] = useState<GSCKeyword[]>([]);
   const [suggestLoading, setSuggestLoading] = useState(false);
   const [suggestError, setSuggestError] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   usePageTitle("Pillars & Clusters");
+
+  function showToast(message: string, type: "success" | "error" = "error") {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 5000);
+  }
 
   const fetchPillars = useCallback(async () => {
     setLoading(true);
@@ -145,12 +151,12 @@ export default function PillarsPage() {
       });
       const contentType = res.headers.get("content-type") || "";
       if (!contentType.includes("application/json")) {
-        alert("Server returned an unexpected response. The article may be taking too long to generate — please try again.");
+        showToast("Server returned an unexpected response. Please try again.", "error");
         return;
       }
       if (!res.ok) {
         const data = await res.json();
-        alert(data.error || "Generation failed");
+        showToast(data.error || "Generation failed", "error");
         return;
       }
       const result = await res.json();
@@ -166,7 +172,7 @@ export default function PillarsPage() {
         };
       }));
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Generation failed");
+      showToast(err instanceof Error ? err.message : "Generation failed", "error");
     } finally {
       setGenerating(null);
     }
@@ -246,13 +252,13 @@ export default function PillarsPage() {
     try {
       const res = await fetch(`/api/pillars/${pillarId}/interlink`);
       const data = await res.json();
-      if (!res.ok) { alert(data.error || "Failed to get suggestions"); return; }
+      if (!res.ok) { showToast(data.error || "Failed to get suggestions", "error"); return; }
       const suggestions = data.suggestions || [];
       setInterlinkSuggestions(prev => ({ ...prev, [pillarId]: suggestions }));
       // Auto-select all
       setSelectedSuggestions(new Set(suggestions.map((s: InterlinkSuggestion) => s.id)));
     } catch {
-      alert("Failed to get interlink suggestions");
+      showToast("Failed to get interlink suggestions", "error");
     } finally {
       setInterlinkLoading(null);
     }
@@ -279,12 +285,12 @@ export default function PillarsPage() {
         body: JSON.stringify({ suggestions: toApply.map(s => ({ articleId: s.articleId, find: s.find, replace: s.replace })) }),
       });
       const data = await res.json();
-      if (!res.ok) { alert(data.error || "Failed to apply"); return; }
-      alert(`Applied ${data.applied} internal links successfully!`);
+      if (!res.ok) { showToast(data.error || "Failed to apply", "error"); return; }
+      showToast(`Applied ${data.applied} internal links successfully!`, "success");
       // Clear suggestions for this pillar
       setInterlinkSuggestions(prev => { const next = { ...prev }; delete next[pillarId]; return next; });
     } catch {
-      alert("Failed to apply links");
+      showToast("Failed to apply links", "error");
     } finally {
       setApplyingLinks(false);
     }
@@ -713,6 +719,26 @@ export default function PillarsPage() {
           </div>
         )}
       </div>
+
+      {/* Toast notification */}
+      {toast && (
+        <div style={{
+          position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)",
+          padding: "12px 20px", borderRadius: 12, zIndex: 100,
+          background: toast.type === "success" ? "#166534" : "#991b1b",
+          color: "#fff", fontSize: 13, fontWeight: 500,
+          boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
+          display: "flex", alignItems: "center", gap: 8,
+        }}>
+          {toast.type === "success" ? (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
+          ) : (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
+          )}
+          {toast.message}
+          <button onClick={() => setToast(null)} style={{ background: "none", border: "none", color: "#fff", cursor: "pointer", marginLeft: 8, opacity: 0.7 }}>✕</button>
+        </div>
+      )}
     </div>
   );
 }
