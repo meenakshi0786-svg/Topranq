@@ -42,6 +42,7 @@ interface InterlinkSuggestion {
   targetSlug: string;
   targetTitle: string;
   direction: "pillar→cluster" | "cluster→pillar" | "cluster↔cluster";
+  status?: "pending" | "applied" | "rejected";
 }
 
 interface GSCKeyword {
@@ -64,8 +65,7 @@ export default function PillarsPage() {
   const [generating, setGenerating] = useState<string | null>(null); // id of item being generated
   const [interlinkLoading, setInterlinkLoading] = useState<string | null>(null); // pillarId
   const [interlinkSuggestions, setInterlinkSuggestions] = useState<Record<string, InterlinkSuggestion[]>>({});
-  const [selectedSuggestions, setSelectedSuggestions] = useState<Set<string>>(new Set());
-  const [applyingLinks, setApplyingLinks] = useState(false);
+  const [actioningSuggestion, setActioningSuggestion] = useState<string | null>(null);
   const [articleUsage, setArticleUsage] = useState<{ used: number; limit: number } | null>(null);
   const [suggestions, setSuggestions] = useState<PillarSuggestion[] | null>(null);
   const [gscKeywords, setGscKeywords] = useState<GSCKeyword[]>([]);
@@ -255,16 +255,25 @@ export default function PillarsPage() {
     await fetchPillars();
   }
 
-  async function fetchInterlinkSuggestions(pillarId: string) {
-    setInterlinkLoading(pillarId);
+  // Load saved suggestions for a pillar from DB
+  async function loadSavedSuggestions(pillarId: string) {
     try {
       const res = await fetch(`/api/pillars/${pillarId}/interlink`);
       const data = await res.json();
+      if (res.ok && data.suggestions && data.suggestions.length > 0) {
+        setInterlinkSuggestions(prev => ({ ...prev, [pillarId]: data.suggestions }));
+      }
+    } catch { /* ignore */ }
+  }
+
+  // Generate NEW suggestions (calls AI, saves to DB)
+  async function fetchInterlinkSuggestions(pillarId: string) {
+    setInterlinkLoading(pillarId);
+    try {
+      const res = await fetch(`/api/pillars/${pillarId}/interlink?action=generate`);
+      const data = await res.json();
       if (!res.ok) { showToast(data.error || "Failed to get suggestions", "error"); return; }
-      const suggestions = data.suggestions || [];
-      setInterlinkSuggestions(prev => ({ ...prev, [pillarId]: suggestions }));
-      // Auto-select all
-      setSelectedSuggestions(new Set(suggestions.map((s: InterlinkSuggestion) => s.id)));
+      setInterlinkSuggestions(prev => ({ ...prev, [pillarId]: data.suggestions || [] }));
     } catch {
       showToast("Failed to get interlink suggestions", "error");
     } finally {
@@ -272,37 +281,61 @@ export default function PillarsPage() {
     }
   }
 
-  function toggleSuggestion(id: string) {
-    setSelectedSuggestions(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      return next;
-    });
-  }
-
-  async function applySelectedSuggestions(pillarId: string) {
-    const suggestions = interlinkSuggestions[pillarId] || [];
-    const toApply = suggestions.filter(s => selectedSuggestions.has(s.id));
-    if (toApply.length === 0) return;
-
-    setApplyingLinks(true);
+  // Accept a single suggestion
+  async function acceptSuggestion(pillarId: string, suggestionId: string) {
+    setActioningSuggestion(suggestionId);
     try {
       const res = await fetch(`/api/pillars/${pillarId}/interlink`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ suggestions: toApply.map(s => ({ articleId: s.articleId, find: s.find, replace: s.replace })) }),
+        body: JSON.stringify({ suggestionId, action: "accept" }),
       });
       const data = await res.json();
       if (!res.ok) { showToast(data.error || "Failed to apply", "error"); return; }
-      showToast(`Applied ${data.applied} internal links successfully!`, "success");
-      // Clear suggestions for this pillar
-      setInterlinkSuggestions(prev => { const next = { ...prev }; delete next[pillarId]; return next; });
+      // Update local state
+      setInterlinkSuggestions(prev => ({
+        ...prev,
+        [pillarId]: (prev[pillarId] || []).map(s =>
+          s.id === suggestionId ? { ...s, status: "applied" as const } : s
+        ),
+      }));
+      showToast("Link applied successfully!", "success");
     } catch {
-      showToast("Failed to apply links", "error");
+      showToast("Failed to apply link", "error");
     } finally {
-      setApplyingLinks(false);
+      setActioningSuggestion(null);
     }
   }
+
+  // Reject a single suggestion
+  async function rejectSuggestion(pillarId: string, suggestionId: string) {
+    setActioningSuggestion(suggestionId);
+    try {
+      const res = await fetch(`/api/pillars/${pillarId}/interlink`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ suggestionId, action: "reject" }),
+      });
+      if (!res.ok) { showToast("Failed to dismiss", "error"); return; }
+      setInterlinkSuggestions(prev => ({
+        ...prev,
+        [pillarId]: (prev[pillarId] || []).map(s =>
+          s.id === suggestionId ? { ...s, status: "rejected" as const } : s
+        ),
+      }));
+    } catch {
+      showToast("Failed to dismiss", "error");
+    } finally {
+      setActioningSuggestion(null);
+    }
+  }
+
+  // Load saved suggestions for all pillars on mount
+  useEffect(() => {
+    if (pillars.length > 0) {
+      pillars.forEach(p => loadSavedSuggestions(p.id));
+    }
+  }, [pillars.length]);
 
   function allArticlesGenerated(pillar: Pillar): boolean {
     if (!pillar.pillarArticleId) return false;
@@ -652,8 +685,8 @@ export default function PillarsPage() {
                 </div>
 
                 {/* Internal Linking — single button */}
-                {interlinkSuggestions[pillar.id] ? (
-                  /* Suggestions loaded — show them */
+                {interlinkSuggestions[pillar.id] && interlinkSuggestions[pillar.id].length > 0 ? (
+                  /* Suggestions loaded — show with per-suggestion ✓/✗ */
                   <div className="mt-5 p-4 rounded-lg" style={{ background: "linear-gradient(135deg, #f0fdf4, #ecfdf5)", border: "1px solid #22c55e40" }}>
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
@@ -662,44 +695,25 @@ export default function PillarsPage() {
                           {interlinkSuggestions[pillar.id].length} Link Suggestions
                         </p>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>
-                          {interlinkSuggestions[pillar.id].filter(s => selectedSuggestions.has(s.id)).length} selected
-                        </span>
-                        <button
-                          onClick={() => applySelectedSuggestions(pillar.id)}
-                          disabled={applyingLinks || interlinkSuggestions[pillar.id].filter(s => selectedSuggestions.has(s.id)).length === 0}
-                          className="text-[11px] font-semibold px-3 py-1.5 rounded-lg text-white cursor-pointer disabled:opacity-40"
-                          style={{ background: "#22c55e" }}
-                        >
-                          {applyingLinks ? "Applying..." : "Apply Selected"}
-                        </button>
+                      <div className="flex items-center gap-2 text-[10px]" style={{ color: "var(--text-muted)" }}>
+                        <span>{interlinkSuggestions[pillar.id].filter(s => s.status === "applied").length} applied</span>
+                        <span>·</span>
+                        <span>{interlinkSuggestions[pillar.id].filter(s => s.status === "pending").length} pending</span>
                       </div>
                     </div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 300, overflowY: "auto" }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 350, overflowY: "auto" }}>
                       {interlinkSuggestions[pillar.id].map(s => (
                         <div
                           key={s.id}
-                          className="cursor-pointer"
-                          onClick={() => toggleSuggestion(s.id)}
                           style={{
                             padding: "10px 12px",
                             borderRadius: 8,
-                            background: selectedSuggestions.has(s.id) ? "#dcfce7" : "var(--bg-white)",
-                            border: `1px solid ${selectedSuggestions.has(s.id) ? "#22c55e40" : "var(--border-light)"}`,
+                            background: s.status === "applied" ? "#dcfce7" : s.status === "rejected" ? "#f9fafb" : "var(--bg-white)",
+                            border: `1px solid ${s.status === "applied" ? "#22c55e40" : s.status === "rejected" ? "#e5e7eb" : "var(--border-light)"}`,
+                            opacity: s.status === "rejected" ? 0.5 : 1,
                           }}
                         >
                           <div className="flex items-start gap-2">
-                            <span style={{
-                              width: 16, height: 16, borderRadius: 4, flexShrink: 0, marginTop: 2,
-                              border: selectedSuggestions.has(s.id) ? "none" : "1.5px solid var(--border)",
-                              background: selectedSuggestions.has(s.id) ? "#22c55e" : "transparent",
-                              display: "flex", alignItems: "center", justifyContent: "center",
-                            }}>
-                              {selectedSuggestions.has(s.id) && (
-                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>
-                              )}
-                            </span>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 mb-1">
                                 <span className="text-[9px] font-bold px-1.5 py-0.5 rounded" style={{
@@ -711,6 +725,12 @@ export default function PillarsPage() {
                                 <span className="text-[10px] font-medium" style={{ color: "var(--text-secondary)" }}>
                                   in &ldquo;{s.articleTitle.slice(0, 40)}&rdquo;
                                 </span>
+                                {s.status === "applied" && (
+                                  <span className="text-[8px] font-bold px-1.5 py-0.5 rounded" style={{ background: "#dcfce7", color: "#166534" }}>Applied ✓</span>
+                                )}
+                                {s.status === "rejected" && (
+                                  <span className="text-[8px] font-bold px-1.5 py-0.5 rounded" style={{ background: "#f3f4f6", color: "#9ca3af" }}>Dismissed</span>
+                                )}
                               </div>
                               <p className="text-[11px] mb-1" style={{ color: "var(--text-muted)" }}>
                                 <span style={{ textDecoration: "line-through", color: "var(--critical)" }}>{s.find.slice(0, 60)}</span>
@@ -719,6 +739,29 @@ export default function PillarsPage() {
                                 → {s.replace.slice(0, 80)}
                               </p>
                             </div>
+                            {/* Accept / Reject buttons */}
+                            {s.status === "pending" && (
+                              <div className="flex items-center gap-1 shrink-0" style={{ marginTop: 2 }}>
+                                <button
+                                  onClick={() => acceptSuggestion(pillar.id, s.id)}
+                                  disabled={actioningSuggestion === s.id}
+                                  className="cursor-pointer disabled:opacity-40"
+                                  title="Accept and apply this link"
+                                  style={{ width: 28, height: 28, borderRadius: 6, border: "none", background: "#dcfce7", display: "flex", alignItems: "center", justifyContent: "center" }}
+                                >
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#166534" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
+                                </button>
+                                <button
+                                  onClick={() => rejectSuggestion(pillar.id, s.id)}
+                                  disabled={actioningSuggestion === s.id}
+                                  className="cursor-pointer disabled:opacity-40"
+                                  title="Dismiss this suggestion"
+                                  style={{ width: 28, height: 28, borderRadius: 6, border: "none", background: "#fee2e2", display: "flex", alignItems: "center", justifyContent: "center" }}
+                                >
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#991b1b" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                                </button>
+                              </div>
+                            )}
                           </div>
                         </div>
                       ))}

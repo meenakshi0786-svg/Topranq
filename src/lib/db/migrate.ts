@@ -105,6 +105,22 @@ if (!tables.find(t => t.name === "discovered_keywords")) {
   )`);
   console.log("  + discovered_keywords table");
 }
+if (!tables.find(t => t.name === "interlink_suggestions")) {
+  sqlite.exec(`CREATE TABLE interlink_suggestions (
+    id TEXT PRIMARY KEY NOT NULL,
+    pillar_id TEXT NOT NULL REFERENCES pillars(id) ON DELETE CASCADE,
+    article_id TEXT NOT NULL,
+    article_title TEXT NOT NULL,
+    find TEXT NOT NULL,
+    replace TEXT NOT NULL,
+    target_slug TEXT,
+    target_title TEXT,
+    direction TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending',
+    created_at TEXT DEFAULT (datetime('now'))
+  )`);
+  console.log("  + interlink_suggestions table");
+}
 if (!tables.find(t => t.name === "store_products")) {
   sqlite.exec(`CREATE TABLE store_products (
     id TEXT PRIMARY KEY NOT NULL,

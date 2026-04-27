@@ -245,6 +245,21 @@ export const domainLearnings = sqliteTable("domain_learnings", {
   createdAt: text("created_at").default(sql`(datetime('now'))`),
 });
 
+// ── Interlink Suggestions (persisted) ────────────────────────────────
+export const interlinkSuggestions = sqliteTable("interlink_suggestions", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  pillarId: text("pillar_id").notNull().references(() => pillars.id, { onDelete: "cascade" }),
+  articleId: text("article_id").notNull(),
+  articleTitle: text("article_title").notNull(),
+  find: text("find").notNull(),
+  replace: text("replace").notNull(),
+  targetSlug: text("target_slug"),
+  targetTitle: text("target_title"),
+  direction: text("direction").notNull(), // pillar→cluster, cluster→pillar, cluster↔cluster
+  status: text("status", { enum: ["pending", "applied", "rejected"] }).notNull().default("pending"),
+  createdAt: text("created_at").default(sql`(datetime('now'))`),
+});
+
 // ── Discovered Keywords (persisted across runs) ─────────────────────
 export const discoveredKeywords = sqliteTable("discovered_keywords", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
