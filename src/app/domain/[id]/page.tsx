@@ -232,7 +232,7 @@ export default function DomainOverview() {
 
         {/* Score section — compact, at top */}
         {latestAudit?.status === "complete" && latestAudit.scoresJson && (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr", gap: 12, marginBottom: 20 }} className="fade-in">
+          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr", gap: 12, marginBottom: 20 }} className="fade-in">
             {/* Score card */}
             <div className="card-static" style={{ padding: "20px 16px", display: "flex", alignItems: "center", gap: 14 }}>
               <div className="relative" style={{ width: 72, height: 72, flexShrink: 0 }}>
