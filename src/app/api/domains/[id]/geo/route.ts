@@ -141,7 +141,13 @@ export async function GET(
   // ── llms.txt download ──
   if (action === "llms-txt") {
     const sitemapUrls = await fetchSitemapUrls(domain.domainUrl);
-    const content = await generateLlmsTxt(domain.domainUrl, pages, sitemapUrls, language);
+    // Load products for Featured Products section
+    let products: Array<{ name: string; url: string | null; price: string | null; category: string | null; description: string | null }> = [];
+    try {
+      const { storeProducts } = await import("@/lib/db/schema");
+      products = db.select().from(storeProducts).where(eq(storeProducts.domainId, id)).all();
+    } catch { /* no products */ }
+    const content = await generateLlmsTxt(domain.domainUrl, pages, sitemapUrls, language, products);
     return new NextResponse(content, {
       headers: {
         "Content-Type": "text/plain; charset=utf-8",

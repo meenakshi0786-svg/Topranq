@@ -257,6 +257,7 @@ export async function generateLlmsTxt(
   pages: PageRow[],
   sitemapUrls: string[] = [],
   language: string = "English",
+  products?: Array<{ name: string; url: string | null; price: string | null; category: string | null; description: string | null }>,
 ): Promise<string> {
   const hostname = (() => { try { return new URL(domainUrl).hostname; } catch { return domainUrl; } })();
 
@@ -283,7 +284,7 @@ export async function generateLlmsTxt(
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (apiKey && allUrls.length > 0) {
     try {
-      const optimized = await generateOptimizedLlmsTxt(apiKey, hostname, domainUrl, urlBlock, language);
+      const optimized = await generateOptimizedLlmsTxt(apiKey, hostname, domainUrl, urlBlock, language, products);
       if (optimized) return optimized;
     } catch (err) {
       console.warn("[llms.txt] AI optimization failed, falling back to static:", err);
@@ -300,6 +301,7 @@ async function generateOptimizedLlmsTxt(
   domainUrl: string,
   urlBlock: string,
   language: string = "English",
+  products?: Array<{ name: string; url: string | null; price: string | null; category: string | null; description: string | null }>,
 ): Promise<string | null> {
   const langInstruction = language !== "English"
     ? `\n\nLANGUAGE REQUIREMENT: Write the ENTIRE output in ${language}. All descriptions, sections, key topics, capabilities, use cases, and audience text MUST be in native ${language}. Only URLs and technical terms (JSON-LD, schema.org) stay in English.\n`
@@ -352,6 +354,13 @@ NEVER use generic topics like "market analysis" alone — always qualify: "real-
 - FAIL: "Investors looking to understand market trends" (too vague)
 - PASS: "A swing trader uses the TOB Screener to find high-IV options before earnings announcements, then builds a straddle in Strategy Builder to test the risk/reward ratio"
 - PASS: "A fashion buyer uses the monthly capsule collection to refresh her professional wardrobe without exceeding a €100 budget"]
+
+## Featured Products
+[IMPORTANT: Include 8-10 of the BEST/MOST POPULAR products. For each product:
+- [Product Name](product-url): Brief description. Price: X EUR.
+Do NOT list every product — pick the most representative ones that showcase the brand's range.
+${products && products.length > 0 ? `\nHere are products from the catalog to choose from:\n${products.slice(0, 30).map(p => `- ${p.name}${p.url ? ` (${p.url})` : ""}${p.price ? ` — ${p.price}` : ""}${p.category ? ` [${p.category}]` : ""}`).join("\n")}` : "Select from the URLs above if product pages are visible."}
+]
 
 ## Audience
 [4-6 entries. Each MUST include who they are + what they need:
