@@ -194,13 +194,10 @@ export default function PricingPage() {
                 </div>
               )}
 
-              <div className="flex items-center gap-2 mb-1">
-                <h2 className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>{plan.name}</h2>
-                <span style={{ textDecoration: "line-through", color: "var(--text-muted)", fontSize: 14 }}>{plan.originalPrice}</span>
-              </div>
-              <div className="mb-1">
+              <div className="mb-2">
+                <span style={{ textDecoration: "line-through", color: "var(--text-muted)", fontSize: 16 }}>{plan.originalPrice}</span>
+                <span className="text-sm" style={{ color: "var(--text-muted)" }}> now at </span>
                 <span className="text-4xl font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>{plan.price}</span>
-                <span className="text-sm" style={{ color: "var(--text-muted)" }}> {plan.periodLabel}</span>
               </div>
               <div className="flex items-center gap-3 mb-5">
                 <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: "#dbeafe", color: "#1e40af" }}>
