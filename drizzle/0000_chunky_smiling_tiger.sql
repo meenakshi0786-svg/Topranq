@@ -1,4 +1,4 @@
-CREATE TABLE `agent_actions` (
+CREATE TABLE IF NOT EXISTS `agent_actions` (
 	`id` text PRIMARY KEY NOT NULL,
 	`domain_id` text NOT NULL,
 	`agent_name` text NOT NULL,
@@ -12,7 +12,7 @@ CREATE TABLE `agent_actions` (
 	FOREIGN KEY (`domain_id`) REFERENCES `domains`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE `articles` (
+CREATE TABLE IF NOT EXISTS `articles` (
 	`id` text PRIMARY KEY NOT NULL,
 	`domain_id` text NOT NULL,
 	`calendar_item_id` text,
@@ -34,7 +34,7 @@ CREATE TABLE `articles` (
 	FOREIGN KEY (`calendar_item_id`) REFERENCES `content_calendar`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
-CREATE TABLE `audit_issues` (
+CREATE TABLE IF NOT EXISTS `audit_issues` (
 	`id` text PRIMARY KEY NOT NULL,
 	`audit_run_id` text NOT NULL,
 	`issue_type` text NOT NULL,
@@ -50,7 +50,7 @@ CREATE TABLE `audit_issues` (
 	FOREIGN KEY (`audit_run_id`) REFERENCES `audit_runs`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE `audit_runs` (
+CREATE TABLE IF NOT EXISTS `audit_runs` (
 	`id` text PRIMARY KEY NOT NULL,
 	`domain_id` text NOT NULL,
 	`agent_version` text,
@@ -67,7 +67,7 @@ CREATE TABLE `audit_runs` (
 	FOREIGN KEY (`domain_id`) REFERENCES `domains`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE `backlinks` (
+CREATE TABLE IF NOT EXISTS `backlinks` (
 	`id` text PRIMARY KEY NOT NULL,
 	`domain_id` text NOT NULL,
 	`source_url` text,
@@ -79,7 +79,7 @@ CREATE TABLE `backlinks` (
 	FOREIGN KEY (`domain_id`) REFERENCES `domains`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE `connectors` (
+CREATE TABLE IF NOT EXISTS `connectors` (
 	`id` text PRIMARY KEY NOT NULL,
 	`domain_id` text NOT NULL,
 	`platform` text NOT NULL,
@@ -90,7 +90,7 @@ CREATE TABLE `connectors` (
 	FOREIGN KEY (`domain_id`) REFERENCES `domains`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE `content_calendar` (
+CREATE TABLE IF NOT EXISTS `content_calendar` (
 	`id` text PRIMARY KEY NOT NULL,
 	`domain_id` text NOT NULL,
 	`keyword_cluster_id` text,
@@ -107,7 +107,7 @@ CREATE TABLE `content_calendar` (
 	FOREIGN KEY (`keyword_cluster_id`) REFERENCES `keyword_clusters`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
-CREATE TABLE `credit_ledger` (
+CREATE TABLE IF NOT EXISTS `credit_ledger` (
 	`id` text PRIMARY KEY NOT NULL,
 	`user_id` text NOT NULL,
 	`action` text NOT NULL,
@@ -118,7 +118,7 @@ CREATE TABLE `credit_ledger` (
 	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE `domain_learnings` (
+CREATE TABLE IF NOT EXISTS `domain_learnings` (
 	`id` text PRIMARY KEY NOT NULL,
 	`domain_id` text NOT NULL,
 	`learning_type` text NOT NULL,
@@ -129,7 +129,7 @@ CREATE TABLE `domain_learnings` (
 	FOREIGN KEY (`domain_id`) REFERENCES `domains`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE `domains` (
+CREATE TABLE IF NOT EXISTS `domains` (
 	`id` text PRIMARY KEY NOT NULL,
 	`user_id` text NOT NULL,
 	`domain_url` text NOT NULL,
@@ -138,7 +138,7 @@ CREATE TABLE `domains` (
 	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE `internal_links` (
+CREATE TABLE IF NOT EXISTS `internal_links` (
 	`id` text PRIMARY KEY NOT NULL,
 	`domain_id` text NOT NULL,
 	`from_page_id` text,
@@ -149,7 +149,7 @@ CREATE TABLE `internal_links` (
 	FOREIGN KEY (`to_page_id`) REFERENCES `pages`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE `keyword_clusters` (
+CREATE TABLE IF NOT EXISTS `keyword_clusters` (
 	`id` text PRIMARY KEY NOT NULL,
 	`domain_id` text NOT NULL,
 	`cluster_name` text NOT NULL,
@@ -161,7 +161,7 @@ CREATE TABLE `keyword_clusters` (
 	FOREIGN KEY (`domain_id`) REFERENCES `domains`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE `keywords` (
+CREATE TABLE IF NOT EXISTS `keywords` (
 	`id` text PRIMARY KEY NOT NULL,
 	`cluster_id` text NOT NULL,
 	`keyword` text NOT NULL,
@@ -173,7 +173,7 @@ CREATE TABLE `keywords` (
 	FOREIGN KEY (`cluster_id`) REFERENCES `keyword_clusters`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE `pages` (
+CREATE TABLE IF NOT EXISTS `pages` (
 	`id` text PRIMARY KEY NOT NULL,
 	`domain_id` text NOT NULL,
 	`url` text NOT NULL,
@@ -189,7 +189,7 @@ CREATE TABLE `pages` (
 	FOREIGN KEY (`domain_id`) REFERENCES `domains`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE `publish_log` (
+CREATE TABLE IF NOT EXISTS `publish_log` (
 	`id` text PRIMARY KEY NOT NULL,
 	`article_id` text NOT NULL,
 	`connector_id` text,
@@ -201,7 +201,7 @@ CREATE TABLE `publish_log` (
 	FOREIGN KEY (`connector_id`) REFERENCES `connectors`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
-CREATE TABLE `search_console_data` (
+CREATE TABLE IF NOT EXISTS `search_console_data` (
 	`id` text PRIMARY KEY NOT NULL,
 	`domain_id` text NOT NULL,
 	`page_url` text,
@@ -214,7 +214,7 @@ CREATE TABLE `search_console_data` (
 	FOREIGN KEY (`domain_id`) REFERENCES `domains`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE `users` (
+CREATE TABLE IF NOT EXISTS `users` (
 	`id` text PRIMARY KEY NOT NULL,
 	`email` text NOT NULL,
 	`name` text,
@@ -223,4 +223,4 @@ CREATE TABLE `users` (
 	`created_at` text DEFAULT (datetime('now'))
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `users_email_unique` ON `users` (`email`);
+CREATE UNIQUE INDEX IF NOT EXISTS `users_email_unique` ON `users` (`email`);
