@@ -7,6 +7,7 @@ export const users = sqliteTable("users", {
   email: text("email").notNull().unique(),
   name: text("name"),
   plan: text("plan", { enum: ["free", "dollar1", "dollar5", "starter", "growth", "agency"] }).notNull().default("free"),
+  planPurchasedAt: text("plan_purchased_at"),
   stripeCustomerId: text("stripe_customer_id"),
   createdAt: text("created_at").default(sql`(datetime('now'))`),
 });

@@ -72,11 +72,20 @@ export async function GET(request: NextRequest) {
       ? `${APP_URL}/domain/${domainId}?autoaudit=true`
       : `${APP_URL}/dashboard`;
     const response = NextResponse.redirect(redirectUrl);
+    // Primary auth cookie (httpOnly, secure)
     response.cookies.set("user_id", user.id, {
       httpOnly: true,
       secure: true,
       sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 30, // 30 days
+      maxAge: 60 * 60 * 24 * 90, // 90 days
+      path: "/",
+    });
+    // Readable cookie for client-side session check (not sensitive — just indicates logged in)
+    response.cookies.set("logged_in", "1", {
+      httpOnly: false,
+      secure: true,
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 90, // 90 days
       path: "/",
     });
     return response;

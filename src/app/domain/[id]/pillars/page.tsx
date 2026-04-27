@@ -66,6 +66,7 @@ export default function PillarsPage() {
   const [interlinkSuggestions, setInterlinkSuggestions] = useState<Record<string, InterlinkSuggestion[]>>({});
   const [selectedSuggestions, setSelectedSuggestions] = useState<Set<string>>(new Set());
   const [applyingLinks, setApplyingLinks] = useState(false);
+  const [articleUsage, setArticleUsage] = useState<{ used: number; limit: number } | null>(null);
   const [suggestions, setSuggestions] = useState<PillarSuggestion[] | null>(null);
   const [gscKeywords, setGscKeywords] = useState<GSCKeyword[]>([]);
   const [suggestLoading, setSuggestLoading] = useState(false);
@@ -89,6 +90,13 @@ export default function PillarsPage() {
   }, [domainId]);
 
   useEffect(() => { fetchPillars(); }, [fetchPillars]);
+
+  // Fetch article usage
+  useEffect(() => {
+    fetch("/api/credits").then(r => r.json()).then(data => {
+      if (data.articles) setArticleUsage(data.articles);
+    }).catch(() => {});
+  }, []);
 
   const runSuggest = useCallback(async () => {
     setSuggestError(null);
@@ -325,6 +333,38 @@ export default function PillarsPage() {
             Build topical authority: one comprehensive pillar page with supporting cluster articles that all link back to it.
           </p>
         </div>
+
+        {/* Article usage bar */}
+        {articleUsage && (
+          <div className="card-static p-4 mb-6 flex items-center justify-between fade-in">
+            <div className="flex items-center gap-3">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+              <div>
+                <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+                  {articleUsage.used} / {articleUsage.limit} Articles Used
+                </p>
+                <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+                  {articleUsage.limit - articleUsage.used > 0
+                    ? `${articleUsage.limit - articleUsage.used} remaining`
+                    : "Limit reached — purchase another pack"}
+                </p>
+              </div>
+            </div>
+            <div className="flex-1 max-w-[200px] mx-4">
+              <div className="h-2 rounded-full overflow-hidden" style={{ background: "var(--border-light)" }}>
+                <div className="h-full rounded-full" style={{
+                  width: `${Math.min(100, (articleUsage.used / articleUsage.limit) * 100)}%`,
+                  background: articleUsage.used >= articleUsage.limit ? "var(--critical)" : articleUsage.used >= articleUsage.limit * 0.8 ? "#eab308" : "var(--accent)",
+                }} />
+              </div>
+            </div>
+            {articleUsage.used >= articleUsage.limit && (
+              <a href="/pricing" className="text-xs font-semibold px-3 py-1.5 rounded-lg text-white shrink-0" style={{ background: "var(--accent)" }}>
+                Buy More
+              </a>
+            )}
+          </div>
+        )}
 
         {/* Create a new pillar strategy — GSC + Products driven, with seed-topic fallback */}
         <div className="card-static p-6 mb-6">

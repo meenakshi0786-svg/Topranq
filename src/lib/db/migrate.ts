@@ -25,6 +25,9 @@ function addColumnIfMissing(table: string, column: string, type: string) {
   }
 }
 
+// users
+addColumnIfMissing("users", "plan_purchased_at", "TEXT");
+
 // domains
 addColumnIfMissing("domains", "language", "TEXT DEFAULT 'English'");
 

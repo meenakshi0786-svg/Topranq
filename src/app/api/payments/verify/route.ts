@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
   const user = await getOrCreateUser();
 
   db.update(schema.users)
-    .set({ plan: plan })
+    .set({ plan: plan, planPurchasedAt: new Date().toISOString() })
     .where(eq(schema.users.id, user.id))
     .run();
 

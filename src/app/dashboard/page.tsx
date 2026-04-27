@@ -31,6 +31,18 @@ export default function DashboardPage() {
   } | null>(null);
 
   useEffect(() => {
+    // Check if logged_in cookie exists client-side
+    const hasLoginCookie = document.cookie.includes("logged_in=1");
+    if (!hasLoginCookie) {
+      // No cookie — check if we have a stored session hint
+      const savedEmail = localStorage.getItem("ranqapex_email");
+      if (savedEmail) {
+        // Had a session before — cookie expired, show sign-in prompt
+        setLoading(false);
+        return;
+      }
+    }
+
     Promise.all([
       fetch("/api/domains").then((r) => r.json()),
       fetch("/api/credits").then((r) => r.json()),
@@ -38,6 +50,10 @@ export default function DashboardPage() {
       setDomains(d);
       setCredits(c);
       setLoading(false);
+      // Save email for session recovery
+      if (c?.email && c.email !== "demo@ranqapex.com") {
+        localStorage.setItem("ranqapex_email", c.email);
+      }
     });
   }, []);
 

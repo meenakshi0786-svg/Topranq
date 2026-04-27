@@ -16,9 +16,21 @@ export function isAdmin(email: string): boolean {
   return ADMIN_EMAILS.includes(email.toLowerCase());
 }
 
-export function isPaidUser(user: { email: string; plan: string }): boolean {
+export function isPlanExpired(planPurchasedAt: string | null): boolean {
+  if (!planPurchasedAt) return false; // No purchase date = admin or legacy, don't expire
+  const purchased = new Date(planPurchasedAt);
+  const now = new Date();
+  const diffDays = (now.getTime() - purchased.getTime()) / (1000 * 60 * 60 * 24);
+  return diffDays > 30;
+}
+
+export function isPaidUser(user: { email: string; plan: string; planPurchasedAt?: string | null }): boolean {
   if (isAdmin(user.email)) return true;
-  if (user.plan === "dollar1" || user.plan === "dollar5") return true;
+  if (user.plan === "dollar1" || user.plan === "dollar5") {
+    // Check if plan has expired (30 days)
+    if (isPlanExpired(user.planPurchasedAt || null)) return false;
+    return true;
+  }
   return false;
 }
 
