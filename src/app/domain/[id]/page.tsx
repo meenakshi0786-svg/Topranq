@@ -232,39 +232,35 @@ export default function DomainOverview() {
 
         {/* Score section — compact, at top */}
         {latestAudit?.status === "complete" && latestAudit.scoresJson && (
-          <div className="card-static p-5 mb-5 fade-in">
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              {/* Score circle + label */}
-              <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                <div className="relative" style={{ width: 64, height: 64 }}>
-                  <svg width="64" height="64" viewBox="0 0 64 64">
-                    <circle cx="32" cy="32" r="26" fill="none" stroke="var(--border-light)" strokeWidth="5" />
-                    <circle cx="32" cy="32" r="26" fill="none" stroke={latestAudit.scoresJson.overall >= 80 ? "var(--success)" : latestAudit.scoresJson.overall >= 60 ? "var(--high)" : "var(--critical)"} strokeWidth="5" strokeLinecap="round" strokeDasharray={`${(latestAudit.scoresJson.overall / 100) * 163} 163`} transform="rotate(-90 32 32)" />
-                  </svg>
-                  <span className="absolute inset-0 flex items-center justify-center text-xl font-bold" style={{ color: latestAudit.scoresJson.overall >= 80 ? "var(--success)" : latestAudit.scoresJson.overall >= 60 ? "var(--high)" : "var(--critical)" }}>
-                    {latestAudit.scoresJson.overall}
-                  </span>
-                </div>
-                <div>
-                  <p className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>Overall Score</p>
-                  <p className="text-xs" style={{ color: "var(--text-muted)" }}>{stats.pages} pages analyzed</p>
-                </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr", gap: 12, marginBottom: 20 }} className="fade-in">
+            {/* Score card */}
+            <div className="card-static" style={{ padding: "20px 16px", display: "flex", alignItems: "center", gap: 14 }}>
+              <div className="relative" style={{ width: 72, height: 72, flexShrink: 0 }}>
+                <svg width="72" height="72" viewBox="0 0 72 72">
+                  <circle cx="36" cy="36" r="29" fill="none" stroke="var(--border-light)" strokeWidth="5" />
+                  <circle cx="36" cy="36" r="29" fill="none" stroke={latestAudit.scoresJson.overall >= 80 ? "var(--success)" : latestAudit.scoresJson.overall >= 60 ? "var(--high)" : "var(--critical)"} strokeWidth="5" strokeLinecap="round" strokeDasharray={`${(latestAudit.scoresJson.overall / 100) * 182} 182`} transform="rotate(-90 36 36)" />
+                </svg>
+                <span className="absolute inset-0 flex items-center justify-center" style={{ fontSize: 22, fontWeight: 800, color: latestAudit.scoresJson.overall >= 80 ? "var(--success)" : latestAudit.scoresJson.overall >= 60 ? "var(--high)" : "var(--critical)" }}>
+                  {latestAudit.scoresJson.overall}
+                </span>
               </div>
-              {/* Severity badges — spread evenly */}
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                {[
-                  { label: "Critical", count: stats.issues.critical, color: "var(--critical)", bg: "var(--critical-bg)" },
-                  { label: "High", count: stats.issues.high, color: "var(--high)", bg: "var(--high-bg)" },
-                  { label: "Medium", count: stats.issues.medium, color: "var(--medium)", bg: "var(--medium-bg)" },
-                  { label: "Low", count: stats.issues.low, color: "var(--low)", bg: "var(--low-bg)" },
-                ].map(s => (
-                  <div key={s.label} style={{ textAlign: "center", padding: "8px 16px", borderRadius: 10, background: s.bg, minWidth: 70 }}>
-                    <p style={{ fontSize: 20, fontWeight: 700, color: s.color, margin: 0 }}>{s.count}</p>
-                    <p style={{ fontSize: 10, fontWeight: 500, color: s.color, margin: 0 }}>{s.label}</p>
-                  </div>
-                ))}
+              <div>
+                <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>Overall Score</p>
+                <p style={{ fontSize: 11, color: "var(--text-muted)", margin: "3px 0 0" }}>{stats.pages} pages analyzed</p>
               </div>
             </div>
+            {/* Severity cards */}
+            {[
+              { label: "Critical", count: stats.issues.critical, color: "var(--critical)", bg: "var(--critical-bg)" },
+              { label: "High", count: stats.issues.high, color: "var(--high)", bg: "var(--high-bg)" },
+              { label: "Medium", count: stats.issues.medium, color: "var(--medium)", bg: "var(--medium-bg)" },
+              { label: "Low", count: stats.issues.low, color: "var(--low)", bg: "var(--low-bg)" },
+            ].map(s => (
+              <div key={s.label} className="card-static" style={{ padding: "20px 16px", textAlign: "center", background: s.bg }}>
+                <p style={{ fontSize: 28, fontWeight: 800, color: s.color, margin: 0, lineHeight: 1 }}>{s.count}</p>
+                <p style={{ fontSize: 11, fontWeight: 600, color: s.color, margin: "6px 0 0" }}>{s.label}</p>
+              </div>
+            ))}
           </div>
         )}
 
