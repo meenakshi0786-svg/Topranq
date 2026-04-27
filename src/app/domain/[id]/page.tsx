@@ -207,15 +207,6 @@ export default function DomainOverview() {
           </div>
         )}
 
-        {/* Onboarding (Connect GSC + Add Products) — lives above the score */}
-        {latestAudit?.status === "complete" && (
-          <OnboardingPanel
-            domainId={domainId}
-            domainUrl={domain.domainUrl}
-            justConnectedGsc={searchParams.get("gscConnected") === "1"}
-          />
-        )}
-
         {/* Progress */}
         {isRunning && (
           <div className="card-static p-12 mb-8 fade-in">
@@ -239,31 +230,49 @@ export default function DomainOverview() {
           </div>
         )}
 
-        {/* Score section */}
+        {/* Score section — compact, at top */}
         {latestAudit?.status === "complete" && latestAudit.scoresJson && (
-          <>
-            <div className="grid grid-cols-12 gap-5 mb-5">
-              {/* Score */}
-              <div className="col-span-12 md:col-span-3 card-static p-7 flex flex-col items-center justify-center fade-in">
-                <ScoreCircle score={latestAudit.scoresJson.overall} />
-                <p className="mt-3 text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
-                  Overall Score
-                </p>
-                <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>
-                  {stats.pages} pages analyzed
-                </p>
+          <div className="card-static p-4 mb-5 fade-in">
+            <div className="flex items-center gap-5">
+              <div className="flex items-center gap-3 shrink-0">
+                <div className="relative" style={{ width: 52, height: 52 }}>
+                  <svg width="52" height="52" viewBox="0 0 52 52">
+                    <circle cx="26" cy="26" r="21" fill="none" stroke="var(--border-light)" strokeWidth="4" />
+                    <circle cx="26" cy="26" r="21" fill="none" stroke={latestAudit.scoresJson.overall >= 80 ? "var(--success)" : latestAudit.scoresJson.overall >= 60 ? "var(--high)" : "var(--critical)"} strokeWidth="4" strokeLinecap="round" strokeDasharray={`${(latestAudit.scoresJson.overall / 100) * 132} 132`} transform="rotate(-90 26 26)" />
+                  </svg>
+                  <span className="absolute inset-0 flex items-center justify-center text-base font-bold" style={{ color: latestAudit.scoresJson.overall >= 80 ? "var(--success)" : latestAudit.scoresJson.overall >= 60 ? "var(--high)" : "var(--critical)" }}>
+                    {latestAudit.scoresJson.overall}
+                  </span>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold" style={{ color: "var(--text-primary)" }}>Overall Score</p>
+                  <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>{stats.pages} pages</p>
+                </div>
               </div>
-
-              {/* Severity cards */}
-              <div className="col-span-12 md:col-span-9 grid grid-cols-2 md:grid-cols-4 gap-3">
-                <SeverityCard label="Critical" count={stats.issues.critical} color="var(--critical)" bg="var(--critical-bg)" />
-                <SeverityCard label="High" count={stats.issues.high} color="var(--high)" bg="var(--high-bg)" />
-                <SeverityCard label="Medium" count={stats.issues.medium} color="var(--medium)" bg="var(--medium-bg)" />
-                <SeverityCard label="Low" count={stats.issues.low} color="var(--low)" bg="var(--low-bg)" />
+              <div className="flex items-center gap-2 flex-1 flex-wrap">
+                {[
+                  { label: "Critical", count: stats.issues.critical, color: "var(--critical)", bg: "var(--critical-bg)" },
+                  { label: "High", count: stats.issues.high, color: "var(--high)", bg: "var(--high-bg)" },
+                  { label: "Medium", count: stats.issues.medium, color: "var(--medium)", bg: "var(--medium-bg)" },
+                  { label: "Low", count: stats.issues.low, color: "var(--low)", bg: "var(--low-bg)" },
+                ].map(s => (
+                  <div key={s.label} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg" style={{ background: s.bg }}>
+                    <span className="text-sm font-bold tabular-nums" style={{ color: s.color }}>{s.count}</span>
+                    <span className="text-[10px] font-medium" style={{ color: s.color }}>{s.label}</span>
+                  </div>
+                ))}
               </div>
             </div>
+          </div>
+        )}
 
-          </>
+        {/* Onboarding (Connect GSC + Add Products) */}
+        {latestAudit?.status === "complete" && (
+          <OnboardingPanel
+            domainId={domainId}
+            domainUrl={domain.domainUrl}
+            justConnectedGsc={searchParams.get("gscConnected") === "1"}
+          />
         )}
 
         {/* Free plan nudge */}
@@ -286,9 +295,8 @@ export default function DomainOverview() {
         {/* Navigation */}
         {/* NOTE: "Search Console", "Strategy AI Agents" and "Connectors" are temporarily hidden.
             To restore: uncomment the NavCards below and change md:grid-cols-4 to match the new count. */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-3 gap-4 mb-8">
           <NavCard href={`/domain/${domainId}/audit`} icon="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" title="Audit" desc={`${stats.issues.total} issues`} />
-          <NavCard href={`/domain/${domainId}/geo`} icon="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" title="GEO" desc="AI readiness" />
           <NavCard href={`/domain/${domainId}/pillars`} icon="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" title="Pillars" desc="Topic clusters" />
           <NavCard href={`/domain/${domainId}/articles`} icon="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" title="Articles" desc="Generated content" />
           {/* <NavCard href={`/domain/${domainId}/search-console`} icon="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" title="Search Console" desc="GSC data" /> */}
