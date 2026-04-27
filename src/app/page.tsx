@@ -207,6 +207,14 @@ export default function LandingPage() {
               </div>
             </div>
 
+            {/* Pricing link */}
+            <div className="mt-5 text-center">
+              <a href="/pricing" className="inline-flex items-center gap-2 text-sm font-medium" style={{ color: "var(--accent)" }}>
+                View Pricing — starts at $1
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+              </a>
+            </div>
+
           </div>
 
           {/* Product infographics — visual walkthrough */}
