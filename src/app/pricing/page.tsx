@@ -66,6 +66,7 @@ export default function PricingPage() {
   const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
   const [scriptLoaded, setScriptLoaded] = useState(false);
+  const [showTelegram, setShowTelegram] = useState<string | null>(null); // plan name for telegram popup
 
   // Load Razorpay script
   function loadRazorpayScript(): Promise<void> {
@@ -132,8 +133,7 @@ export default function PricingPage() {
 
           const result = await verifyRes.json();
           if (result.success) {
-            alert(`Payment successful! You're now on the ${planKey === "dollar1" ? "$1" : "$5"} Plan.`);
-            router.push("/dashboard");
+            setShowTelegram(planKey === "dollar1" ? "$1" : "$5");
           } else {
             alert("Payment verification failed. Please contact support.");
           }
@@ -281,6 +281,69 @@ export default function PricingPage() {
           </div>
         </div>
       </div>
+
+      {/* Telegram Group Invitation Popup */}
+      {showTelegram && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.5)" }}>
+          <div style={{ width: "100%", maxWidth: 440, margin: 16, borderRadius: 20, background: "#fff", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)", overflow: "hidden" }}>
+            {/* Header */}
+            <div style={{ padding: "32px 24px 20px", textAlign: "center", background: "linear-gradient(135deg, #0088cc, #0055aa)" }}>
+              <div style={{ width: 64, height: 64, borderRadius: 16, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", background: "rgba(255,255,255,0.15)" }}>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="white">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z" />
+                </svg>
+              </div>
+              <h2 style={{ fontSize: 22, fontWeight: 700, color: "#fff", margin: "0 0 6px" }}>Payment Successful!</h2>
+              <p style={{ fontSize: 13, color: "rgba(255,255,255,0.8)", margin: 0 }}>You&apos;re now on the {showTelegram} Plan</p>
+            </div>
+
+            {/* Body */}
+            <div style={{ padding: "24px" }}>
+              <p style={{ fontSize: 15, fontWeight: 600, color: "#111827", margin: "0 0 6px", textAlign: "center" }}>
+                Join our exclusive community
+              </p>
+              <p style={{ fontSize: 13, color: "#6b7280", margin: "0 0 20px", textAlign: "center" }}>
+                Get direct support, feature updates, and connect with other Ranqapex users.
+              </p>
+
+              <a
+                href={`https://t.me/+zoz0403pg_45NTFl`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+                  width: "100%", padding: "14px", borderRadius: 12,
+                  background: "#0088cc", color: "#fff",
+                  fontSize: 15, fontWeight: 600, textDecoration: "none",
+                  cursor: "pointer",
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z" />
+                </svg>
+                Join Ranqapex on Telegram
+              </a>
+
+              <p style={{ fontSize: 11, color: "#9ca3af", textAlign: "center", margin: "12px 0 0" }}>
+                Pre-typed message: &ldquo;Joined on {showTelegram} Plan&rdquo;
+              </p>
+
+              <button
+                onClick={() => { setShowTelegram(null); router.push("/dashboard"); }}
+                style={{
+                  display: "block", width: "100%", padding: "12px",
+                  marginTop: 12, borderRadius: 12,
+                  background: "transparent", border: "none",
+                  color: "#9ca3af", fontSize: 13, fontWeight: 500,
+                  cursor: "pointer",
+                }}
+              >
+                Skip for now →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
