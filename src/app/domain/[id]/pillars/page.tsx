@@ -67,6 +67,7 @@ export default function PillarsPage() {
   const [interlinkSuggestions, setInterlinkSuggestions] = useState<Record<string, InterlinkSuggestion[]>>({});
   const [actioningSuggestion, setActioningSuggestion] = useState<string | null>(null);
   const [articleUsage, setArticleUsage] = useState<{ used: number; limit: number } | null>(null);
+  const [userPlan, setUserPlan] = useState<string>("free");
   const [suggestions, setSuggestions] = useState<PillarSuggestion[] | null>(null);
   const [gscKeywords, setGscKeywords] = useState<GSCKeyword[]>([]);
   const [suggestLoading, setSuggestLoading] = useState(false);
@@ -95,6 +96,7 @@ export default function PillarsPage() {
   useEffect(() => {
     fetch("/api/credits").then(r => r.json()).then(data => {
       if (data.articles) setArticleUsage(data.articles);
+      if (data.plan) setUserPlan(data.plan);
     }).catch(() => {});
   }, []);
 
@@ -391,11 +393,34 @@ export default function PillarsPage() {
                 }} />
               </div>
             </div>
-            {articleUsage.used >= articleUsage.limit && (
-              <a href="/pricing" className="text-xs font-semibold px-3 py-1.5 rounded-lg text-white shrink-0" style={{ background: "var(--accent)" }}>
-                Buy More
-              </a>
-            )}
+            <div className="flex items-center gap-2 shrink-0">
+              {/* View Plans — always visible */}
+              {userPlan === "free" && (
+                <a href="/pricing" className="text-xs font-semibold px-3 py-1.5 rounded-lg shrink-0" style={{ background: "var(--accent-light)", color: "var(--accent)" }}>
+                  View Plans
+                </a>
+              )}
+              {/* Buy More — only enabled when $1 plan limit reached, links to $5 plan */}
+              {userPlan === "dollar1" && (
+                <a
+                  href={articleUsage.used >= articleUsage.limit ? "/pricing" : "#"}
+                  className="text-xs font-semibold px-3 py-1.5 rounded-lg text-white shrink-0"
+                  style={{
+                    background: articleUsage.used >= articleUsage.limit ? "#22c55e" : "var(--border)",
+                    cursor: articleUsage.used >= articleUsage.limit ? "pointer" : "default",
+                    pointerEvents: articleUsage.used >= articleUsage.limit ? "auto" : "none",
+                    opacity: articleUsage.used >= articleUsage.limit ? 1 : 0.5,
+                  }}
+                >
+                  Upgrade to $5 Plan
+                </a>
+              )}
+              {userPlan === "dollar5" && articleUsage.used >= articleUsage.limit && (
+                <a href="/pricing" className="text-xs font-semibold px-3 py-1.5 rounded-lg text-white shrink-0" style={{ background: "var(--accent)" }}>
+                  Buy More
+                </a>
+              )}
+            </div>
           </div>
         )}
 
