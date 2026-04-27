@@ -395,11 +395,12 @@ export default function GEOPage() {
                       whatItIs: "The standard file AI crawlers look for — like robots.txt but for LLMs. Contains your site summary, grouped page index, key topics, capabilities, and use cases.",
                       whereToUpload: "Root of your website → your-domain.com/llms.txt (same directory as robots.txt and sitemap.xml).",
                       howToUploadWP: [
-                        "Go to your WordPress admin panel",
-                        "Install and activate the File Manager plugin (or use FTP / cPanel)",
-                        "Navigate to the root directory where wp-config.php lives",
-                        "Upload the downloaded llms.txt file",
-                        "Verify by visiting your-domain.com/llms.txt",
+                        "Option A (easiest): Go to your hosting panel (cPanel / Plesk / hPanel)",
+                        "Open File Manager → navigate to public_html (your site root)",
+                        "Upload the downloaded llms.txt file there (same folder as wp-config.php)",
+                        "Option B (FTP): Connect via FileZilla or any FTP client to your server",
+                        "Upload llms.txt to the root directory (public_html or www)",
+                        "Verify by visiting your-domain.com/llms.txt in your browser",
                       ],
                       howToUploadShopify: [
                         "Go to Shopify Admin → Content → Pages",
