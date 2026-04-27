@@ -66,9 +66,32 @@ export default function GEOPage() {
 
   useEffect(() => { fetchReport(); }, [fetchReport]);
 
-  function downloadAsset(action: string) {
-    window.location.href = `/api/domains/${domainId}/geo?action=${action}`;
-    setLlmsDownloaded(true);
+  async function downloadAsset(action: string) {
+    try {
+      const res = await fetch(`/api/domains/${domainId}/geo?action=${action}`);
+      if (res.status === 403) {
+        // Show purchase prompt
+        if (confirm("Please purchase a plan to download llms.txt.\n\nGo to Pricing page?")) {
+          window.location.href = "/pricing";
+        }
+        return;
+      }
+      if (!res.ok) {
+        alert("Failed to generate asset. Please try again.");
+        return;
+      }
+      // Download the file
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = action === "llms-txt" ? "llms.txt" : `${action}.txt`;
+      a.click();
+      URL.revokeObjectURL(url);
+      setLlmsDownloaded(true);
+    } catch {
+      alert("Failed to download. Please try again.");
+    }
   }
 
   return (
@@ -379,13 +402,15 @@ export default function GEOPage() {
                         "Verify by visiting your-domain.com/llms.txt",
                       ],
                       howToUploadShopify: [
-                        "Go to Shopify Admin → Online Store → Themes",
-                        "Click Actions → Edit code",
-                        "Under Templates, click Add a new template",
-                        "Create a page template named llms-txt",
-                        "Paste your llms.txt content into the template",
-                        "Go to Pages → Add page, set URL handle to llms.txt and assign the template",
-                        "Verify at your-domain.com/pages/llms.txt",
+                        "Go to Shopify Admin → Content → Pages",
+                        "Click 'Add page'",
+                        "Set the Title to 'llms.txt'",
+                        "In the page editor, click the < > (HTML) button to switch to code view",
+                        "Paste the entire llms.txt content inside a <pre> tag: <pre>your content here</pre>",
+                        "Under 'Search engine listing', set the URL handle to 'llms-txt'",
+                        "Click Save",
+                        "Your llms.txt will be available at your-domain.com/pages/llms-txt",
+                        "Tip: Add a link to it in your robots.txt or sitemap for better AI crawler discovery",
                       ],
                       whoReadsIt: "GPTBot (ChatGPT), ClaudeBot (Claude), PerplexityBot (Perplexity), Google-Extended (AI Overviews), and any LLM crawler that checks for it.",
                       impact: "Baseline for AI discovery. Without it, AI engines guess what your site is about. With it, you control the narrative.",
