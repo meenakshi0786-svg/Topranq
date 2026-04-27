@@ -232,33 +232,35 @@ export default function DomainOverview() {
 
         {/* Score section — compact, at top */}
         {latestAudit?.status === "complete" && latestAudit.scoresJson && (
-          <div className="card-static p-4 mb-5 fade-in">
-            <div className="flex items-center gap-5">
-              <div className="flex items-center gap-3 shrink-0">
-                <div className="relative" style={{ width: 52, height: 52 }}>
-                  <svg width="52" height="52" viewBox="0 0 52 52">
-                    <circle cx="26" cy="26" r="21" fill="none" stroke="var(--border-light)" strokeWidth="4" />
-                    <circle cx="26" cy="26" r="21" fill="none" stroke={latestAudit.scoresJson.overall >= 80 ? "var(--success)" : latestAudit.scoresJson.overall >= 60 ? "var(--high)" : "var(--critical)"} strokeWidth="4" strokeLinecap="round" strokeDasharray={`${(latestAudit.scoresJson.overall / 100) * 132} 132`} transform="rotate(-90 26 26)" />
+          <div className="card-static p-5 mb-5 fade-in">
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              {/* Score circle + label */}
+              <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                <div className="relative" style={{ width: 64, height: 64 }}>
+                  <svg width="64" height="64" viewBox="0 0 64 64">
+                    <circle cx="32" cy="32" r="26" fill="none" stroke="var(--border-light)" strokeWidth="5" />
+                    <circle cx="32" cy="32" r="26" fill="none" stroke={latestAudit.scoresJson.overall >= 80 ? "var(--success)" : latestAudit.scoresJson.overall >= 60 ? "var(--high)" : "var(--critical)"} strokeWidth="5" strokeLinecap="round" strokeDasharray={`${(latestAudit.scoresJson.overall / 100) * 163} 163`} transform="rotate(-90 32 32)" />
                   </svg>
-                  <span className="absolute inset-0 flex items-center justify-center text-base font-bold" style={{ color: latestAudit.scoresJson.overall >= 80 ? "var(--success)" : latestAudit.scoresJson.overall >= 60 ? "var(--high)" : "var(--critical)" }}>
+                  <span className="absolute inset-0 flex items-center justify-center text-xl font-bold" style={{ color: latestAudit.scoresJson.overall >= 80 ? "var(--success)" : latestAudit.scoresJson.overall >= 60 ? "var(--high)" : "var(--critical)" }}>
                     {latestAudit.scoresJson.overall}
                   </span>
                 </div>
                 <div>
-                  <p className="text-xs font-semibold" style={{ color: "var(--text-primary)" }}>Overall Score</p>
-                  <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>{stats.pages} pages</p>
+                  <p className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>Overall Score</p>
+                  <p className="text-xs" style={{ color: "var(--text-muted)" }}>{stats.pages} pages analyzed</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 flex-1 flex-wrap">
+              {/* Severity badges — spread evenly */}
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 {[
                   { label: "Critical", count: stats.issues.critical, color: "var(--critical)", bg: "var(--critical-bg)" },
                   { label: "High", count: stats.issues.high, color: "var(--high)", bg: "var(--high-bg)" },
                   { label: "Medium", count: stats.issues.medium, color: "var(--medium)", bg: "var(--medium-bg)" },
                   { label: "Low", count: stats.issues.low, color: "var(--low)", bg: "var(--low-bg)" },
                 ].map(s => (
-                  <div key={s.label} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg" style={{ background: s.bg }}>
-                    <span className="text-sm font-bold tabular-nums" style={{ color: s.color }}>{s.count}</span>
-                    <span className="text-[10px] font-medium" style={{ color: s.color }}>{s.label}</span>
+                  <div key={s.label} style={{ textAlign: "center", padding: "8px 16px", borderRadius: 10, background: s.bg, minWidth: 70 }}>
+                    <p style={{ fontSize: 20, fontWeight: 700, color: s.color, margin: 0 }}>{s.count}</p>
+                    <p style={{ fontSize: 10, fontWeight: 500, color: s.color, margin: 0 }}>{s.label}</p>
                   </div>
                 ))}
               </div>
