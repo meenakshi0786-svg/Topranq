@@ -14,6 +14,7 @@ declare global {
 const PLANS = [
   {
     name: "$1 Plan",
+    originalPrice: "$29/mo",
     planKey: "dollar1" as const,
     price: "$1",
     period: "",
@@ -38,6 +39,7 @@ const PLANS = [
   },
   {
     name: "$5 Plan",
+    originalPrice: "$99/mo",
     planKey: "dollar5" as const,
     price: "$5",
     period: "",
@@ -173,9 +175,6 @@ export default function PricingPage() {
           <h1 className="text-3xl font-bold tracking-tight mb-3" style={{ color: "var(--text-primary)" }}>
             Introductory pricing for the next 3 months
           </h1>
-          <p className="text-base" style={{ color: "var(--text-secondary)" }}>
-            So that we can iterate our product on your feedback
-          </p>
         </div>
 
         {/* Plan cards */}
@@ -195,7 +194,10 @@ export default function PricingPage() {
                 </div>
               )}
 
-              <h2 className="text-xl font-bold mb-1" style={{ color: "var(--text-primary)" }}>{plan.name}</h2>
+              <div className="flex items-center gap-2 mb-1">
+                <h2 className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>{plan.name}</h2>
+                <span style={{ textDecoration: "line-through", color: "var(--text-muted)", fontSize: 14 }}>{plan.originalPrice}</span>
+              </div>
               <div className="mb-1">
                 <span className="text-4xl font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>{plan.price}</span>
                 <span className="text-sm" style={{ color: "var(--text-muted)" }}> {plan.periodLabel}</span>
