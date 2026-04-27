@@ -13,7 +13,12 @@ export default function LandingPage() {
   const [domainUrl, setDomainUrl] = useState("");
   const [userName, setUserName] = useState("");
   const [userEmail, setUserEmail] = useState("");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    setIsLoggedIn(document.cookie.includes("logged_in=1"));
+  }, []);
 
   async function addDomain(e: React.FormEvent) {
     e.preventDefault();
@@ -82,13 +87,23 @@ export default function LandingPage() {
           <a href="/compare" className="text-sm font-medium px-4 py-2 rounded-lg hidden md:inline-block" style={{ color: "var(--text-secondary)" }}>
             Compare
           </a>
-          <a
-            href="/dashboard"
-            className="text-sm font-medium px-5 py-2 rounded-lg"
-            style={{ color: "var(--accent)", background: "var(--accent-light)" }}
-          >
-            Dashboard
-          </a>
+          {isLoggedIn ? (
+            <a
+              href="/dashboard"
+              className="text-sm font-medium px-5 py-2 rounded-lg"
+              style={{ color: "var(--accent)", background: "var(--accent-light)" }}
+            >
+              Dashboard
+            </a>
+          ) : (
+            <a
+              href="/api/auth/google"
+              className="text-sm font-medium px-5 py-2 rounded-lg"
+              style={{ color: "#fff", background: "var(--accent)" }}
+            >
+              Sign In
+            </a>
+          )}
         </div>
       </nav>
 
