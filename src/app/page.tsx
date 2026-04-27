@@ -194,29 +194,187 @@ export default function LandingPage() {
 
           </div>
 
-          {/* Product preview — how it works steps */}
-          <div className="mt-16 max-w-3xl mx-auto fade-in">
-            <p className="text-center text-xs font-bold uppercase tracking-widest mb-8" style={{ color: "var(--text-muted)" }}>
+          {/* Product infographics — visual walkthrough */}
+          <div className="mt-20 max-w-4xl mx-auto fade-in">
+            <p className="text-center text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "var(--accent)" }}>
               How Ranqapex works
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {[
-                { step: "1", title: "Audit your site", desc: "We crawl up to 50 pages, check technical SEO, meta tags, schema, and content quality.", icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" },
-                { step: "2", title: "Discover keywords", desc: "AI finds low-hanging keywords from competitor gaps, PAA questions, and SERP weaknesses.", icon: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" },
-                { step: "3", title: "Generate articles", desc: "Sonnet or Opus writes editorial-quality articles with your products woven in naturally.", icon: "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" },
-                { step: "4", title: "Interlink & export", desc: "AI suggests internal links between articles. Copy or export your content anytime.", icon: "M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101" },
-              ].map((item) => (
-                <div key={item.step} className="text-center p-5 rounded-xl" style={{ background: "var(--bg-white)", border: "1px solid var(--border-light)" }}>
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3" style={{ background: "var(--accent)", color: "#fff", fontSize: 14, fontWeight: 700 }}>
-                    {item.step}
-                  </div>
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center mx-auto mb-3" style={{ background: "#4F6EF710" }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d={item.icon} /></svg>
-                  </div>
-                  <p className="text-sm font-bold mb-1" style={{ color: "var(--text-primary)" }}>{item.title}</p>
-                  <p className="text-xs" style={{ color: "var(--text-muted)", lineHeight: 1.5 }}>{item.desc}</p>
+            <h2 className="text-center text-2xl font-bold tracking-tight mb-12" style={{ color: "var(--text-primary)" }}>
+              From audit to articles in 4 steps
+            </h2>
+
+            {/* Step 1: Audit */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16 items-center">
+              <div>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold mb-4" style={{ background: "#4F6EF715", color: "#4F6EF7" }}>Step 1</div>
+                <h3 className="text-xl font-bold mb-2" style={{ color: "var(--text-primary)" }}>Audit your website</h3>
+                <p className="text-sm mb-4" style={{ color: "var(--text-secondary)", lineHeight: 1.7 }}>
+                  We crawl up to 50 pages and analyze technical SEO, meta tags, schema markup, and content quality. Get an overall score with actionable fixes.
+                </p>
+                <div className="flex items-center gap-4 text-xs" style={{ color: "var(--text-muted)" }}>
+                  <span className="flex items-center gap-1"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg> 50 pages</span>
+                  <span className="flex items-center gap-1"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg> 47 checks</span>
+                  <span className="flex items-center gap-1"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg> Free</span>
                 </div>
-              ))}
+              </div>
+              {/* Audit mockup */}
+              <div className="rounded-xl overflow-hidden" style={{ background: "var(--bg-white)", border: "1px solid var(--border-light)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)" }}>
+                <div className="px-4 py-2.5 flex items-center gap-1.5" style={{ background: "var(--bg)", borderBottom: "1px solid var(--border-light)" }}>
+                  <span style={{ width: 8, height: 8, borderRadius: 99, background: "#ff5f57" }} />
+                  <span style={{ width: 8, height: 8, borderRadius: 99, background: "#febc2e" }} />
+                  <span style={{ width: 8, height: 8, borderRadius: 99, background: "#28c840" }} />
+                </div>
+                <div className="p-5">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div style={{ width: 56, height: 56, position: "relative" }}>
+                      <svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="22" fill="none" stroke="var(--border-light)" strokeWidth="4" /><circle cx="28" cy="28" r="22" fill="none" stroke="#22c55e" strokeWidth="4" strokeLinecap="round" strokeDasharray={`${0.82 * 138} 138`} transform="rotate(-90 28 28)" /></svg>
+                      <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 700, color: "#22c55e" }}>82</span>
+                    </div>
+                    <div>
+                      <p style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 500 }}>Overall Score</p>
+                      <p style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>yoursite.com</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-4 gap-2">
+                    {[{ n: 0, l: "Critical", c: "#22c55e" }, { n: 1, l: "High", c: "#f97316" }, { n: 3, l: "Medium", c: "#eab308" }, { n: 2, l: "Low", c: "#22c55e" }].map(s => (
+                      <div key={s.l} className="text-center p-2 rounded-lg" style={{ background: `${s.c}08` }}>
+                        <p style={{ fontSize: 18, fontWeight: 700, color: s.c }}>{s.n}</p>
+                        <p style={{ fontSize: 9, fontWeight: 500, color: s.c }}>{s.l}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Step 2: Keywords */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16 items-center">
+              {/* Keyword mockup — left on desktop */}
+              <div className="rounded-xl overflow-hidden order-2 md:order-1" style={{ background: "var(--bg-white)", border: "1px solid var(--border-light)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)" }}>
+                <div className="px-4 py-2.5 flex items-center gap-1.5" style={{ background: "var(--bg)", borderBottom: "1px solid var(--border-light)" }}>
+                  <span style={{ width: 8, height: 8, borderRadius: 99, background: "#ff5f57" }} />
+                  <span style={{ width: 8, height: 8, borderRadius: 99, background: "#febc2e" }} />
+                  <span style={{ width: 8, height: 8, borderRadius: 99, background: "#28c840" }} />
+                </div>
+                <div className="p-5">
+                  <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)", marginBottom: 10 }}>Keyword Opportunities</p>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    {["mode modest paris", "hijab jersey premium", "robe gaze coton", "style e-girl 2026", "chemise oversize femme", "jupe longue broderie", "veste sans manche"].map((kw, i) => (
+                      <span key={kw} style={{
+                        display: "inline-flex", alignItems: "center", gap: 4,
+                        padding: "5px 10px", borderRadius: 8, fontSize: 11, fontWeight: 500,
+                        background: i < 4 ? "#4F6EF708" : "var(--bg)",
+                        border: i < 4 ? "2px solid #4F6EF7" : "1px solid var(--border-light)",
+                        color: "var(--text-primary)",
+                      }}>
+                        {i < 4 && <span style={{ width: 12, height: 12, borderRadius: 3, background: "#4F6EF7", display: "flex", alignItems: "center", justifyContent: "center" }}><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg></span>}
+                        {kw}
+                        <span style={{ fontSize: 8, fontWeight: 700, padding: "1px 4px", borderRadius: 4, background: i % 3 === 0 ? "#dcfce7" : i % 3 === 1 ? "#fef9c3" : "#fee2e2", color: i % 3 === 0 ? "#166534" : i % 3 === 1 ? "#854d0e" : "#991b1b" }}>
+                          {i % 3 === 0 ? "Low" : i % 3 === 1 ? "Med" : "High"}
+                        </span>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="order-1 md:order-2">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold mb-4" style={{ background: "#22c55e15", color: "#22c55e" }}>Step 2</div>
+                <h3 className="text-xl font-bold mb-2" style={{ color: "var(--text-primary)" }}>Discover low-hanging keywords</h3>
+                <p className="text-sm mb-4" style={{ color: "var(--text-secondary)", lineHeight: 1.7 }}>
+                  AI analyzes competitor SERPs, finds gaps in your content, and surfaces keywords where you can realistically rank. Select the ones you want and build your content plan.
+                </p>
+                <div className="flex items-center gap-4 text-xs" style={{ color: "var(--text-muted)" }}>
+                  <span className="flex items-center gap-1"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg> Competitor gaps</span>
+                  <span className="flex items-center gap-1"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg> SERP analysis</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Step 3: Articles */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16 items-center">
+              <div>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold mb-4" style={{ background: "#7C5CFC15", color: "#7C5CFC" }}>Step 3</div>
+                <h3 className="text-xl font-bold mb-2" style={{ color: "var(--text-primary)" }}>Generate editorial articles</h3>
+                <p className="text-sm mb-4" style={{ color: "var(--text-secondary)", lineHeight: 1.7 }}>
+                  AI writes publication-ready articles with rich formatting — bullet points, product recommendations, pro tips, and hero images. Your products from CSV are woven in naturally.
+                </p>
+                <div className="flex items-center gap-4 text-xs" style={{ color: "var(--text-muted)" }}>
+                  <span className="flex items-center gap-1"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg> Sonnet / Opus</span>
+                  <span className="flex items-center gap-1"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg> Product integration</span>
+                </div>
+              </div>
+              {/* Article mockup */}
+              <div className="rounded-xl overflow-hidden" style={{ background: "var(--bg-white)", border: "1px solid var(--border-light)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)" }}>
+                <div className="px-4 py-2.5 flex items-center gap-1.5" style={{ background: "var(--bg)", borderBottom: "1px solid var(--border-light)" }}>
+                  <span style={{ width: 8, height: 8, borderRadius: 99, background: "#ff5f57" }} />
+                  <span style={{ width: 8, height: 8, borderRadius: 99, background: "#febc2e" }} />
+                  <span style={{ width: 8, height: 8, borderRadius: 99, background: "#28c840" }} />
+                </div>
+                <div className="p-5">
+                  <div style={{ width: "100%", height: 48, borderRadius: 8, background: "linear-gradient(135deg, #4F6EF720, #7C5CFC20)", marginBottom: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <span style={{ fontSize: 10, fontWeight: 600, color: "var(--accent)" }}>AI-generated hero image</span>
+                  </div>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", marginBottom: 8 }}>Hijab Jersey Premium : Guide Complet</p>
+                  <div style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.6 }}>
+                    <p style={{ marginBottom: 6 }}>Le hijab jersey se distingue par sa composition unique...</p>
+                    <p style={{ fontWeight: 700, color: "var(--text-primary)", marginBottom: 4 }}>Les caractéristiques :</p>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 2, marginBottom: 8 }}>
+                      <span>• <strong>Élasticité</strong> — s&apos;étire sans se déformer</span>
+                      <span>• <strong>Respirabilité</strong> — évacue l&apos;humidité</span>
+                    </div>
+                    <div style={{ padding: "8px 10px", borderLeft: "3px solid #7C5CFC", background: "#f5f3ff", borderRadius: "0 6px 6px 0", fontSize: 10, marginBottom: 8 }}>
+                      <strong>💡 Astuce :</strong> Testez l&apos;élasticité avant l&apos;achat
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <span>👉</span>
+                      <span style={{ color: "#4F6EF7", fontWeight: 600, textDecoration: "underline" }}>Hijab Jersey Liquide</span>
+                      <span style={{ fontSize: 10, color: "var(--text-muted)" }}>— 15€</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Step 4: GEO + Interlink */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+              {/* GEO mockup */}
+              <div className="rounded-xl overflow-hidden order-2 md:order-1" style={{ background: "var(--bg-white)", border: "1px solid var(--border-light)", boxShadow: "0 8px 30px rgba(0,0,0,0.06)" }}>
+                <div className="px-4 py-2.5 flex items-center gap-1.5" style={{ background: "var(--bg)", borderBottom: "1px solid var(--border-light)" }}>
+                  <span style={{ width: 8, height: 8, borderRadius: 99, background: "#ff5f57" }} />
+                  <span style={{ width: 8, height: 8, borderRadius: 99, background: "#febc2e" }} />
+                  <span style={{ width: 8, height: 8, borderRadius: 99, background: "#28c840" }} />
+                </div>
+                <div className="p-5">
+                  <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)", marginBottom: 10 }}>GEO Toolkit</p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    {[
+                      { name: "llms.txt", desc: "AI crawler directives", icon: "📄" },
+                      { name: "entity-map.jsonld", desc: "Structured knowledge graph", icon: "🗺️" },
+                      { name: "citation-snippets.md", desc: "Quotable content blocks", icon: "💬" },
+                    ].map(a => (
+                      <div key={a.name} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", borderRadius: 8, background: "var(--bg)", border: "1px solid var(--border-light)" }}>
+                        <span style={{ fontSize: 16 }}>{a.icon}</span>
+                        <div style={{ flex: 1 }}>
+                          <p style={{ fontSize: 12, fontWeight: 600, color: "var(--text-primary)", margin: 0 }}>{a.name}</p>
+                          <p style={{ fontSize: 10, color: "var(--text-muted)", margin: 0 }}>{a.desc}</p>
+                        </div>
+                        <span style={{ fontSize: 9, fontWeight: 600, padding: "2px 6px", borderRadius: 4, background: "#dcfce7", color: "#166534" }}>Download</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="order-1 md:order-2">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold mb-4" style={{ background: "#f9731615", color: "#f97316" }}>Step 4</div>
+                <h3 className="text-xl font-bold mb-2" style={{ color: "var(--text-primary)" }}>GEO optimization + interlinking</h3>
+                <p className="text-sm mb-4" style={{ color: "var(--text-secondary)", lineHeight: 1.7 }}>
+                  Get cited by ChatGPT, Claude, and Perplexity. Download llms.txt, entity maps, and citation snippets. AI suggests internal links between your articles automatically.
+                </p>
+                <div className="flex items-center gap-4 text-xs" style={{ color: "var(--text-muted)" }}>
+                  <span className="flex items-center gap-1"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg> 4 GEO assets</span>
+                  <span className="flex items-center gap-1"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg> AI interlinking</span>
+                </div>
+              </div>
             </div>
           </div>
 
