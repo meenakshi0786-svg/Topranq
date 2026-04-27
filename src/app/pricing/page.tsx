@@ -215,7 +215,7 @@ export default function PricingPage() {
               <div className="flex gap-3 mb-5">
                 <div className="flex-1 p-3 rounded-lg text-center" style={{ background: "var(--bg)", border: "1px solid var(--border-light)" }}>
                   <p className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>{plan.pages}</p>
-                  <p className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>Pages</p>
+                  <p className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>Crawls {plan.pages} Pages</p>
                 </div>
                 <div className="flex-1 p-3 rounded-lg text-center" style={{ background: "var(--bg)", border: "1px solid var(--border-light)" }}>
                   <p className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>{plan.articles}</p>
