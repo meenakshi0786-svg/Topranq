@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db, schema } from "@/lib/db";
 import { eq } from "drizzle-orm";
-import { getOrCreateUser, isPaidUser } from "@/lib/auth";
+import { getOrCreateUser, isRealUser } from "@/lib/auth";
 
 // POST /api/domains/:id/keyword-discovery/create-plan — create pillars + clusters from confirmed plan
 export async function POST(
@@ -9,8 +9,8 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const user = await getOrCreateUser();
-  if (!isPaidUser(user)) {
-    return NextResponse.json({ error: "Please purchase a plan." }, { status: 403 });
+  if (!isRealUser(user.email)) {
+    return NextResponse.json({ error: "Please sign in." }, { status: 401 });
   }
   const { id } = await params;
   const body = await request.json();

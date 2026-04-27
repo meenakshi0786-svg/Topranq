@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { discoverKeywords } from "@/lib/keyword-discovery";
-import { getOrCreateUser, isPaidUser } from "@/lib/auth";
+import { getOrCreateUser, isRealUser } from "@/lib/auth";
 import { db, schema } from "@/lib/db";
 import { eq, desc } from "drizzle-orm";
 
@@ -10,8 +10,8 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const user = await getOrCreateUser();
-  if (!isPaidUser(user)) {
-    return NextResponse.json({ error: "Please purchase a plan to use the Keyword Planner." }, { status: 403 });
+  if (!isRealUser(user.email)) {
+    return NextResponse.json({ error: "Please sign in to use the Keyword Planner." }, { status: 401 });
   }
 
   const { id } = await params;
@@ -55,8 +55,8 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const user = await getOrCreateUser();
-  if (!isPaidUser(user)) {
-    return NextResponse.json({ error: "Please purchase a plan to use the Keyword Planner." }, { status: 403 });
+  if (!isRealUser(user.email)) {
+    return NextResponse.json({ error: "Please sign in to use the Keyword Planner." }, { status: 401 });
   }
 
   const { id } = await params;

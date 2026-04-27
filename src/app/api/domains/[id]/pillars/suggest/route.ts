@@ -3,7 +3,7 @@ import { db, schema } from "@/lib/db";
 import { and, desc, eq } from "drizzle-orm";
 import { suggestPillarsFromGSC } from "@/lib/pillars";
 import { fetchSearchAnalytics, fetchSiteList } from "@/lib/gsc";
-import { getOrCreateUser, isPaidUser } from "@/lib/auth";
+import { getOrCreateUser, isRealUser } from "@/lib/auth";
 
 /**
  * GET /api/domains/:id/pillars/suggest
@@ -14,8 +14,8 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const user = await getOrCreateUser();
-  if (!isPaidUser(user)) {
-    return NextResponse.json({ error: "Please purchase a plan to get pillar suggestions." }, { status: 403 });
+  if (!isRealUser(user.email)) {
+    return NextResponse.json({ error: "Please sign in." }, { status: 401 });
   }
   const { id } = await params;
 
