@@ -120,8 +120,10 @@ export default function KeywordPlannerPage() {
     setSelected(new Set(filteredKeywords.map((_, i) => keywords.indexOf(filteredKeywords[i]))));
   }
 
-  function deselectAll() {
+  function clearAll() {
+    setKeywords([]);
     setSelected(new Set());
+    setLatestRunId(null);
   }
 
   async function openContentPipeline() {
@@ -321,19 +323,21 @@ export default function KeywordPlannerPage() {
                 <button onClick={selectAll} className="text-xs font-medium px-3 py-1.5 rounded-lg cursor-pointer" style={{ border: "1px solid var(--border-light)", color: "var(--text-secondary)" }}>
                   Select All
                 </button>
-                <button onClick={deselectAll} className="text-xs font-medium px-3 py-1.5 rounded-lg cursor-pointer" style={{ border: "1px solid var(--border-light)", color: "var(--text-secondary)" }}>
+                <button onClick={clearAll} className="text-xs font-medium px-3 py-1.5 rounded-lg cursor-pointer" style={{ border: "1px solid var(--border-light)", color: "var(--text-secondary)" }}>
                   Clear
                 </button>
               </div>
             </div>
 
-            {/* Keyword pills */}
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }} className="mb-6">
-              {filteredKeywords.map((kw) => {
+            {/* Keyword pills — two clean boxes */}
+            {(() => {
+              const previousKws = filteredKeywords.filter(kw => !kw.isLatestRun && kw.runId);
+              const latestKws = filteredKeywords.filter(kw => kw.isLatestRun);
+
+              const renderPill = (kw: DiscoveredKeyword) => {
                 const realIndex = keywords.indexOf(kw);
                 const isSelected = selected.has(realIndex);
                 const ds = difficultyStyle(kw.difficulty);
-                const sl = sourceLabel(kw.source);
 
                 return (
                   <button
@@ -341,74 +345,72 @@ export default function KeywordPlannerPage() {
                     onClick={() => toggleKeyword(realIndex)}
                     className="cursor-pointer"
                     style={{
-                      display: "flex",
+                      display: "inline-flex",
                       alignItems: "center",
-                      gap: 8,
-                      padding: "8px 14px",
-                      borderRadius: 12,
-                      border: isSelected ? "2px solid #4F6EF7" : "1px solid var(--border-light)",
-                      background: isSelected ? "#4F6EF708" : "var(--bg-white)",
+                      gap: 6,
+                      padding: "6px 12px",
+                      borderRadius: 20,
+                      border: isSelected ? "2px solid #4F6EF7" : "1.5px solid var(--border-light)",
+                      background: isSelected ? "#4F6EF70D" : "#fff",
                       transition: "all 0.15s",
-                      position: "relative",
+                      fontSize: 13,
+                      fontWeight: 500,
+                      color: "var(--text-primary)",
+                      whiteSpace: "nowrap",
                     }}
                   >
-                    {/* Checkbox indicator */}
-                    <span style={{
-                      width: 16, height: 16, borderRadius: 4,
-                      border: isSelected ? "none" : "1.5px solid var(--border)",
-                      background: isSelected ? "#4F6EF7" : "transparent",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      flexShrink: 0,
-                    }}>
-                      {isSelected && (
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>
-                      )}
-                    </span>
-
-                    {/* Intent icon */}
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                      <path d={intentIcon(kw.intent)} />
-                    </svg>
-
-                    {/* Keyword text */}
-                    <span style={{ fontSize: 13, fontWeight: 500, color: "var(--text-primary)", whiteSpace: "nowrap" }}>
-                      {kw.keyword}
-                    </span>
-
-                    {/* Difficulty badge */}
-                    <span style={{
-                      fontSize: 9, fontWeight: 700, padding: "2px 6px", borderRadius: 6,
-                      background: ds.bg, color: ds.color, flexShrink: 0,
-                    }}>
-                      {kw.difficulty}
-                    </span>
-
-                    {/* Source badge */}
-                    <span style={{
-                      fontSize: 8, fontWeight: 700, padding: "1px 5px", borderRadius: 4,
-                      background: sl.bg, color: sl.color, letterSpacing: "0.05em", flexShrink: 0,
-                    }}>
-                      {sl.text}
-                    </span>
-
-                    {/* Relevancy score */}
-                    <span style={{ fontSize: 10, color: "var(--text-muted)", flexShrink: 0 }}>
-                      {kw.relevancyScore}%
-                    </span>
-
-                    {/* Run badge */}
-                    {!kw.isLatestRun && kw.runId && (
-                      <span style={{
-                        fontSize: 7, fontWeight: 700, padding: "1px 4px", borderRadius: 3,
-                        background: "#f3f4f6", color: "#6b7280", letterSpacing: "0.03em", flexShrink: 0,
-                      }}>
-                        PREV
-                      </span>
+                    {isSelected && (
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4F6EF7" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>
                     )}
+                    {kw.keyword}
+                    <span style={{
+                      fontSize: 9, fontWeight: 600, padding: "1px 5px", borderRadius: 4,
+                      background: ds.bg, color: ds.color,
+                    }}>
+                      {kw.difficulty[0]}
+                    </span>
                   </button>
                 );
-              })}
-            </div>
+              };
+
+              return (
+                <div style={{ display: "flex", flexDirection: "column", gap: 20 }} className="mb-6">
+                  {/* Previous Run Keywords Box */}
+                  {previousKws.length > 0 && (
+                    <div className="card-static" style={{ padding: "20px 24px", borderLeft: "3px solid #94a3b8" }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+                        <h3 style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>
+                          Keywords from Previous Run
+                        </h3>
+                        <span style={{ fontSize: 12, fontWeight: 500, color: "var(--text-muted)" }}>
+                          {previousKws.length} keywords
+                        </span>
+                      </div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                        {previousKws.map(renderPill)}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* New Keywords Box */}
+                  {latestKws.length > 0 && (
+                    <div className="card-static" style={{ padding: "20px 24px", borderLeft: "3px solid #4F6EF7" }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+                        <h3 style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>
+                          New Keywords
+                        </h3>
+                        <span style={{ fontSize: 12, fontWeight: 500, color: "var(--text-muted)" }}>
+                          {latestKws.length} keywords
+                        </span>
+                      </div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                        {latestKws.map(renderPill)}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
 
             {/* Generate Content Plan button */}
             {selected.size > 0 && (
