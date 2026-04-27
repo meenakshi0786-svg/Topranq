@@ -102,9 +102,19 @@ export async function POST(
         articleCount += db.select().from(schema.articles).where(eq(schema.articles.domainId, d.id)).all().length;
       }
 
-      if (articleCount >= maxArticles) {
+      if (maxArticles === 0) {
         return NextResponse.json(
-          { error: `You've reached your limit of ${maxArticles} articles. To generate more, purchase another pack from the Pricing page.` },
+          { error: "Please purchase a plan to generate articles. Visit the Pricing page to get started." },
+          { status: 403 }
+        );
+      }
+
+      if (articleCount >= maxArticles) {
+        const upgradeMsg = user.plan === "dollar1"
+          ? "You've used all 10 articles on your $1 Plan. Upgrade to the $5 Plan to get 15 more articles."
+          : `You've reached your limit of ${maxArticles} articles. Purchase another pack from the Pricing page.`;
+        return NextResponse.json(
+          { error: upgradeMsg },
           { status: 403 }
         );
       }
