@@ -245,6 +245,21 @@ export const domainLearnings = sqliteTable("domain_learnings", {
   createdAt: text("created_at").default(sql`(datetime('now'))`),
 });
 
+// ── Discovered Keywords (persisted across runs) ─────────────────────
+export const discoveredKeywords = sqliteTable("discovered_keywords", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  domainId: text("domain_id").notNull().references(() => domains.id, { onDelete: "cascade" }),
+  keyword: text("keyword").notNull(),
+  difficulty: text("difficulty").notNull(), // Low, Medium, High
+  intent: text("intent").notNull(),
+  relevancyScore: integer("relevancy_score").notNull(),
+  source: text("source").notNull(),
+  sourceDetail: text("source_detail"),
+  competitorUrl: text("competitor_url"),
+  runId: text("run_id").notNull(), // groups keywords from the same discovery run
+  createdAt: text("created_at").default(sql`(datetime('now'))`),
+});
+
 // ── Connectors (Publisher Agent uses) ────────────────────────────────
 export const connectors = sqliteTable("connectors", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),

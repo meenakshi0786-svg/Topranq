@@ -89,6 +89,22 @@ if (!tables.find(t => t.name === "article_reviews")) {
   )`);
   console.log("  + article_reviews table");
 }
+if (!tables.find(t => t.name === "discovered_keywords")) {
+  sqlite.exec(`CREATE TABLE discovered_keywords (
+    id TEXT PRIMARY KEY NOT NULL,
+    domain_id TEXT NOT NULL REFERENCES domains(id) ON DELETE CASCADE,
+    keyword TEXT NOT NULL,
+    difficulty TEXT NOT NULL,
+    intent TEXT NOT NULL,
+    relevancy_score INTEGER NOT NULL,
+    source TEXT NOT NULL,
+    source_detail TEXT,
+    competitor_url TEXT,
+    run_id TEXT NOT NULL,
+    created_at TEXT DEFAULT (datetime('now'))
+  )`);
+  console.log("  + discovered_keywords table");
+}
 if (!tables.find(t => t.name === "store_products")) {
   sqlite.exec(`CREATE TABLE store_products (
     id TEXT PRIMARY KEY NOT NULL,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
@@ -15,6 +15,8 @@ interface DiscoveredKeyword {
   source: "competitor_gap" | "paa" | "related" | "gsc_weak" | "gsc_opportunity";
   sourceDetail?: string;
   competitorUrl?: string;
+  runId?: string;
+  isLatestRun?: boolean;
 }
 
 interface SuggestedPillar {
@@ -39,8 +41,10 @@ export default function KeywordPlannerPage() {
   const [keywords, setKeywords] = useState<DiscoveredKeyword[]>([]);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [loading, setLoading] = useState(false);
+  const [loadingPrevious, setLoadingPrevious] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<FilterDifficulty>("all");
+  const [latestRunId, setLatestRunId] = useState<string | null>(null);
 
   // Modal state
   const [showModal, setShowModal] = useState(false);
@@ -48,19 +52,54 @@ export default function KeywordPlannerPage() {
   const [suggestedPillars, setSuggestedPillars] = useState<SuggestedPillar[]>([]);
   const [modalError, setModalError] = useState<string | null>(null);
 
+  // Load previous keywords on mount
+  useEffect(() => {
+    fetch(`/api/domains/${domainId}/keyword-discovery`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.keywords && data.keywords.length > 0) {
+          setKeywords(data.keywords);
+          setLatestRunId(data.latestRunId);
+          // Auto-select latest run keywords
+          const latestIndices = new Set<number>();
+          data.keywords.forEach((kw: DiscoveredKeyword, i: number) => {
+            if (kw.isLatestRun) latestIndices.add(i);
+          });
+          setSelected(latestIndices);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoadingPrevious(false));
+  }, [domainId]);
+
   async function discover() {
     setLoading(true);
     setError(null);
-    setKeywords([]);
-    setSelected(new Set());
     try {
-      const res = await fetch(`/api/domains/${domainId}/keyword-discovery`);
+      const res = await fetch(`/api/domains/${domainId}/keyword-discovery`, { method: "POST" });
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Discovery failed"); return; }
-      const kws = data.keywords || [];
-      setKeywords(kws);
-      // Auto-select all
-      setSelected(new Set(kws.map((_: DiscoveredKeyword, i: number) => i)));
+      const newKws = (data.keywords || []) as DiscoveredKeyword[];
+      const newRunId = data.runId;
+
+      // Mark existing keywords as not latest
+      const existingUpdated = keywords.map(kw => ({ ...kw, isLatestRun: false }));
+
+      // Deduplicate: remove old keywords that match new ones
+      const newKeywordTexts = new Set(newKws.map(k => k.keyword.toLowerCase()));
+      const filtered = existingUpdated.filter(kw => !newKeywordTexts.has(kw.keyword.toLowerCase()));
+
+      // Combine: new keywords first, then previous
+      const combined = [...newKws, ...filtered];
+      setKeywords(combined);
+      setLatestRunId(newRunId);
+
+      // Auto-select new keywords
+      const newIndices = new Set<number>();
+      combined.forEach((kw, i) => {
+        if (kw.isLatestRun) newIndices.add(i);
+      });
+      setSelected(newIndices);
     } catch {
       setError("Failed to discover keywords");
     } finally {
@@ -207,7 +246,7 @@ export default function KeywordPlannerPage() {
         </div>
 
         {/* Discover button */}
-        {keywords.length === 0 && !loading && (
+        {keywords.length === 0 && !loading && !loadingPrevious && (
           <div className="card-static p-10 text-center fade-in" style={{ background: "linear-gradient(135deg, #4F6EF705, #7C5CFC05)", border: "1px solid #4F6EF720" }}>
             <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5 glow-pulse" style={{ background: "linear-gradient(135deg, #4F6EF720, #7C5CFC20)" }}>
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -356,6 +395,16 @@ export default function KeywordPlannerPage() {
                     <span style={{ fontSize: 10, color: "var(--text-muted)", flexShrink: 0 }}>
                       {kw.relevancyScore}%
                     </span>
+
+                    {/* Run badge */}
+                    {!kw.isLatestRun && kw.runId && (
+                      <span style={{
+                        fontSize: 7, fontWeight: 700, padding: "1px 4px", borderRadius: 3,
+                        background: "#f3f4f6", color: "#6b7280", letterSpacing: "0.03em", flexShrink: 0,
+                      }}>
+                        PREV
+                      </span>
+                    )}
                   </button>
                 );
               })}
