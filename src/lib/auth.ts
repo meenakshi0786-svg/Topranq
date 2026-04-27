@@ -16,8 +16,12 @@ export function isAdmin(email: string): boolean {
   return ADMIN_EMAILS.includes(email.toLowerCase());
 }
 
+export function isRealUser(email: string): boolean {
+  return email !== DEFAULT_USER_EMAIL;
+}
+
 export function isPlanExpired(planPurchasedAt: string | null): boolean {
-  if (!planPurchasedAt) return false; // No purchase date = admin or legacy, don't expire
+  if (!planPurchasedAt) return false;
   const purchased = new Date(planPurchasedAt);
   const now = new Date();
   const diffDays = (now.getTime() - purchased.getTime()) / (1000 * 60 * 60 * 24);
@@ -25,9 +29,10 @@ export function isPlanExpired(planPurchasedAt: string | null): boolean {
 }
 
 export function isPaidUser(user: { email: string; plan: string; planPurchasedAt?: string | null }): boolean {
+  // Demo users have NO access to paid features
+  if (!isRealUser(user.email)) return false;
   if (isAdmin(user.email)) return true;
   if (user.plan === "dollar1" || user.plan === "dollar5") {
-    // Check if plan has expired (30 days)
     if (isPlanExpired(user.planPurchasedAt || null)) return false;
     return true;
   }
@@ -49,7 +54,7 @@ export async function getOrCreateUser(): Promise<typeof schema.users.$inferSelec
     if (user) return user;
   }
 
-  // Fallback: default demo user
+  // Fallback: default demo user (limited access)
   let user = await db.query.users.findFirst({
     where: eq(schema.users.email, DEFAULT_USER_EMAIL),
   });

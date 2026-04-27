@@ -517,14 +517,6 @@ INTENT: ${intent}
 ${gscContext}
 ${reworkNotes ? `REVISION NOTES: ${reworkNotes}` : ""}
 ${productInstructions}
-${pillarClusterCtx ? `
-═══ INTERNAL LINKING (CRITICAL) ═══
-${pillarClusterCtx.isPillarArticle ? `You are writing the PILLAR article. Naturally mention and link to these cluster articles (3-5 links spread across sections):
-${pillarClusterCtx.clusters.filter((c: { slug: string }) => c.slug).map((c: { topic: string; slug: string }) => `- [${c.topic}](/${c.slug})`).join("\n")}` : `You are writing a CLUSTER article. Link back to the pillar once in the introduction:
-- Pillar: [${pillarClusterCtx.pillarTitle}](/${pillarClusterCtx.pillarSlug})
-Also link to 1-2 related clusters if relevant:
-${pillarClusterCtx.clusters.filter((c: { slug: string; topic: string }) => c.slug && c.topic !== topic).slice(0, 3).map((c: { topic: string; slug: string }) => `- [${c.topic}](/${c.slug})`).join("\n")}`}
-` : ""}
 
 ═══ STRUCTURE (MANDATORY) ═══
 
@@ -535,7 +527,6 @@ ${pillarClusterCtx.clusters.filter((c: { slug: string; topic: string }) => c.slu
 - Mention the primary keyword naturally in the first sentence
 - End with a bullet list: "**Dans ce guide, vous allez apprendre :**" (or English equivalent)
   - 3-4 concrete learning objectives as bullets
-${pillarClusterCtx && !pillarClusterCtx.isPillarArticle ? "- Include contextual backlink to pillar article" : ""}
 
 ### Body Sections (${isPillar ? "8-12" : "5-7"} sections)
 Each section MUST:

@@ -143,12 +143,25 @@ export function buildImagePrompt(
 ): string {
   const cleanTitle = title.replace(/["']/g, "").slice(0, 120);
 
-  const environment =
-    tone === "technical"
-      ? "Modern home office or co-working space. Clean desk with laptop, notebook, and coffee. Minimalist decor, natural wood and white surfaces"
-      : tone === "casual"
-      ? "Bright café or sunlit living room. Relaxed atmosphere with plants, soft textiles, and warm natural light streaming through windows"
-      : "Elegant boutique interior or styled apartment. Curated details — fresh flowers, quality materials, soft neutral palette";
+  // Generate unique scene elements based on article title hash
+  const hash = cleanTitle.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+  const seasons = ["spring morning", "golden hour sunset", "overcast autumn day", "bright summer noon", "soft winter light"];
+  const settings = [
+    "sunlit café terrace with wrought-iron furniture",
+    "minimalist loft apartment with floor-to-ceiling windows",
+    "cozy reading nook with bookshelves and warm textiles",
+    "modern showroom with marble surfaces and greenery",
+    "rooftop garden with city skyline in the background",
+    "rustic farmhouse kitchen with natural wood and herbs",
+    "art gallery with white walls and sculptural lighting",
+    "seaside balcony with linen curtains blowing in the breeze",
+  ];
+  const season = seasons[hash % seasons.length];
+  const setting = settings[hash % settings.length];
 
-  return `${cleanTitle}. Topic: ${topic}. Environment: ${environment}`;
+  const cultureHint = language && language !== "English"
+    ? ` Cultural context: ${language}-speaking audience.`
+    : "";
+
+  return `Editorial lifestyle photograph. ${cleanTitle}. Scene: ${setting} during ${season}. Subject relates to: ${topic}. Style: magazine-quality editorial photography, shallow depth of field, natural light, no text overlays, no logos, no watermarks.${cultureHint}`;
 }

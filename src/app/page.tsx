@@ -60,7 +60,7 @@ export default function LandingPage() {
   }
 
   function skipSignIn() {
-    router.push(`/domain/${domainId}`);
+    setShowSignIn(false);
   }
 
   return (

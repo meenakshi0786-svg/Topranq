@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db, schema } from "@/lib/db";
 import { eq, desc } from "drizzle-orm";
-import { getOrCreateUser } from "@/lib/auth";
+import { getOrCreateUser, isRealUser } from "@/lib/auth";
 import { PLAN_LIMITS } from "@/lib/agents/orchestrator";
 import { runPipeline } from "@/lib/agents/orchestrator";
 
@@ -9,6 +9,15 @@ import { runPipeline } from "@/lib/agents/orchestrator";
 export async function POST(request: NextRequest) {
   try {
     const user = await getOrCreateUser();
+
+    // Block demo users from creating domains — must sign in with Google first
+    if (!isRealUser(user.email)) {
+      return NextResponse.json(
+        { error: "Please sign in with Google to add a domain." },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     let { url } = body;
 
