@@ -295,7 +295,7 @@ export default function DomainOverview() {
         {/* Navigation */}
         {/* NOTE: "Search Console", "Strategy AI Agents" and "Connectors" are temporarily hidden.
             To restore: uncomment the NavCards below and change md:grid-cols-4 to match the new count. */}
-        <div className="grid grid-cols-3 gap-4 mb-8">
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }} className="mb-8">
           <NavCard href={`/domain/${domainId}/audit`} icon="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" title="Audit" desc={`${stats.issues.total} issues`} />
           <NavCard href={`/domain/${domainId}/pillars`} icon="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" title="Pillars" desc="Topic clusters" />
           <NavCard href={`/domain/${domainId}/articles`} icon="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" title="Articles" desc="Generated content" />
