@@ -248,38 +248,6 @@ export default function PricingPage() {
           ))}
         </div>
 
-        {/* Bottom details */}
-        <div className="card-static p-6 fade-in">
-          <div className="space-y-3">
-            <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ background: "#dcfce7" }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#166534" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
-              </div>
-              <div>
-                <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>One-time purchase, no subscription</p>
-                <p className="text-xs" style={{ color: "var(--text-muted)" }}>Pay once, use your credits within 30 days. No auto-renewal, no recurring charges. Need more? Purchase another pack anytime.</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ background: "#fef9c3" }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#854d0e" strokeWidth="2.5"><path d="M12 9v4M12 17h.01" /></svg>
-              </div>
-              <div>
-                <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>Limited to 20 users at a time</p>
-                <p className="text-xs" style={{ color: "var(--text-muted)" }}>We onboard only 20 users per batch to ensure quality support and fast iteration.</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ background: "#dbeafe" }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1e40af" strokeWidth="2.5"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-              </div>
-              <div>
-                <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>Separate charges for article regeneration</p>
-                <p className="text-xs" style={{ color: "var(--text-muted)" }}>Your pack covers new articles. Regenerating or rewriting an existing article counts towards your article limit.</p>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Telegram Group Invitation Popup */}
