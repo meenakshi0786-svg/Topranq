@@ -31,7 +31,7 @@ const PLANS = [
       "Pillar-cluster content strategy",
       "Auto internal linking suggestions",
       "Product CSV integration",
-      "GEO toolkit (llms.txt, entity map)",
+      "GEO toolkit (llms.txt)",
     ],
     cta: "Buy Now",
     highlighted: false,

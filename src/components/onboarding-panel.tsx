@@ -143,6 +143,14 @@ export function OnboardingPanel({ domainId, domainUrl, justConnectedGsc }: Props
           actionLabel="Magic Keyword Planner"
           onAction={() => { window.location.href = `/domain/${domainId}/keyword-planner`; }}
         />
+        <StepCard
+          number={4}
+          status={"todo"}
+          title="Make your site AI-ready"
+          description="Generate llms.txt so AI engines like ChatGPT, Claude, and Perplexity can discover and cite your content."
+          actionLabel="GEO Toolkit"
+          onAction={() => { window.location.href = `/domain/${domainId}/geo`; }}
+        />
       </div>
 
       {showImport && (

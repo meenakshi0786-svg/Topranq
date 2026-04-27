@@ -346,21 +346,20 @@ export default function LandingPage() {
                 </div>
                 <div className="p-5">
                   <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)", marginBottom: 10 }}>GEO Toolkit</p>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                    {[
-                      { name: "llms.txt", desc: "AI crawler directives", icon: "📄" },
-                      { name: "entity-map.jsonld", desc: "Structured knowledge graph", icon: "🗺️" },
-                      { name: "citation-snippets.md", desc: "Quotable content blocks", icon: "💬" },
-                    ].map(a => (
-                      <div key={a.name} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", borderRadius: 8, background: "var(--bg)", border: "1px solid var(--border-light)" }}>
-                        <span style={{ fontSize: 16 }}>{a.icon}</span>
-                        <div style={{ flex: 1 }}>
-                          <p style={{ fontSize: 12, fontWeight: 600, color: "var(--text-primary)", margin: 0 }}>{a.name}</p>
-                          <p style={{ fontSize: 10, color: "var(--text-muted)", margin: 0 }}>{a.desc}</p>
-                        </div>
-                        <span style={{ fontSize: 9, fontWeight: 600, padding: "2px 6px", borderRadius: 4, background: "#dcfce7", color: "#166534" }}>Download</span>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", borderRadius: 10, background: "var(--bg)", border: "1px solid var(--border-light)" }}>
+                      <span style={{ fontSize: 20 }}>📄</span>
+                      <div style={{ flex: 1 }}>
+                        <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>llms.txt</p>
+                        <p style={{ fontSize: 10, color: "var(--text-muted)", margin: "2px 0 0" }}>Tell AI crawlers what your site is about — like robots.txt but for LLMs</p>
                       </div>
-                    ))}
+                      <span style={{ fontSize: 10, fontWeight: 600, padding: "4px 10px", borderRadius: 6, background: "#dcfce7", color: "#166534" }}>Download</span>
+                    </div>
+                    <div style={{ padding: "10px 14px", borderRadius: 10, background: "linear-gradient(135deg, #f0fdf4, #ecfdf5)", border: "1px solid #22c55e30" }}>
+                      <p style={{ fontSize: 11, color: "#166534", margin: 0, lineHeight: 1.5 }}>
+                        <strong>Why it matters:</strong> Without llms.txt, AI engines guess what your site is about. With it, you control how ChatGPT, Claude, and Perplexity understand your brand.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
