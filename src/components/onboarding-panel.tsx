@@ -117,6 +117,7 @@ export function OnboardingPanel({ domainId, domainUrl, justConnectedGsc }: Props
           actionLabel={gscConnected ? "Connected" : "Connect"}
           onAction={() => { window.location.href = `/api/gsc/auth?domainId=${domainId}`; }}
           progressMessage={gscFetching ? GSC_PROGRESS_MESSAGES[gscProgressIdx] : null}
+          onSkip={!gscConnected ? () => setGscConnected(true) : undefined}
         />
         <StepCard
           number={2}
@@ -125,6 +126,7 @@ export function OnboardingPanel({ domainId, domainUrl, justConnectedGsc }: Props
           description="Import a CSV so article heroes use real product photos."
           actionLabel={hasProducts ? "Imported" : "Import"}
           onAction={() => setShowImport(true)}
+          onSkip={!hasProducts ? () => setHasProducts(true) : undefined}
           onRemove={hasProducts ? async () => {
             if (!confirm("Remove imported products? You can re-import anytime.")) return;
             await fetch(`/api/products/import`, {
@@ -166,7 +168,7 @@ export function OnboardingPanel({ domainId, domainUrl, justConnectedGsc }: Props
 }
 
 function StepCard({
-  number, status, title, description, actionLabel, onAction, progressMessage, onRemove,
+  number, status, title, description, actionLabel, onAction, progressMessage, onRemove, onSkip,
 }: {
   number: number;
   status: StepStatus;
@@ -176,6 +178,7 @@ function StepCard({
   onAction: () => void;
   progressMessage?: string | null;
   onRemove?: () => void;
+  onSkip?: () => void;
 }) {
   const locked = status === "locked";
   const done = status === "done";
@@ -215,6 +218,15 @@ function StepCard({
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
           </svg>
+        </button>
+      )}
+      {!done && !doing && onSkip && (
+        <button
+          onClick={onSkip}
+          className="px-3 py-2 rounded-lg text-xs font-medium cursor-pointer"
+          style={{ color: "var(--text-muted)", border: "1px solid var(--border-light)" }}
+        >
+          Skip
         </button>
       )}
       <button
