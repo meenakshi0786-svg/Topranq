@@ -21,6 +21,8 @@ const GSC_PROGRESS_MESSAGES = [
 export function OnboardingPanel({ domainId, domainUrl, justConnectedGsc }: Props) {
   const [gscConnected, setGscConnected] = useState<boolean | null>(null);
   const [hasProducts, setHasProducts] = useState<boolean | null>(null);
+  const [gscSkipped, setGscSkipped] = useState(false);
+  const [productsSkipped, setProductsSkipped] = useState(false);
   const [gscFetching, setGscFetching] = useState(false);
   const [gscProgressIdx, setGscProgressIdx] = useState(0);
   const [showImport, setShowImport] = useState(false);
@@ -89,10 +91,10 @@ export function OnboardingPanel({ domainId, domainUrl, justConnectedGsc }: Props
       </div>
     );
   }
-  const allDone = gscConnected && hasProducts;
+  const allDone = (gscConnected || gscSkipped) && (hasProducts || productsSkipped);
 
-  const gscStatus: StepStatus = gscFetching ? "doing" : gscConnected ? "done" : "todo";
-  const productStatus: StepStatus = hasProducts ? "done" : "todo";
+  const gscStatus: StepStatus = gscFetching ? "doing" : gscConnected ? "done" : gscSkipped ? "done" : "todo";
+  const productStatus: StepStatus = hasProducts ? "done" : productsSkipped ? "done" : "todo";
   const strategyStatus: StepStatus = "todo";
 
   return (
@@ -114,20 +116,20 @@ export function OnboardingPanel({ domainId, domainUrl, justConnectedGsc }: Props
           status={gscStatus}
           title="Connect to Google Search Console"
           description="We&apos;ll pull your top-ranking queries to guide strategy and pillars."
-          actionLabel={gscConnected ? "Connected" : "Connect"}
+          actionLabel={gscConnected ? "Connected" : gscSkipped ? "Skipped" : "Connect"}
           onAction={() => { window.location.href = `/api/gsc/auth?domainId=${domainId}`; }}
           progressMessage={gscFetching ? GSC_PROGRESS_MESSAGES[gscProgressIdx] : null}
-          onSkip={!gscConnected ? () => setGscConnected(true) : undefined}
+          onSkip={!gscConnected && !gscSkipped ? () => setGscSkipped(true) : undefined}
         />
         <StepCard
           number={2}
           status={productStatus}
           title="Add your Products"
           description="Import a CSV so article heroes use real product photos."
-          actionLabel={hasProducts ? "Imported" : "Import"}
+          actionLabel={hasProducts ? "Imported" : productsSkipped ? "Skipped" : "Import"}
           onAction={() => setShowImport(true)}
-          onSkip={!hasProducts ? () => setHasProducts(true) : undefined}
-          onRemove={hasProducts ? async () => {
+          onSkip={!hasProducts && !productsSkipped ? () => setProductsSkipped(true) : undefined}
+          onRemove={hasProducts && !productsSkipped ? async () => {
             if (!confirm("Remove imported products? You can re-import anytime.")) return;
             await fetch(`/api/products/import`, {
               method: "POST",
