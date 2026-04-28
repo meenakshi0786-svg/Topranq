@@ -282,17 +282,34 @@ export async function generateLlmsTxt(
     .join("\n");
 
   const apiKey = process.env.OPENROUTER_API_KEY;
+  let base: string;
   if (apiKey && allUrls.length > 0) {
     try {
       const optimized = await generateOptimizedLlmsTxt(apiKey, hostname, domainUrl, urlBlock, language, products);
-      if (optimized) return optimized;
+      base = optimized || buildStaticLlmsTxt(hostname, pageEntries, extraUrls);
     } catch (err) {
       console.warn("[llms.txt] AI optimization failed, falling back to static:", err);
+      base = buildStaticLlmsTxt(hostname, pageEntries, extraUrls);
     }
+  } else {
+    base = buildStaticLlmsTxt(hostname, pageEntries, extraUrls);
   }
 
-  // Static fallback
-  return buildStaticLlmsTxt(hostname, pageEntries, extraUrls);
+  // Append full product catalog if available
+  if (products && products.length > 0) {
+    const productLines = products.map(p => {
+      const parts: string[] = [`- [${p.name}]`];
+      if (p.url) parts[0] = `- [${p.name}](${p.url})`;
+      const details: string[] = [];
+      if (p.description) details.push(p.description);
+      if (p.category) details.push(`Type: ${p.category}`);
+      if (p.price) details.push(`Price: ${p.price}`);
+      return parts[0] + (details.length > 0 ? `: ${details.join(". ")}.` : "");
+    });
+    base += `\n\n## Full Product Catalog\n\n${productLines.join("\n")}\n`;
+  }
+
+  return base;
 }
 
 async function generateOptimizedLlmsTxt(
@@ -356,11 +373,10 @@ NEVER use generic topics like "market analysis" alone — always qualify: "real-
 - PASS: "A fashion buyer uses the monthly capsule collection to refresh her professional wardrobe without exceeding a €100 budget"]
 
 ## Featured Products
-[IMPORTANT: Include 8-10 of the BEST/MOST POPULAR products. For each product:
+[Include 8-10 of the BEST products that represent the brand's range. For each:
 - [Product Name](product-url): Brief description. Price: X EUR.
-Do NOT list every product — pick the most representative ones that showcase the brand's range.
-${products && products.length > 0 ? `\nHere are products from the catalog to choose from:\n${products.slice(0, 30).map(p => `- ${p.name}${p.url ? ` (${p.url})` : ""}${p.price ? ` — ${p.price}` : ""}${p.category ? ` [${p.category}]` : ""}`).join("\n")}` : "Select from the URLs above if product pages are visible."}
-]
+${products && products.length > 0 ? `\nHere are some products from the catalog:\n${products.slice(0, 30).map(p => `- ${p.name}${p.url ? ` (${p.url})` : ""}${p.price ? ` — ${p.price}` : ""}${p.category ? ` [${p.category}]` : ""}`).join("\n")}` : "Select from the URLs above if product pages are visible."}
+NOTE: The FULL product catalog will be appended after your output automatically. You only need to pick 8-10 highlights here.]
 
 ## Audience
 [4-6 entries. Each MUST include who they are + what they need:
