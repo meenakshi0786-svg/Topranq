@@ -112,7 +112,7 @@ export async function POST(
       if (articleCount >= maxArticles) {
         const upgradeMsg = user.plan === "dollar1"
           ? "You've used all 10 articles on your $1 Plan. Upgrade to the $5 Plan to get 15 more articles."
-          : "You've used all 15 articles on your $5 Plan. Please contact our support team at katapariscontact@gmail.com for assistance.";
+          : "You've used all 15 articles on your $5 Plan. Please contact our support team at ranqapexcontact@gmail.com for assistance.";
         return NextResponse.json(
           { error: upgradeMsg },
           { status: 403 }
