@@ -116,14 +116,27 @@ export default function KeywordPlannerPage() {
     });
   }
 
-  function selectAll() {
-    setSelected(new Set(filteredKeywords.map((_, i) => keywords.indexOf(filteredKeywords[i]))));
+  function toggleSelectAll() {
+    const allIndices = keywords.map((_, i) => i);
+    const allSelected = allIndices.every(i => selected.has(i));
+    if (allSelected) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(allIndices));
+    }
   }
 
   function clearAll() {
     setKeywords([]);
     setSelected(new Set());
     setLatestRunId(null);
+  }
+
+  function deleteSelected() {
+    if (selected.size === 0) return;
+    const remaining = keywords.filter((_, i) => !selected.has(i));
+    setKeywords(remaining);
+    setSelected(new Set());
   }
 
   async function openContentPipeline() {
@@ -320,9 +333,14 @@ export default function KeywordPlannerPage() {
                 <span className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
                   {selected.size} of {keywords.length} selected
                 </span>
-                <button onClick={selectAll} className="text-xs font-medium px-3 py-1.5 rounded-lg cursor-pointer" style={{ border: "1px solid var(--border-light)", color: "var(--text-secondary)" }}>
-                  Select All
+                <button onClick={toggleSelectAll} className="text-xs font-medium px-3 py-1.5 rounded-lg cursor-pointer" style={{ border: "1px solid var(--border-light)", color: "var(--text-secondary)" }}>
+                  {keywords.length > 0 && keywords.every((_, i) => selected.has(i)) ? "Deselect All" : "Select All"}
                 </button>
+                {selected.size > 0 && (
+                  <button onClick={deleteSelected} className="text-xs font-medium px-3 py-1.5 rounded-lg cursor-pointer" style={{ border: "1px solid #fee2e2", color: "#991b1b", background: "#fee2e2" }}>
+                    Delete ({selected.size})
+                  </button>
+                )}
                 <button onClick={clearAll} className="text-xs font-medium px-3 py-1.5 rounded-lg cursor-pointer" style={{ border: "1px solid var(--border-light)", color: "var(--text-secondary)" }}>
                   Clear
                 </button>
