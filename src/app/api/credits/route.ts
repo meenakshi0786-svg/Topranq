@@ -31,6 +31,7 @@ export async function GET() {
   return NextResponse.json({
     plan: user.plan,
     email: user.email,
+    name: user.name || "",
     isDemo: user.email === "demo@ranqapex.com",
     credits: {
       total: limits.credits,
