@@ -3,6 +3,7 @@ import crypto from "crypto";
 import { db, schema } from "@/lib/db";
 import { eq } from "drizzle-orm";
 import { getOrCreateUser } from "@/lib/auth";
+import { sendPaymentConfirmationEmail } from "@/lib/email";
 
 // POST /api/payments/verify — verify payment and upgrade user plan
 export async function POST(request: NextRequest) {
@@ -48,6 +49,11 @@ export async function POST(request: NextRequest) {
     .run();
 
   console.log(`[payments] User ${user.email} upgraded to ${plan} (payment: ${razorpay_payment_id})`);
+
+  // Send payment confirmation email (don't block response)
+  sendPaymentConfirmationEmail(user.email, user.name || "", plan, razorpay_payment_id).catch(err => {
+    console.error("[payments] Failed to send confirmation email:", err);
+  });
 
   return NextResponse.json({
     success: true,
