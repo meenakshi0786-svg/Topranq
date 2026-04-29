@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 
@@ -13,15 +14,24 @@ interface UserData {
 }
 
 export default function SettingsPage() {
+  const router = useRouter();
   const [data, setData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const hasLoginCookie = document.cookie.includes("logged_in=1");
+    if (!hasLoginCookie) {
+      router.replace("/?signin=1");
+      return;
+    }
     fetch("/api/credits")
       .then((r) => r.json())
-      .then((d) => { setData(d); setLoading(false); })
+      .then((d) => {
+        if (d?.isDemo) { router.replace("/?signin=1"); return; }
+        setData(d); setLoading(false);
+      })
       .catch(() => setLoading(false));
-  }, []);
+  }, [router]);
 
   const planLabels: Record<string, string> = {
     free: "Free",

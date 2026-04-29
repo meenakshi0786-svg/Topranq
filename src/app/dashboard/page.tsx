@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { usePageTitle } from "@/components/page-title";
@@ -21,6 +22,7 @@ interface DomainSummary {
 
 export default function DashboardPage() {
   usePageTitle("Dashboard");
+  const router = useRouter();
   const [domains, setDomains] = useState<DomainSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [credits, setCredits] = useState<{
@@ -34,19 +36,20 @@ export default function DashboardPage() {
     // Check if logged_in cookie exists client-side
     const hasLoginCookie = document.cookie.includes("logged_in=1");
     if (!hasLoginCookie) {
-      // No cookie — check if we have a stored session hint
-      const savedEmail = localStorage.getItem("ranqapex_email");
-      if (savedEmail) {
-        // Had a session before — cookie expired, show sign-in prompt
-        setLoading(false);
-        return;
-      }
+      // No cookie — redirect to landing page to sign in
+      router.replace("/?signin=1");
+      return;
     }
 
     Promise.all([
       fetch("/api/domains").then((r) => r.json()),
       fetch("/api/credits").then((r) => r.json()),
     ]).then(([d, c]) => {
+      // If demo user (not really signed in), redirect
+      if (c?.isDemo) {
+        router.replace("/?signin=1");
+        return;
+      }
       setDomains(d);
       setCredits(c);
       setLoading(false);
@@ -55,7 +58,7 @@ export default function DashboardPage() {
         localStorage.setItem("ranqapex_email", c.email);
       }
     });
-  }, []);
+  }, [router]);
 
   return (
     <div className="min-h-screen">
