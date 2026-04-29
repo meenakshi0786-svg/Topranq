@@ -36,12 +36,24 @@ export default function LandingPage() {
 
       if (!res.ok) {
         const data = await res.json();
+        // If not signed in, show the Sign In popup instead of error
+        if (res.status === 401) {
+          setDomainUrl(url.trim());
+          setShowSignIn(true);
+          setLoading(false);
+          return;
+        }
         throw new Error(data.error || "Failed to add domain");
       }
 
       const data = await res.json();
       setDomainId(data.domainId);
       setDomainUrl(url.trim());
+      // If already logged in, go directly to dashboard
+      if (data.domainId) {
+        router.push(`/domain/${data.domainId}`);
+        return;
+      }
       setShowSignIn(true);
       setLoading(false);
     } catch (err) {
@@ -55,8 +67,13 @@ export default function LandingPage() {
   }
 
   function signInWithGoogle() {
-    if (!domainId) return;
-    window.location.href = `/api/auth/google?domainId=${domainId}`;
+    if (domainId) {
+      window.location.href = `/api/auth/google?domainId=${domainId}`;
+    } else if (domainUrl) {
+      window.location.href = `/api/auth/google?pendingDomain=${encodeURIComponent(domainUrl)}`;
+    } else {
+      window.location.href = `/api/auth/google`;
+    }
   }
 
   function skipSignIn() {
