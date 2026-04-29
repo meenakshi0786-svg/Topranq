@@ -72,7 +72,7 @@ export default function AccountPage() {
             <p style={{ color: "var(--text-muted)" }}>Loading...</p>
           </div>
         ) : data && (
-          <div className="space-y-6">
+          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
             {/* Profile Card */}
             <div className="card-static p-8 fade-in" style={{ background: "var(--bg-white)" }}>
               <div className="flex items-center gap-5">
@@ -137,18 +137,18 @@ export default function AccountPage() {
                 </div>
               )}
 
-              <div className="grid grid-cols-3 gap-4">
-                <div className="p-4 rounded-xl text-center" style={{ background: "var(--bg)", border: "1px solid var(--border-light)" }}>
-                  <p className="text-2xl font-bold tabular-nums" style={{ color: "var(--text-primary)" }}>{data.limits.pages}</p>
-                  <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>Pages / Audit</p>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+                <div style={{ padding: 16, borderRadius: 12, textAlign: "center", background: "var(--bg)", border: "1px solid var(--border-light)" }}>
+                  <p style={{ fontSize: 22, fontWeight: 700, color: "var(--text-primary)" }}>{data.limits.pages}</p>
+                  <p style={{ fontSize: 11, marginTop: 4, color: "var(--text-muted)" }}>Pages / Audit</p>
                 </div>
-                <div className="p-4 rounded-xl text-center" style={{ background: "var(--bg)", border: "1px solid var(--border-light)" }}>
-                  <p className="text-2xl font-bold tabular-nums" style={{ color: "var(--text-primary)" }}>{data.limits.articles}</p>
-                  <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>Articles / Plan</p>
+                <div style={{ padding: 16, borderRadius: 12, textAlign: "center", background: "var(--bg)", border: "1px solid var(--border-light)" }}>
+                  <p style={{ fontSize: 22, fontWeight: 700, color: "var(--text-primary)" }}>{data.limits.articles}</p>
+                  <p style={{ fontSize: 11, marginTop: 4, color: "var(--text-muted)" }}>Articles / Plan</p>
                 </div>
-                <div className="p-4 rounded-xl text-center" style={{ background: "var(--bg)", border: "1px solid var(--border-light)" }}>
-                  <p className="text-2xl font-bold tabular-nums" style={{ color: "var(--text-primary)" }}>{data.limits.domains}</p>
-                  <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>Domains</p>
+                <div style={{ padding: 16, borderRadius: 12, textAlign: "center", background: "var(--bg)", border: "1px solid var(--border-light)" }}>
+                  <p style={{ fontSize: 22, fontWeight: 700, color: "var(--text-primary)" }}>{data.limits.domains}</p>
+                  <p style={{ fontSize: 11, marginTop: 4, color: "var(--text-muted)" }}>Domains</p>
                 </div>
               </div>
             </div>
