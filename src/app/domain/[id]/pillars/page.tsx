@@ -710,8 +710,9 @@ export default function PillarsPage() {
       {showUpgrade && (
         <UpgradeModal
           onClose={() => setShowUpgrade(false)}
-          title={upgradeMessage.includes("Upgrade") ? "Upgrade Your Plan" : "Unlock Article Generation"}
+          title={upgradeMessage.includes("contact") ? "Plan Limit Reached" : upgradeMessage.includes("Upgrade") ? "Upgrade Your Plan" : "Unlock Article Generation"}
           subtitle={upgradeMessage || "Purchase a plan to generate AI articles"}
+          contactOnly={upgradeMessage.includes("contact")}
         />
       )}
     </div>

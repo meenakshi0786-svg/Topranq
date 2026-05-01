@@ -4,9 +4,48 @@ interface Props {
   onClose: () => void;
   title?: string;
   subtitle?: string;
+  contactOnly?: boolean;
 }
 
-export function UpgradeModal({ onClose, title, subtitle }: Props) {
+export function UpgradeModal({ onClose, title, subtitle, contactOnly }: Props) {
+  const isContactMode = contactOnly || (subtitle || "").includes("contact");
+  if (isContactMode) {
+    return (
+      <div
+        style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.5)" }}
+        onClick={onClose}
+      >
+        <div
+          style={{ width: "100%", maxWidth: 420, margin: 16, borderRadius: 20, background: "#fff", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)", overflow: "hidden" }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div style={{ background: "linear-gradient(135deg, #7C5CFC, #4F6EF7)", padding: "32px 28px", textAlign: "center", position: "relative" }}>
+            <button onClick={onClose} style={{ position: "absolute", top: 12, right: 12, background: "rgba(255,255,255,0.2)", border: "none", borderRadius: 8, width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12" /></svg>
+            </button>
+            <div style={{ width: 48, height: 48, borderRadius: 14, background: "rgba(255,255,255,0.2)", display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>
+            </div>
+            <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: "#fff" }}>
+              {title || "Plan Limit Reached"}
+            </h2>
+          </div>
+          <div style={{ padding: "28px", textAlign: "center" }}>
+            <p style={{ fontSize: 14, color: "#444", lineHeight: 1.6, marginBottom: 24 }}>
+              You&apos;ve used all articles on your current plan. Contact our support team to get more articles or a custom plan.
+            </p>
+            <a
+              href="mailto:ranqapexcontact@gmail.com"
+              style={{ display: "inline-block", padding: "12px 32px", borderRadius: 10, fontSize: 14, fontWeight: 700, color: "#fff", textDecoration: "none", background: "linear-gradient(135deg, #4F6EF7, #7C5CFC)", marginBottom: 12 }}
+            >
+              Email Support
+            </a>
+            <p style={{ fontSize: 12, color: "#999", margin: "12px 0 0" }}>ranqapexcontact@gmail.com</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div
       style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.5)" }}
