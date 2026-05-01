@@ -146,7 +146,7 @@ export function UpgradeModal({ onClose, title, subtitle, contactOnly }: Props) {
         {/* Footer */}
         <div style={{ padding: "0 24px 20px", textAlign: "center" }}>
           <p style={{ fontSize: 11, color: "#999", margin: 0 }}>
-            One-time payment. No subscription. Cancel anytime.
+            One-time payment. No subscription. No hidden fees.
           </p>
         </div>
       </div>
