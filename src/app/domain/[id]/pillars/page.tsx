@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { CubeLoader } from "@/components/cube-loader";
 import { usePageTitle } from "@/components/page-title";
+import { UpgradeModal } from "@/components/upgrade-modal";
 
 interface Cluster {
   id: string;
@@ -73,6 +74,8 @@ export default function PillarsPage() {
   const [suggestLoading, setSuggestLoading] = useState(false);
   const [suggestError, setSuggestError] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  const [showUpgrade, setShowUpgrade] = useState(false);
+  const [upgradeMessage, setUpgradeMessage] = useState("");
   usePageTitle("Pillars & Clusters");
 
   function showToast(message: string, type: "success" | "error" = "error") {
@@ -166,6 +169,11 @@ export default function PillarsPage() {
       }
       if (!res.ok) {
         const data = await res.json();
+        if (res.status === 403 || res.status === 401) {
+          setUpgradeMessage(data.error || "");
+          setShowUpgrade(true);
+          return;
+        }
         showToast(data.error || "Generation failed", "error");
         return;
       }
@@ -697,6 +705,14 @@ export default function PillarsPage() {
           {toast.message}
           <button onClick={() => setToast(null)} style={{ background: "none", border: "none", color: "#fff", cursor: "pointer", marginLeft: 8, opacity: 0.7 }}>✕</button>
         </div>
+      )}
+
+      {showUpgrade && (
+        <UpgradeModal
+          onClose={() => setShowUpgrade(false)}
+          title={upgradeMessage.includes("Upgrade") ? "Upgrade Your Plan" : "Unlock Article Generation"}
+          subtitle={upgradeMessage || "Purchase a plan to generate AI articles"}
+        />
       )}
     </div>
   );

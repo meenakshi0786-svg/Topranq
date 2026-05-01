@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { usePageTitle } from "@/components/page-title";
+import { UpgradeModal } from "@/components/upgrade-modal";
 
 interface GEOReport {
   domain: { id: string; url: string };
@@ -41,6 +42,7 @@ export default function GEOPage() {
   const [report, setReport] = useState<GEOReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showUpgrade, setShowUpgrade] = useState(false);
   const [expandedPage, setExpandedPage] = useState<string | null>(null);
   const [expandedIssue, setExpandedIssue] = useState<number | null>(null);
   const [llmsDownloaded, setLlmsDownloaded] = useState(false);
@@ -70,10 +72,7 @@ export default function GEOPage() {
     try {
       const res = await fetch(`/api/domains/${domainId}/geo?action=${action}`);
       if (res.status === 403) {
-        // Show purchase prompt
-        if (confirm("Please purchase a plan to download llms.txt.\n\nGo to Pricing page?")) {
-          window.location.href = "/pricing";
-        }
+        setShowUpgrade(true);
         return;
       }
       if (!res.ok) {
@@ -484,6 +483,14 @@ export default function GEOPage() {
           </>
         )}
       </div>
+
+      {showUpgrade && (
+        <UpgradeModal
+          onClose={() => setShowUpgrade(false)}
+          title="Upgrade to Download llms.txt"
+          subtitle="Get your AI-optimized llms.txt file with a paid plan"
+        />
+      )}
     </div>
   );
 }
