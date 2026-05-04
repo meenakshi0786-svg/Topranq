@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { db, schema } from "@/lib/db";
 import { eq, sql } from "drizzle-orm";
 import { getOrCreateUser, isPlanExpired } from "@/lib/auth";
@@ -6,6 +7,11 @@ import { PLAN_LIMITS } from "@/lib/agents/orchestrator";
 
 // GET /api/credits/balance
 export async function GET() {
+  // Require auth — return 401 if not signed in (prevents data leak)
+  const cookieStore = await cookies();
+  if (!cookieStore.get("user_id")?.value) {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
   const user = await getOrCreateUser();
   const plan = user.plan as keyof typeof PLAN_LIMITS;
   const limits = PLAN_LIMITS[plan];
