@@ -729,7 +729,7 @@ export default function LandingPage() {
               Recently audited by Ranqapex users
             </p>
             <div style={{ display: "flex", justifyContent: "center", flexWrap: "wrap", gap: 10 }}>
-              {["kataparis.com", "kaidra.ai", "fetch.ai", "contextpool.io", "keepo.tech", "shopify.com", "notion.so", "vercel.com", "stripe.com", "linear.app"].map((domain) => (
+              {["kataparis.com", "kaidra.ai", "fetch.ai", "contextpool.io", "keepo.tech", "bewakoof.com", "netlink.com", "theoptionbox.com"].map((domain) => (
                 <span
                   key={domain}
                   style={{
@@ -741,6 +741,24 @@ export default function LandingPage() {
                 </span>
               ))}
             </div>
+          </div>
+
+          {/* Case Study Link */}
+          <div style={{ marginTop: 32, padding: "20px 24px", borderRadius: 14, background: "linear-gradient(135deg, #f0f5ff, #f5f3ff)", border: "1px solid #c7d7fe", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap", maxWidth: 720, margin: "32px auto 0" }}>
+            <div style={{ flex: 1, minWidth: 240 }}>
+              <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--accent)", marginBottom: 4 }}>
+                Real Case Study
+              </p>
+              <p style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", margin: "0 0 4px" }}>
+                KATA PARIS: SEO score 30 → 91 in 14 days
+              </p>
+              <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: 0 }}>
+                French fashion brand · 376 products · 5 articles generated
+              </p>
+            </div>
+            <Link href="/case-studies/kataparis" style={{ fontSize: 13, fontWeight: 600, padding: "10px 20px", borderRadius: 10, background: "#fff", color: "var(--accent)", textDecoration: "none", border: "1px solid var(--accent)", whiteSpace: "nowrap" }}>
+              Read full study →
+            </Link>
           </div>
         </div>
       </section>
