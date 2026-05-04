@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { CrispChat } from "@/components/crisp-chat";
 
 const SITE_URL = "https://ranqapex.com";
 const SITE_NAME = "Ranqapex";
@@ -72,7 +73,10 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
         />
       </head>
-      <body className="min-h-full flex flex-col" suppressHydrationWarning>{children}</body>
+      <body className="min-h-full flex flex-col" suppressHydrationWarning>
+        {children}
+        <CrispChat />
+      </body>
     </html>
   );
 }
