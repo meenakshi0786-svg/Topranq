@@ -47,6 +47,7 @@ export default function KeywordPlannerPage() {
   const [filter, setFilter] = useState<FilterDifficulty>("all");
   const [latestRunId, setLatestRunId] = useState<string | null>(null);
   const [showUpgrade, setShowUpgrade] = useState(false);
+  const [upgradeContext, setUpgradeContext] = useState<"discover" | "plan">("discover");
 
   // Modal state
   const [showModal, setShowModal] = useState(false);
@@ -81,6 +82,7 @@ export default function KeywordPlannerPage() {
       const res = await fetch(`/api/domains/${domainId}/keyword-discovery`, { method: "POST" });
       const data = await res.json();
       if (res.status === 403) {
+        setUpgradeContext("discover");
         setShowUpgrade(true);
         return;
       }
@@ -160,6 +162,12 @@ export default function KeywordPlannerPage() {
         body: JSON.stringify({ keywords: selectedKeywords }),
       });
       const data = await res.json();
+      if (res.status === 403) {
+        setShowModal(false);
+        setUpgradeContext("plan");
+        setShowUpgrade(true);
+        return;
+      }
       if (!res.ok) { setModalError(data.error || "Grouping failed"); return; }
       setSuggestedPillars(data.pillars || []);
       setModalStep("confirm");
@@ -578,8 +586,12 @@ export default function KeywordPlannerPage() {
       {showUpgrade && (
         <UpgradeModal
           onClose={() => setShowUpgrade(false)}
-          title="Upgrade to Rediscover Keywords"
-          subtitle="Free plan allows 1 discovery run per domain. Upgrade to find new opportunities anytime."
+          title={upgradeContext === "plan" ? "Upgrade to Generate New Plans" : "Upgrade to Rediscover Keywords"}
+          subtitle={
+            upgradeContext === "plan"
+              ? "Free plan allows 1 content plan per domain. Upgrade to generate new plans anytime."
+              : "Free plan allows 1 discovery run per domain. Upgrade to find new opportunities anytime."
+          }
         />
       )}
     </div>
