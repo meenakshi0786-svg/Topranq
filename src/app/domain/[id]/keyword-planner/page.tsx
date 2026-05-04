@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { CubeLoader } from "@/components/cube-loader";
 import { usePageTitle } from "@/components/page-title";
+import { UpgradeModal } from "@/components/upgrade-modal";
 
 interface DiscoveredKeyword {
   keyword: string;
@@ -45,6 +46,7 @@ export default function KeywordPlannerPage() {
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<FilterDifficulty>("all");
   const [latestRunId, setLatestRunId] = useState<string | null>(null);
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
   // Modal state
   const [showModal, setShowModal] = useState(false);
@@ -78,6 +80,10 @@ export default function KeywordPlannerPage() {
     try {
       const res = await fetch(`/api/domains/${domainId}/keyword-discovery`, { method: "POST" });
       const data = await res.json();
+      if (res.status === 403) {
+        setShowUpgrade(true);
+        return;
+      }
       if (!res.ok) { setError(data.error || "Discovery failed"); return; }
       const newKws = (data.keywords || []) as DiscoveredKeyword[];
       const newRunId = data.runId;
@@ -567,6 +573,14 @@ export default function KeywordPlannerPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {showUpgrade && (
+        <UpgradeModal
+          onClose={() => setShowUpgrade(false)}
+          title="Upgrade to Rediscover Keywords"
+          subtitle="Free plan allows 1 discovery run per domain. Upgrade to find new opportunities anytime."
+        />
       )}
     </div>
   );

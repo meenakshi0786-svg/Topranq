@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { discoverKeywords } from "@/lib/keyword-discovery";
-import { getOrCreateUser, isRealUser } from "@/lib/auth";
+import { getOrCreateUser, isRealUser, isAdmin, isPaidUser } from "@/lib/auth";
 import { db, schema } from "@/lib/db";
 import { eq, desc } from "drizzle-orm";
 
@@ -60,6 +60,23 @@ export async function POST(
   }
 
   const { id } = await params;
+
+  // Free users get only 1 discovery run per domain. Paid users + admins are unlimited.
+  if (!isAdmin(user.email) && !isPaidUser(user)) {
+    const existingRuns = db
+      .select({ runId: schema.discoveredKeywords.runId })
+      .from(schema.discoveredKeywords)
+      .where(eq(schema.discoveredKeywords.domainId, id))
+      .all();
+    const uniqueRuns = new Set(existingRuns.map(r => r.runId));
+    if (uniqueRuns.size >= 1) {
+      return NextResponse.json(
+        { error: "Free plan allows 1 keyword discovery run per domain. Upgrade to rediscover keywords." },
+        { status: 403 }
+      );
+    }
+  }
+
   try {
     const keywords = await discoverKeywords(id);
     const runId = `run_${Date.now()}`;
