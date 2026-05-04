@@ -234,8 +234,29 @@ export default function PillarsPage() {
         });
 
         const contentType = res.headers.get("content-type") || "";
-        if (!contentType.includes("application/json")) continue;
-        if (!res.ok) continue;
+        if (!contentType.includes("application/json")) {
+          setGeneratingAll(null);
+          setGeneratingAllProgress("");
+          showToast("Server returned an unexpected response. Please try again.", "error");
+          return;
+        }
+
+        if (res.status === 401 || res.status === 403) {
+          const data = await res.json();
+          setGeneratingAll(null);
+          setGeneratingAllProgress("");
+          setUpgradeMessage(data.error || "");
+          setShowUpgrade(true);
+          return;
+        }
+
+        if (!res.ok) {
+          const data = await res.json();
+          setGeneratingAll(null);
+          setGeneratingAllProgress("");
+          showToast(data.error || "Generation failed", "error");
+          return;
+        }
 
         const result = await res.json();
 
