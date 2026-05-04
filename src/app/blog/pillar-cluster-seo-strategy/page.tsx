@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { usePageTitle } from "@/components/page-title";
+import { Breadcrumbs, RelatedPosts } from "@/components/blog-extras";
 
 export default function PillarClusterArticle() {
   usePageTitle("Pillar & Cluster SEO: Build Topical Authority in 2026");
@@ -15,10 +16,11 @@ export default function PillarClusterArticle() {
         </div>
       </nav>
       <article className="max-w-[720px] mx-auto px-6 py-10">
+        <Breadcrumbs currentTitle="Pillar & Cluster SEO Strategy" />
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded" style={{ background: "var(--accent-light)", color: "var(--accent)" }}>SEO Strategy</span>
-            <span className="text-xs" style={{ color: "var(--text-muted)" }}>April 2026 · 12 min read</span>
+            <span className="text-xs" style={{ color: "var(--text-muted)" }}>By Ranqapex Team · Published Apr 8, 2026 · Updated May 4, 2026 · 12 min read</span>
           </div>
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight leading-tight mb-4" style={{ color: "var(--text-primary)" }}>Pillar &amp; Cluster SEO: How to Build Topical Authority in 2026</h1>
           <p className="text-base leading-relaxed" style={{ color: "var(--text-secondary)" }}>The pillar-cluster model is the most effective way to rank for competitive keywords. One comprehensive pillar article surrounded by 6-8 focused cluster articles — all interlinked — signals topical authority to Google. Here&apos;s how to build one from scratch using real data.</p>
@@ -68,6 +70,7 @@ export default function PillarClusterArticle() {
           </ol>
           <p><strong><Link href="/" style={{ color: "var(--accent)" }}>Start your free audit and build your first pillar →</Link></strong></p>
         </div>
+        <RelatedPosts currentSlug="pillar-cluster-seo-strategy" />
       </article>
     </div>
   );

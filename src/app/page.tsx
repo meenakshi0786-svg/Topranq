@@ -81,8 +81,41 @@ export default function LandingPage() {
     setShowSignIn(false);
   }
 
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name: "What does Ranqapex do?",
+        acceptedAnswer: { "@type": "Answer", text: "Ranqapex is an AI-powered SEO autopilot. It crawls your site, runs a full SEO audit, discovers low-hanging keywords from competitor SERPs, builds pillar-cluster content strategies, generates editorial articles with your products woven in, and creates llms.txt for AI search engines like ChatGPT and Perplexity." },
+      },
+      {
+        "@type": "Question",
+        name: "How much does Ranqapex cost?",
+        acceptedAnswer: { "@type": "Answer", text: "Plans start at $1 (one-time, 30-day access) for 10 articles using Sonnet AI. The $5 plan unlocks 15 articles using Opus AI. Audits and keyword discovery are free." },
+      },
+      {
+        "@type": "Question",
+        name: "What is Generative Engine Optimization (GEO)?",
+        acceptedAnswer: { "@type": "Answer", text: "GEO is the practice of optimizing your website for AI search engines like ChatGPT, Perplexity, Claude, and Google AI Overviews. Ranqapex generates llms.txt, entity maps, and AI citation snippets to help AI models accurately understand and cite your content." },
+      },
+      {
+        "@type": "Question",
+        name: "Can Ranqapex publish articles directly to my Shopify or WordPress site?",
+        acceptedAnswer: { "@type": "Answer", text: "Yes. Ranqapex integrates with both Shopify and WordPress for direct article publishing. You can also export articles as Markdown or HTML for any other CMS." },
+      },
+      {
+        "@type": "Question",
+        name: "How is Ranqapex different from SurferSEO or Jasper?",
+        acceptedAnswer: { "@type": "Answer", text: "Ranqapex combines technical SEO audits, keyword research, and AI article generation in a single tool, plus exclusive GEO features (llms.txt, entity maps, citation snippets) that competitors don't offer. Pricing starts at $1 vs $49-99/month for SurferSEO, Jasper, and Frase." },
+      },
+    ],
+  };
+
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "var(--bg)" }}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       {/* Nav */}
       <nav className="px-6 py-5 flex items-center justify-between max-w-[1200px] mx-auto w-full">
         <Logo size={42} />

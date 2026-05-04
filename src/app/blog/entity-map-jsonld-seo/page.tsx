@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { usePageTitle } from "@/components/page-title";
+import { Breadcrumbs, RelatedPosts } from "@/components/blog-extras";
 
 export default function EntityMapArticle() {
   usePageTitle("Entity Maps & JSON-LD: Structured Data for AI Search");
@@ -15,10 +16,11 @@ export default function EntityMapArticle() {
         </div>
       </nav>
       <article className="max-w-[720px] mx-auto px-6 py-10">
+        <Breadcrumbs currentTitle="Entity Maps & JSON-LD" />
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded" style={{ background: "var(--accent-light)", color: "var(--accent)" }}>GEO</span>
-            <span className="text-xs" style={{ color: "var(--text-muted)" }}>April 2026 · 8 min read</span>
+            <span className="text-xs" style={{ color: "var(--text-muted)" }}>By Ranqapex Team · Published Apr 12, 2026 · Updated May 4, 2026 · 8 min read</span>
           </div>
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight leading-tight mb-4" style={{ color: "var(--text-primary)" }}>Entity Maps &amp; JSON-LD: Structured Data for AI Search Engines</h1>
           <p className="text-base leading-relaxed" style={{ color: "var(--text-secondary)" }}>JSON-LD knowledge graphs help Google AI Overviews and ChatGPT understand your site&apos;s entities, topics, and relationships. An entity map is the structured data equivalent of telling AI exactly what you are, what you know, and how your content connects.</p>
@@ -59,6 +61,7 @@ export default function EntityMapArticle() {
           <p>Ranqapex generates entity maps automatically from your crawled pages. The AI analyzes your site structure, identifies entities, assigns specific Schema.org types, and builds the <code>knowsAbout</code> and relationship graph. Download it from the GEO toolkit.</p>
           <p><strong><Link href="/" style={{ color: "var(--accent)" }}>Get your entity map for free →</Link></strong></p>
         </div>
+        <RelatedPosts currentSlug="entity-map-jsonld-seo" />
       </article>
     </div>
   );

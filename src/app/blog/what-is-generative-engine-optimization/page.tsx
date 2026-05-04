@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { usePageTitle } from "@/components/page-title";
+import { Breadcrumbs, RelatedPosts } from "@/components/blog-extras";
 
 export default function GEOArticle() {
   usePageTitle("What is Generative Engine Optimization (GEO)?");
@@ -17,10 +18,11 @@ export default function GEOArticle() {
       </nav>
 
       <article className="max-w-[720px] mx-auto px-6 py-10">
+        <Breadcrumbs currentTitle="What is GEO?" />
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded" style={{ background: "var(--accent-light)", color: "var(--accent)" }}>GEO</span>
-            <span className="text-xs" style={{ color: "var(--text-muted)" }}>April 2026 · 8 min read</span>
+            <span className="text-xs" style={{ color: "var(--text-muted)" }}>By Ranqapex Team · Published Apr 1, 2026 · Updated May 4, 2026 · 8 min read</span>
           </div>
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight leading-tight mb-4" style={{ color: "var(--text-primary)" }}>
             What is Generative Engine Optimization (GEO)? The 2026 Guide
@@ -96,6 +98,7 @@ export default function GEOArticle() {
           <p>GEO is no longer optional. As AI engines handle more searches, sites that aren&apos;t optimized for citation will lose visibility — regardless of their traditional SEO rankings. The good news: GEO is straightforward to implement, and the tools exist today.</p>
           <p><strong>Start with a free AI Readiness audit on <Link href="/" style={{ color: "var(--accent)" }}>Ranqapex</Link> — see your score in 60 seconds.</strong></p>
         </div>
+        <RelatedPosts currentSlug="what-is-generative-engine-optimization" />
       </article>
     </div>
   );

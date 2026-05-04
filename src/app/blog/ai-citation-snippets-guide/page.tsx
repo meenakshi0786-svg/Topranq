@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { usePageTitle } from "@/components/page-title";
+import { Breadcrumbs, RelatedPosts } from "@/components/blog-extras";
 
 export default function CitationSnippetsArticle() {
   usePageTitle("AI Citation Snippets: Get Quoted by ChatGPT & Perplexity");
@@ -15,10 +16,11 @@ export default function CitationSnippetsArticle() {
         </div>
       </nav>
       <article className="max-w-[720px] mx-auto px-6 py-10">
+        <Breadcrumbs currentTitle="AI Citation Snippets" />
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded" style={{ background: "var(--accent-light)", color: "var(--accent)" }}>GEO</span>
-            <span className="text-xs" style={{ color: "var(--text-muted)" }}>April 2026 · 7 min read</span>
+            <span className="text-xs" style={{ color: "var(--text-muted)" }}>By Ranqapex Team · Published Apr 15, 2026 · Updated May 4, 2026 · 7 min read</span>
           </div>
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight leading-tight mb-4" style={{ color: "var(--text-primary)" }}>AI Citation Snippets: How to Get Quoted by ChatGPT &amp; Perplexity</h1>
           <p className="text-base leading-relaxed" style={{ color: "var(--text-secondary)" }}>When ChatGPT says &ldquo;According to [your site]...&rdquo;, the text it quotes comes from your meta descriptions, first paragraphs, and structured data. Citation snippets pre-write those quotes so the AI uses <strong>your words</strong>.</p>
@@ -59,6 +61,7 @@ export default function CitationSnippetsArticle() {
           <p>Citation snippets control <strong>how</strong> you&apos;re cited, not just <strong>if</strong> you&apos;re cited. The FAQ section is especially powerful — if someone asks an AI a question that matches your FAQ, the AI cites your answer directly.</p>
           <p><strong><Link href="/" style={{ color: "var(--accent)" }}>Generate your citation snippets for free →</Link></strong></p>
         </div>
+        <RelatedPosts currentSlug="ai-citation-snippets-guide" />
       </article>
     </div>
   );

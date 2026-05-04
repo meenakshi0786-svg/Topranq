@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { usePageTitle } from "@/components/page-title";
+import { Breadcrumbs, RelatedPosts } from "@/components/blog-extras";
 
 export default function AutopilotVsManualArticle() {
   usePageTitle("SEO Autopilot vs Manual SEO: Which Wins in 2026?");
@@ -15,10 +16,11 @@ export default function AutopilotVsManualArticle() {
         </div>
       </nav>
       <article className="max-w-[720px] mx-auto px-6 py-10">
+        <Breadcrumbs currentTitle="SEO Autopilot vs Manual SEO" />
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded" style={{ background: "var(--accent-light)", color: "var(--accent)" }}>SEO Tools</span>
-            <span className="text-xs" style={{ color: "var(--text-muted)" }}>April 2026 · 9 min read</span>
+            <span className="text-xs" style={{ color: "var(--text-muted)" }}>By Ranqapex Team · Published Apr 20, 2026 · Updated May 4, 2026 · 9 min read</span>
           </div>
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight leading-tight mb-4" style={{ color: "var(--text-primary)" }}>SEO Autopilot vs Manual SEO: Which Approach Wins in 2026?</h1>
           <p className="text-base leading-relaxed" style={{ color: "var(--text-secondary)" }}>AI-powered SEO tools can audit, strategize, write, and publish content automatically. But when does autopilot beat manual work — and when does it fall short? Here&apos;s an honest comparison based on real workflows.</p>
@@ -67,6 +69,7 @@ export default function AutopilotVsManualArticle() {
           <p>SEO autopilot doesn&apos;t replace your team — it makes them 10x more productive. Use it for the heavy lifting (audits, drafts, linking, monitoring) and let your humans do what AI can&apos;t: build brand, create original insights, and make strategic bets.</p>
           <p><strong><Link href="/compare" style={{ color: "var(--accent)" }}>See how Ranqapex compares to other SEO tools →</Link></strong></p>
         </div>
+        <RelatedPosts currentSlug="seo-autopilot-vs-manual" />
       </article>
     </div>
   );

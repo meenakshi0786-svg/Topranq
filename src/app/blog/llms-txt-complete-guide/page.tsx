@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { usePageTitle } from "@/components/page-title";
+import { Breadcrumbs, RelatedPosts } from "@/components/blog-extras";
 
 export default function LlmsTxtArticle() {
   usePageTitle("llms.txt: The Complete Guide to AI-Optimized Site Indexing");
@@ -17,10 +18,11 @@ export default function LlmsTxtArticle() {
       </nav>
 
       <article className="max-w-[720px] mx-auto px-6 py-10">
+        <Breadcrumbs currentTitle="llms.txt: The Complete Guide" />
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded" style={{ background: "var(--accent-light)", color: "var(--accent)" }}>GEO</span>
-            <span className="text-xs" style={{ color: "var(--text-muted)" }}>April 2026 · 10 min read</span>
+            <span className="text-xs" style={{ color: "var(--text-muted)" }}>By Ranqapex Team · Published Apr 5, 2026 · Updated May 4, 2026 · 10 min read</span>
           </div>
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight leading-tight mb-4" style={{ color: "var(--text-primary)" }}>
             llms.txt: The Complete Guide to AI-Optimized Site Indexing
@@ -124,6 +126,7 @@ export default function LlmsTxtArticle() {
           <p>Ranqapex generates all 4 GEO files automatically from your crawled pages. Run a free audit, go to the GEO page, and download your optimized llms.txt — scored and ready to upload.</p>
           <p><strong><Link href="/" style={{ color: "var(--accent)" }}>Start your free audit →</Link></strong></p>
         </div>
+        <RelatedPosts currentSlug="llms-txt-complete-guide" />
       </article>
     </div>
   );
