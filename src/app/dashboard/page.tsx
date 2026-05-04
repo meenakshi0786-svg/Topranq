@@ -158,10 +158,11 @@ export default function DashboardPage() {
               <p style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>Add your first domain</p>
               <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>
                 Enter your website URL to start with a free audit
-            </p>
-            <Link href="/" className="btn-primary inline-block px-6 py-2.5 text-sm">
-              Add Domain
-            </Link>
+              </p>
+              <Link href="/" className="btn-primary inline-block px-6 py-2.5 text-sm">
+                Add Domain
+              </Link>
+            </div>
           </div>
         ) : (
           <div className="space-y-3">
