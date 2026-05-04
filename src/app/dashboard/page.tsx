@@ -124,17 +124,40 @@ export default function DashboardPage() {
             <p style={{ color: "var(--text-muted)" }}>Loading...</p>
           </div>
         ) : domains.length === 0 ? (
-          <div className="card-static p-20 text-center fade-in">
-            <div className="w-14 h-14 rounded-xl mx-auto mb-5 flex items-center justify-center" style={{ background: "var(--border-light)" }}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5">
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="12" />
-                <line x1="12" y1="16" x2="12.01" y2="16" />
-              </svg>
+          <div className="fade-in">
+            {/* Getting Started Guide */}
+            <div className="card-static p-8 mb-6" style={{ background: "linear-gradient(135deg, #f0f5ff, #f5f3ff)", border: "1px solid #c7d7fe" }}>
+              <h2 style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)", marginBottom: 4 }}>Welcome to Ranqapex</h2>
+              <p style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 20 }}>Follow these 4 steps to get your first articles published.</p>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                {[
+                  { step: "1", title: "Enter your domain", desc: "We'll crawl and audit your site in 60 seconds", icon: "M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9", color: "#4F6EF7" },
+                  { step: "2", title: "Discover keywords", desc: "Find low-hanging keywords from competitor gaps", icon: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z", color: "#7C5CFC" },
+                  { step: "3", title: "Build content plan", desc: "Group keywords into pillars and clusters", icon: "M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5", color: "#f59e0b" },
+                  { step: "4", title: "Generate articles", desc: "AI writes SEO-optimized articles with your products", icon: "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z", color: "#22c55e" },
+                ].map((item) => (
+                  <div key={item.step} style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: 14, borderRadius: 12, background: "#fff", border: "1px solid var(--border-light)" }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: `${item.color}15`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={item.color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d={item.icon} /></svg>
+                    </div>
+                    <div>
+                      <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", margin: "0 0 2px" }}>
+                        <span style={{ color: item.color, marginRight: 4 }}>{item.step}.</span>{item.title}
+                      </p>
+                      <p style={{ fontSize: 11, color: "var(--text-muted)", margin: 0 }}>{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-            <p className="text-lg font-semibold mb-2">No domains yet</p>
-            <p className="text-sm mb-8" style={{ color: "var(--text-secondary)" }}>
-              Add your first domain to start analyzing
+
+            <div className="card-static p-12 text-center">
+              <div style={{ width: 56, height: 56, borderRadius: 16, margin: "0 auto 16px", display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg, #4F6EF720, #7C5CFC20)" }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" /></svg>
+              </div>
+              <p style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>Add your first domain</p>
+              <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>
+                Enter your website URL to start with a free audit
             </p>
             <Link href="/" className="btn-primary inline-block px-6 py-2.5 text-sm">
               Add Domain

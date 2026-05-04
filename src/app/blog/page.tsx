@@ -12,6 +12,8 @@ const posts = [
     category: "GEO",
     date: "April 2026",
     readTime: "8 min",
+    gradient: "linear-gradient(135deg, #667eea, #764ba2)",
+    icon: "M13 10V3L4 14h7v7l9-11h-7z",
   },
   {
     slug: "llms-txt-complete-guide",
@@ -20,6 +22,8 @@ const posts = [
     category: "GEO",
     date: "April 2026",
     readTime: "10 min",
+    gradient: "linear-gradient(135deg, #4F6EF7, #7C5CFC)",
+    icon: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z",
   },
   {
     slug: "pillar-cluster-seo-strategy",
@@ -28,6 +32,8 @@ const posts = [
     category: "SEO Strategy",
     date: "April 2026",
     readTime: "12 min",
+    gradient: "linear-gradient(135deg, #f093fb, #f5576c)",
+    icon: "M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5",
   },
   {
     slug: "ai-citation-snippets-guide",
@@ -36,6 +42,8 @@ const posts = [
     category: "GEO",
     date: "April 2026",
     readTime: "7 min",
+    gradient: "linear-gradient(135deg, #43e97b, #38f9d7)",
+    icon: "M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z",
   },
   {
     slug: "seo-autopilot-vs-manual",
@@ -44,6 +52,8 @@ const posts = [
     category: "SEO Tools",
     date: "April 2026",
     readTime: "9 min",
+    gradient: "linear-gradient(135deg, #fa709a, #fee140)",
+    icon: "M13 7h8m0 0v8m0-8l-8 8-4-4-6 6",
   },
   {
     slug: "entity-map-jsonld-seo",
@@ -52,6 +62,8 @@ const posts = [
     category: "GEO",
     date: "April 2026",
     readTime: "8 min",
+    gradient: "linear-gradient(135deg, #a18cd1, #fbc2eb)",
+    icon: "M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4",
   },
 ];
 
@@ -90,19 +102,29 @@ export default function BlogPage() {
               onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 25px rgba(0,0,0,0.06)"; }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow = "var(--shadow-xs)"; }}
             >
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1">
+              <div style={{ display: "flex", alignItems: "stretch", gap: 20 }}>
+                {/* Thumbnail */}
+                <div style={{
+                  width: 140, minHeight: 100, borderRadius: 12, background: post.gradient,
+                  display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                }}>
+                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d={post.icon} />
+                  </svg>
+                </div>
+                {/* Content */}
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded" style={{ background: "var(--accent-light)", color: "var(--accent)" }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", padding: "2px 8px", borderRadius: 4, background: "var(--accent-light)", color: "var(--accent)" }}>
                       {post.category}
                     </span>
-                    <span className="text-xs" style={{ color: "var(--text-muted)" }}>{post.date}</span>
-                    <span className="text-xs" style={{ color: "var(--text-muted)" }}>· {post.readTime}</span>
+                    <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{post.date}</span>
+                    <span style={{ fontSize: 12, color: "var(--text-muted)" }}>· {post.readTime}</span>
                   </div>
-                  <h2 className="text-lg font-bold tracking-tight mb-2" style={{ color: "var(--text-primary)" }}>
+                  <h2 style={{ fontSize: 17, fontWeight: 700, letterSpacing: "-0.01em", marginBottom: 6, color: "var(--text-primary)" }}>
                     {post.title}
                   </h2>
-                  <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                  <p style={{ fontSize: 13, lineHeight: 1.6, color: "var(--text-secondary)", margin: 0 }}>
                     {post.excerpt}
                   </p>
                 </div>
