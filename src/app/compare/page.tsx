@@ -3,6 +3,7 @@
 import { Fragment } from "react";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
+import { SiteFooter } from "@/components/site-footer";
 import { usePageTitle } from "@/components/page-title";
 
 const features = [
@@ -139,6 +140,7 @@ export default function ComparePage() {
           </Link>
         </div>
       </div>
+      <SiteFooter />
     </div>
   );
 }

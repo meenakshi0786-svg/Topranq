@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
+import { SiteFooter } from "@/components/site-footer";
 
 export default function LandingPage() {
   const [url, setUrl] = useState("");
@@ -846,24 +847,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer style={{ background: "var(--bg-white)", borderTop: "1px solid var(--border-light)" }}>
-        <div className="max-w-[1200px] mx-auto px-6 py-10 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <Logo size={22} />
-            <span className="text-xs" style={{ color: "var(--text-muted)" }}>
-              © {new Date().getFullYear()} Ranqapex — SEO Autopilot
-            </span>
-          </div>
-          <div className="flex items-center gap-5 text-xs" style={{ color: "var(--text-muted)" }}>
-            <a href="#features">Features</a>
-            <a href="#how-it-works">How it works</a>
-            <a href="/pricing">Pricing</a>
-            <a href="/blog">Blog</a>
-            <a href="/compare">Compare</a>
-            <a href="/dashboard">Dashboard</a>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
 
       {/* Sign In Popup */}
       {showSignIn && (

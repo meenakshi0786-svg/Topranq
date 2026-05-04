@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Logo } from "@/components/logo";
+import { SiteFooter } from "@/components/site-footer";
 
 const stats = [
   { label: "Pages Crawled", value: "125", subtitle: "Full site analyzed" },
@@ -206,6 +207,7 @@ export default function KataParisCaseStudy() {
           </Link>
         </div>
       </div>
+      <SiteFooter />
     </div>
   );
 }

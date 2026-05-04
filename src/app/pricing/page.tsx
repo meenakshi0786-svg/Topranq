@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Logo } from "@/components/logo";
+import { SiteFooter } from "@/components/site-footer";
 
 declare global {
   interface Window {
@@ -311,6 +312,7 @@ export default function PricingPage() {
           </div>
         </div>
       )}
+      <SiteFooter />
     </div>
   );
 }

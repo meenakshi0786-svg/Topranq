@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Logo } from "@/components/logo";
+import { SiteFooter } from "@/components/site-footer";
 import { usePageTitle } from "@/components/page-title";
 
 const posts = [
@@ -142,6 +143,7 @@ export default function BlogPage() {
           </Link>
         </div>
       </div>
+      <SiteFooter />
     </div>
   );
 }
