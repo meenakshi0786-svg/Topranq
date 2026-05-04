@@ -48,6 +48,7 @@ export default async function Image() {
         {/* Headline */}
         <div
           style={{
+            display: "flex",
             fontSize: 68,
             fontWeight: 800,
             color: "#fff",
@@ -58,13 +59,13 @@ export default async function Image() {
             maxWidth: 1000,
           }}
         >
-          Audit, fix, and publish
-          <br />SEO content — on autopilot
+          Audit, fix, and publish SEO content — on autopilot
         </div>
 
         {/* Subhead */}
         <div
           style={{
+            display: "flex",
             fontSize: 26,
             color: "rgba(255,255,255,0.9)",
             textAlign: "center",
@@ -72,8 +73,7 @@ export default async function Image() {
             lineHeight: 1.4,
           }}
         >
-          AI agents that crawl, audit, strategize, write & publish.
-          <br />Get cited by ChatGPT, Perplexity & Google AI Overviews.
+          AI agents that crawl, audit, strategize, write & publish. Get cited by ChatGPT, Perplexity & Google AI Overviews.
         </div>
 
         {/* Pill CTA */}
