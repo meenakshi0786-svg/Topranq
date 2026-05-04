@@ -89,7 +89,7 @@ export default function TermsPage() {
           <h2 style={h2}>9. Termination</h2>
           <p>
             We may suspend or terminate your account if you violate these terms.
-            You may stop using the service at any time. Refunds for paid plans are governed by our <Link href="/refund-policy" style={link}>Refund Policy</Link>.
+            You may stop using the service at any time. All payments are final — paid plans are non-refundable once articles have been generated.
           </p>
 
           <h2 style={h2}>10. Limitation of Liability</h2>

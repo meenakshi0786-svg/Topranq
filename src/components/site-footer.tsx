@@ -50,7 +50,6 @@ export function SiteFooter() {
             <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 8 }}>
               <li><Link href="/privacy" style={linkStyle}>Privacy Policy</Link></li>
               <li><Link href="/terms" style={linkStyle}>Terms of Service</Link></li>
-              <li><Link href="/refund-policy" style={linkStyle}>Refund Policy</Link></li>
             </ul>
           </div>
         </div>
