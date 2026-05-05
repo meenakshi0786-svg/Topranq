@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db, schema } from "@/lib/db";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { buildGEOReport, generateLlmsTxt } from "@/lib/geo/score";
 import { generateLlmsFullTxt, generateEntityMap, generateCitationSnippets } from "@/lib/geo/ai-assets";
 import { getOrCreateUser, isPaidUser } from "@/lib/auth";
