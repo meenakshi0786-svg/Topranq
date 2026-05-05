@@ -737,38 +737,85 @@ export default function LandingPage() {
       </section>
 
 
-      {/* Just Launched + Social Proof */}
+      {/* Social Proof + Just Launched */}
       <section style={{ background: "var(--bg-white)", borderTop: "1px solid var(--border-light)" }}>
-        <div className="max-w-[1200px] mx-auto px-6 py-16">
-          {/* Just Launched banner */}
-          <div style={{ maxWidth: 720, margin: "0 auto 40px", padding: "28px 32px", borderRadius: 18, background: "linear-gradient(135deg, #f0f5ff, #f5f3ff)", border: "1px solid #c7d7fe", textAlign: "center" }}>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", padding: "5px 14px", borderRadius: 999, background: "#fff", color: "var(--accent)", border: "1px solid #c7d7fe", marginBottom: 16 }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "96px 24px" }}>
+          {/* Top: Just Launched centered headline */}
+          <div style={{ textAlign: "center", marginBottom: 64 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", padding: "6px 14px", borderRadius: 999, background: "#f0f5ff", color: "var(--accent)", border: "1px solid #c7d7fe", marginBottom: 20 }}>
               <span style={{ position: "relative", display: "flex", width: 8, height: 8 }}>
                 <span style={{ position: "absolute", inset: 0, borderRadius: "50%", background: "#22c55e", opacity: 0.7, animation: "ranq-ping 1.6s cubic-bezier(0,0,.2,1) infinite" }} />
                 <span style={{ position: "relative", width: 8, height: 8, borderRadius: "50%", background: "#22c55e" }} />
               </span>
               Just Launched
             </div>
-            <h3 style={{ fontSize: 22, fontWeight: 700, color: "var(--text-primary)", margin: "0 0 6px", letterSpacing: "-0.01em" }}>
+            <h2 style={{ fontSize: 32, fontWeight: 800, color: "var(--text-primary)", margin: "0 0 12px", letterSpacing: "-0.02em", lineHeight: 1.15 }}>
               Be one of the first to try Ranqapex
-            </h3>
-            <p style={{ fontSize: 14, color: "var(--text-secondary)", margin: 0, lineHeight: 1.6 }}>
-              We&apos;re launching today. Plans start at <strong>$1</strong>. Run your first audit free and see your site&apos;s SEO + AI readiness score in 60 seconds.
+            </h2>
+            <p style={{ fontSize: 16, color: "var(--text-secondary)", margin: "0 auto", maxWidth: 560, lineHeight: 1.6 }}>
+              Plans start at <strong style={{ color: "var(--text-primary)" }}>$1</strong>. Run a free audit and see your site&apos;s SEO + AI readiness score in 60 seconds.
             </p>
           </div>
 
-          {/* Recently Audited Ticker */}
-          <div style={{ overflow: "hidden", position: "relative", padding: "16px 0" }}>
-            <p style={{ textAlign: "center", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: 12 }}>
+          {/* Featured Case Study — full-width card */}
+          <Link
+            href="/case-studies/kataparis"
+            style={{
+              display: "block", textDecoration: "none",
+              maxWidth: 880, margin: "0 auto 56px",
+              padding: 0, borderRadius: 20, overflow: "hidden",
+              background: "linear-gradient(135deg, #4F6EF7 0%, #7C5CFC 100%)",
+              boxShadow: "0 10px 40px rgba(79, 110, 247, 0.18)",
+              transition: "transform 0.2s ease, box-shadow 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "translateY(-3px)";
+              e.currentTarget.style.boxShadow = "0 14px 50px rgba(79, 110, 247, 0.28)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "0 10px 40px rgba(79, 110, 247, 0.18)";
+            }}
+          >
+            <div style={{ display: "grid", gridTemplateColumns: "1fr auto", alignItems: "center", gap: 24, padding: "32px 36px", color: "#fff" }}>
+              <div>
+                <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,255,255,0.8)", margin: "0 0 8px" }}>
+                  Real Case Study
+                </p>
+                <h3 style={{ fontSize: 22, fontWeight: 700, color: "#fff", margin: "0 0 8px", letterSpacing: "-0.01em", lineHeight: 1.25 }}>
+                  KATA PARIS: SEO score <span style={{ background: "rgba(255,255,255,0.22)", padding: "2px 10px", borderRadius: 6 }}>30 → 91</span> in 14 days
+                </h3>
+                <p style={{ fontSize: 13, color: "rgba(255,255,255,0.85)", margin: 0 }}>
+                  French fashion brand · 376 products imported · 5 articles generated
+                </p>
+              </div>
+              <div style={{
+                display: "inline-flex", alignItems: "center", gap: 6,
+                padding: "12px 22px", borderRadius: 12,
+                fontSize: 13, fontWeight: 700,
+                background: "#fff", color: "var(--accent)",
+                whiteSpace: "nowrap",
+              }}>
+                Read full study
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
+                </svg>
+              </div>
+            </div>
+          </Link>
+
+          {/* Recently Audited — subtle row at bottom */}
+          <div style={{ borderTop: "1px solid var(--border-light)", paddingTop: 40 }}>
+            <p style={{ textAlign: "center", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: 20 }}>
               Recently audited by Ranqapex users
             </p>
-            <div style={{ display: "flex", justifyContent: "center", flexWrap: "wrap", gap: 10 }}>
+            <div style={{ display: "flex", justifyContent: "center", flexWrap: "wrap", gap: 8 }}>
               {["kataparis.com", "kaidra.ai", "fetch.ai", "contextpool.io", "keepo.tech", "bewakoof.com", "netlink.com", "theoptionbox.com"].map((domain) => (
                 <span
                   key={domain}
                   style={{
-                    fontSize: 12, fontWeight: 500, padding: "6px 14px", borderRadius: 20,
-                    background: "var(--bg)", border: "1px solid var(--border-light)", color: "var(--text-secondary)",
+                    fontSize: 12, fontWeight: 500, padding: "7px 14px", borderRadius: 8,
+                    background: "var(--bg)", color: "var(--text-secondary)",
                   }}
                 >
                   {domain}
@@ -776,37 +823,19 @@ export default function LandingPage() {
               ))}
             </div>
           </div>
-
-          {/* Case Study Link */}
-          <div style={{ marginTop: 32, padding: "20px 24px", borderRadius: 14, background: "linear-gradient(135deg, #f0f5ff, #f5f3ff)", border: "1px solid #c7d7fe", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap", maxWidth: 720, margin: "32px auto 0" }}>
-            <div style={{ flex: 1, minWidth: 240 }}>
-              <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--accent)", marginBottom: 4 }}>
-                Real Case Study
-              </p>
-              <p style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", margin: "0 0 4px" }}>
-                KATA PARIS: SEO score 30 → 91 in 14 days
-              </p>
-              <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: 0 }}>
-                French fashion brand · 376 products · 5 articles generated
-              </p>
-            </div>
-            <Link href="/case-studies/kataparis" style={{ fontSize: 13, fontWeight: 600, padding: "10px 20px", borderRadius: 10, background: "#fff", color: "var(--accent)", textDecoration: "none", border: "1px solid var(--accent)", whiteSpace: "nowrap" }}>
-              Read full study →
-            </Link>
-          </div>
         </div>
       </section>
 
       {/* Final CTA */}
       <section style={{ background: "var(--bg)" }}>
-        <div className="max-w-[800px] mx-auto px-6 py-20 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4" style={{ color: "var(--text-primary)" }}>
+        <div style={{ maxWidth: 760, margin: "0 auto", padding: "96px 24px", textAlign: "center" }}>
+          <h2 style={{ fontSize: 36, fontWeight: 800, letterSpacing: "-0.02em", color: "var(--text-primary)", margin: "0 0 16px", lineHeight: 1.15 }}>
             Ready to rank higher?
           </h2>
-          <p className="text-base mb-8" style={{ color: "var(--text-secondary)" }}>
+          <p style={{ fontSize: 16, color: "var(--text-secondary)", marginBottom: 32, lineHeight: 1.6 }}>
             Start with a free audit. No credit card. See results in 60 seconds.
           </p>
-          <form onSubmit={addDomain} className="relative max-w-xl mx-auto">
+          <form onSubmit={addDomain} style={{ position: "relative", maxWidth: 560, margin: "0 auto" }}>
             <div
               className="flex items-center rounded-xl overflow-hidden"
               style={{
