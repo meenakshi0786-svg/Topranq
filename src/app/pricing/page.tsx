@@ -27,6 +27,7 @@ const PLANS = [
     features: [
       "10 Articles",
       "1 Domain",
+      "1 llms.txt generation",
       "Valid for 30 days from purchase",
       "Full site audit (25 pages)",
       "Magic Keyword Planner",
@@ -34,7 +35,6 @@ const PLANS = [
       "Pillar-cluster content strategy",
       "Auto internal linking suggestions",
       "Product CSV integration",
-      "GEO toolkit (llms.txt)",
     ],
     cta: "Buy Now",
     highlighted: false,
@@ -53,6 +53,7 @@ const PLANS = [
     features: [
       "15 Articles",
       "3 Domains",
+      "3 llms.txt generations (1 per domain)",
       "Valid for 30 days from purchase",
       "Everything in $1 Plan",
       "Full site audit (50 pages)",

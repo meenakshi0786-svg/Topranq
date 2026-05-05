@@ -138,16 +138,49 @@ export async function GET(
     wordCount: p.wordCount || 0,
   }));
 
-  // ── llms.txt download ──
+  // ── llms.txt download (1 generation per domain, cached after first call) ──
   if (action === "llms-txt") {
+    // Check cache: paid plans get 1 generation per domain. Subsequent downloads
+    // serve the cached file instead of re-running the AI (saves cost + faster UX).
+    const cached = db
+      .select()
+      .from(schema.domainLearnings)
+      .where(
+        and(
+          eq(schema.domainLearnings.domainId, id),
+          eq(schema.domainLearnings.learningType, "llms_txt_cache"),
+        ),
+      )
+      .get();
+
+    if (cached?.insight) {
+      return new NextResponse(cached.insight, {
+        headers: {
+          "Content-Type": "text/plain; charset=utf-8",
+          "Content-Disposition": `attachment; filename="llms.txt"`,
+        },
+      });
+    }
+
+    // First-time generation
     const sitemapUrls = await fetchSitemapUrls(domain.domainUrl);
-    // Load products for Featured Products section
     let products: Array<{ name: string; url: string | null; price: string | null; category: string | null; description: string | null }> = [];
     try {
       const { storeProducts } = await import("@/lib/db/schema");
       products = db.select().from(storeProducts).where(eq(storeProducts.domainId, id)).all();
     } catch { /* no products */ }
     const content = await generateLlmsTxt(domain.domainUrl, pages, sitemapUrls, language, products);
+
+    // Cache the result so future downloads don't trigger AI calls
+    db.insert(schema.domainLearnings)
+      .values({
+        domainId: id,
+        learningType: "llms_txt_cache",
+        insight: content,
+        dataSource: "ai_generated",
+      })
+      .run();
+
     return new NextResponse(content, {
       headers: {
         "Content-Type": "text/plain; charset=utf-8",
