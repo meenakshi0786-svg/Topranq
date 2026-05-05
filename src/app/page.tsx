@@ -685,36 +685,52 @@ export default function LandingPage() {
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-4 gap-5">
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 24 }}>
             {[
               { step: "01", title: "Enter your URL", desc: "Paste any website address and sign in with Google.", icon: "M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" },
               { step: "02", title: "We crawl", desc: "Our bots scan up to 25 pages of your site in seconds.", icon: "M22 12h-4l-3 9L9 3l-3 9H2" },
               { step: "03", title: "Get insights", desc: "47 checks, prioritized fixes, and AI-suggested blog topics.", icon: "M9 11H1l8-8 8 8h-8v10" },
               { step: "04", title: "Interlink", desc: "AI suggests internal links between your pillar and cluster articles.", icon: "M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" },
             ].map((item, i) => (
-              <div key={item.step} className="relative fade-in" style={{ animationDelay: `${i * 0.08}s` }}>
+              <div key={item.step} className="fade-in" style={{ animationDelay: `${i * 0.08}s`, position: "relative" }}>
                 <div
-                  className="p-6 rounded-2xl h-full"
                   style={{
+                    padding: "28px 24px",
+                    borderRadius: 18,
+                    height: "100%",
                     background: "var(--bg)",
                     border: "1px solid var(--border-light)",
+                    transition: "transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "translateY(-3px)";
+                    e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.06)";
+                    e.currentTarget.style.borderColor = "#c7d7fe";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow = "none";
+                    e.currentTarget.style.borderColor = "var(--border-light)";
                   }}
                 >
-                  <div className="flex items-start justify-between mb-4">
+                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20 }}>
                     <div
-                      className="w-10 h-10 rounded-lg flex items-center justify-center"
-                      style={{ background: "var(--accent-light)", color: "var(--accent)" }}
+                      style={{
+                        width: 44, height: 44, borderRadius: 12,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        background: "var(--accent-light)", color: "var(--accent)",
+                      }}
                     >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                         <path d={item.icon} />
                       </svg>
                     </div>
-                    <span className="text-xs font-bold tracking-wider" style={{ color: "var(--text-muted)" }}>
+                    <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.08em", color: "var(--text-muted)" }}>
                       {item.step}
                     </span>
                   </div>
-                  <h3 className="font-semibold text-base mb-2" style={{ color: "var(--text-primary)" }}>{item.title}</h3>
-                  <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                  <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 8, color: "var(--text-primary)", letterSpacing: "-0.01em" }}>{item.title}</h3>
+                  <p style={{ fontSize: 13.5, lineHeight: 1.65, color: "var(--text-secondary)", margin: 0 }}>
                     {item.desc}
                   </p>
                 </div>
