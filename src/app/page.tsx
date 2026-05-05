@@ -737,25 +737,24 @@ export default function LandingPage() {
       </section>
 
 
-      {/* Trust Metrics + Social Proof */}
+      {/* Just Launched + Social Proof */}
       <section style={{ background: "var(--bg-white)", borderTop: "1px solid var(--border-light)" }}>
         <div className="max-w-[1200px] mx-auto px-6 py-16">
-          {/* Metrics */}
-          <div style={{ display: "flex", justifyContent: "center", gap: 48, flexWrap: "wrap", marginBottom: 40 }}>
-            {[
-              { value: "500+", label: "Site Audits Run", icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" },
-              { value: "120+", label: "Domains Analyzed", icon: "M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9" },
-              { value: "1,200+", label: "Articles Generated", icon: "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" },
-              { value: "50+", label: "Active Users", icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" },
-            ].map((stat) => (
-              <div key={stat.label} style={{ textAlign: "center", minWidth: 120 }}>
-                <div style={{ width: 44, height: 44, borderRadius: 12, background: "var(--accent-light)", display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 10 }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d={stat.icon} /></svg>
-                </div>
-                <p style={{ fontSize: 28, fontWeight: 800, color: "var(--text-primary)", margin: "0 0 2px", letterSpacing: "-0.02em" }}>{stat.value}</p>
-                <p style={{ fontSize: 12, color: "var(--text-muted)", margin: 0 }}>{stat.label}</p>
-              </div>
-            ))}
+          {/* Just Launched banner */}
+          <div style={{ maxWidth: 720, margin: "0 auto 40px", padding: "28px 32px", borderRadius: 18, background: "linear-gradient(135deg, #f0f5ff, #f5f3ff)", border: "1px solid #c7d7fe", textAlign: "center" }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", padding: "5px 14px", borderRadius: 999, background: "#fff", color: "var(--accent)", border: "1px solid #c7d7fe", marginBottom: 16 }}>
+              <span style={{ position: "relative", display: "flex", width: 8, height: 8 }}>
+                <span style={{ position: "absolute", inset: 0, borderRadius: "50%", background: "#22c55e", opacity: 0.7, animation: "ranq-ping 1.6s cubic-bezier(0,0,.2,1) infinite" }} />
+                <span style={{ position: "relative", width: 8, height: 8, borderRadius: "50%", background: "#22c55e" }} />
+              </span>
+              Just Launched
+            </div>
+            <h3 style={{ fontSize: 22, fontWeight: 700, color: "var(--text-primary)", margin: "0 0 6px", letterSpacing: "-0.01em" }}>
+              Be one of the first to try Ranqapex
+            </h3>
+            <p style={{ fontSize: 14, color: "var(--text-secondary)", margin: 0, lineHeight: 1.6 }}>
+              We&apos;re launching today. Plans start at <strong>$1</strong>. Run your first audit free and see your site&apos;s SEO + AI readiness score in 60 seconds.
+            </p>
           </div>
 
           {/* Recently Audited Ticker */}

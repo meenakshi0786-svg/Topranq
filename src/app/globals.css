@@ -43,3 +43,5 @@
 .article-body code{background:#f3f4f6;padding:0.15rem 0.4rem;border-radius:0.25rem;font-size:0.85em;color:#7c3aed}
 .article-body pre{background:#1f2937;color:#e5e7eb;padding:1.25rem;border-radius:0.75rem;overflow-x:auto;margin:1.5rem 0;font-size:0.85rem}
 .article-body pre code{background:none;color:inherit;padding:0}
+
+@keyframes ranq-ping{75%,100%{transform:scale(2);opacity:0}}
