@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db, schema } from "@/lib/db";
 import { eq, desc } from "drizzle-orm";
-import { runPipeline } from "@/lib/agents/orchestrator";
+import { runPipeline, PLAN_LIMITS } from "@/lib/agents/orchestrator";
 
 // POST /api/domains/:id/crawl — trigger crawl
 export async function POST(
@@ -17,13 +17,18 @@ export async function POST(
     return NextResponse.json({ error: "Domain not found" }, { status: 404 });
   }
 
+  // Use the domain owner's plan to set the page limit
+  const owner = await db.query.users.findFirst({ where: eq(schema.users.id, domain.userId) });
+  const plan = (owner?.plan || "free") as keyof typeof PLAN_LIMITS;
+  const limits = PLAN_LIMITS[plan] || PLAN_LIMITS.free;
+
   const auditRunId = crypto.randomUUID();
   db.insert(schema.auditRuns)
     .values({
       id: auditRunId,
       domainId: id,
       status: "queued",
-      maxPages: 25,
+      maxPages: limits.pages,
       agentVersion: "1.0.0",
     })
     .run();

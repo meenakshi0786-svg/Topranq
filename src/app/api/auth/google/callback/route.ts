@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { google } from "googleapis";
 import { db, schema } from "@/lib/db";
 import { eq } from "drizzle-orm";
-import { runPipeline } from "@/lib/agents/orchestrator";
+import { runPipeline, PLAN_LIMITS } from "@/lib/agents/orchestrator";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://ranqapex.com";
 
@@ -103,12 +103,14 @@ export async function GET(request: NextRequest) {
             domainUrl: parsedUrl.origin,
             status: "active",
           }).run();
+          const userPlan = (user.plan || "free") as keyof typeof PLAN_LIMITS;
+          const userLimits = PLAN_LIMITS[userPlan] || PLAN_LIMITS.free;
           const auditRunId = crypto.randomUUID();
           db.insert(schema.auditRuns).values({
             id: auditRunId,
             domainId: newDomainId,
             status: "queued",
-            maxPages: 25,
+            maxPages: userLimits.pages,
             agentVersion: "1.0.0",
           }).run();
           runPipeline(newDomainId, auditRunId).catch(err => console.error("Pipeline failed:", err));

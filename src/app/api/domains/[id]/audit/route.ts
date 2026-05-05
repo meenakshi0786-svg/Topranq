@@ -53,7 +53,16 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const { runPipeline } = await import("@/lib/agents/orchestrator");
+  const { runPipeline, PLAN_LIMITS } = await import("@/lib/agents/orchestrator");
+
+  // Look up the domain owner's plan to set the correct page limit
+  const domain = await db.query.domains.findFirst({ where: eq(schema.domains.id, id) });
+  if (!domain) {
+    return NextResponse.json({ error: "Domain not found" }, { status: 404 });
+  }
+  const owner = await db.query.users.findFirst({ where: eq(schema.users.id, domain.userId) });
+  const plan = (owner?.plan || "free") as keyof typeof PLAN_LIMITS;
+  const limits = PLAN_LIMITS[plan] || PLAN_LIMITS.free;
 
   const auditRunId = crypto.randomUUID();
   db.insert(schema.auditRuns)
@@ -61,7 +70,7 @@ export async function POST(
       id: auditRunId,
       domainId: id,
       status: "queued",
-      maxPages: 50,
+      maxPages: limits.pages,
       agentVersion: "1.0.0",
     })
     .run();
