@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { CopyButton } from "@/components/copy-button";
+import { CopyHtmlButton } from "@/components/copy-html-button";
 import { PublishModal } from "@/components/publish-modal";
 import { usePageTitle } from "@/components/page-title";
 
@@ -190,6 +191,23 @@ export default function ArticleEditorPage() {
       </header>
 
       <div className="max-w-[1200px] mx-auto px-6 py-6">
+        {/* Info banner */}
+        <div style={{
+          display: "flex", alignItems: "center", gap: 12, padding: "12px 18px",
+          marginBottom: 20, borderRadius: 12,
+          background: "linear-gradient(135deg, #f0f5ff, #f5f3ff)",
+          border: "1px solid #c7d7fe",
+        }}>
+          <div style={{ flexShrink: 0, width: 32, height: 32, borderRadius: 8, background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid #c7d7fe" }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4F6EF7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
+            </svg>
+          </div>
+          <p style={{ fontSize: 13, color: "var(--text-secondary)", margin: 0, lineHeight: 1.5 }}>
+            <strong style={{ color: "var(--text-primary)" }}>Tip:</strong> Click the <strong style={{ color: "#4F6EF7" }}>Preview</strong> tab to see the publish-ready article with hero image, formatting, and embedded products. Use the copy button there to copy everything (images + product links included) into Shopify, WordPress, or any visual editor.
+          </p>
+        </div>
+
         {/* Tabs */}
         <div className="flex gap-1 mb-6 p-1 rounded-xl w-fit" style={{ background: "var(--border-light)" }}>
           {(["edit", "preview", "seo"] as const).map((tab) => (
@@ -336,8 +354,21 @@ export default function ArticleEditorPage() {
           </div>
         )}
 
-        {activeTab === "preview" && (
+        {activeTab === "preview" && (() => {
+          const heroHtml = article.featuredImageUrl
+            ? `<p><img src="${article.featuredImageUrl}" alt="${(h1 || "Featured image").replace(/"/g, "&quot;")}" style="max-width:100%;height:auto;border-radius:12px" /></p>`
+            : "";
+          const fullHtml = `${heroHtml}<h1>${(h1 || "Untitled").replace(/</g, "&lt;")}</h1>${article.bodyHtml || body.replace(/\n/g, "<br>")}`;
+          return (
           <div className="card-static p-8 max-w-3xl mx-auto fade-in">
+            {/* Sticky copy bar */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 20, padding: "12px 14px", borderRadius: 10, background: "var(--bg)", border: "1px solid var(--border-light)" }}>
+              <p style={{ fontSize: 12, color: "var(--text-muted)", margin: 0 }}>
+                Copy includes <strong style={{ color: "var(--text-primary)" }}>title, hero image, products & links</strong> — paste into Shopify, WordPress, or Google Docs.
+              </p>
+              <CopyHtmlButton html={fullHtml} plainText={`${h1}\n\n${body}`} label="Copy full article" />
+            </div>
+
             {article.featuredImageUrl && (
               <div className="mb-6 rounded-xl overflow-hidden" style={{ border: "1px solid var(--border-light)" }}>
                 <img
@@ -352,15 +383,13 @@ export default function ArticleEditorPage() {
               <h1 className="text-3xl font-bold leading-tight">{h1 || "Untitled"}</h1>
               <CopyButton text={h1} label="Copy title" />
             </div>
-            <div className="flex justify-end mb-3">
-              <CopyButton text={body} label="Copy article" />
-            </div>
             <div
               className="article-body max-w-none"
               dangerouslySetInnerHTML={{ __html: article.bodyHtml || body.replace(/\n/g, "<br>") }}
             />
           </div>
-        )}
+          );
+        })()}
 
         {activeTab === "seo" && (
           <div className="max-w-3xl mx-auto space-y-4 fade-in">
