@@ -26,6 +26,7 @@ const PLANS = [
     validity: "30 days",
     features: [
       "10 Articles",
+      "1 Domain",
       "Valid for 30 days from purchase",
       "Full site audit (25 pages)",
       "Magic Keyword Planner",
@@ -51,6 +52,7 @@ const PLANS = [
     validity: "30 days",
     features: [
       "15 Articles",
+      "3 Domains",
       "Valid for 30 days from purchase",
       "Everything in $1 Plan",
       "Full site audit (50 pages)",

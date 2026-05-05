@@ -4,9 +4,9 @@ import { CrawlerAgent } from "./crawler-agent";
 import { AuditorAgent } from "./auditor-agent";
 
 const PLAN_LIMITS = {
-  free: { credits: 100, pages: 25, articles: 0, domains: 20, model: "sonnet" },
-  dollar1: { credits: 100, pages: 25, articles: 10, domains: 5, model: "sonnet" },
-  dollar5: { credits: 200, pages: 50, articles: 15, domains: 5, model: "opus" },
+  free: { credits: 100, pages: 25, articles: 0, domains: 1, model: "sonnet" },
+  dollar1: { credits: 100, pages: 25, articles: 10, domains: 1, model: "sonnet" },
+  dollar5: { credits: 200, pages: 50, articles: 15, domains: 3, model: "opus" },
   // Legacy plans
   starter: { credits: 25, pages: 100, articles: 10, domains: 1, model: "sonnet" },
   growth: { credits: 75, pages: 500, articles: 30, domains: 3, model: "sonnet" },
