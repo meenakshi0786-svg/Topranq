@@ -324,6 +324,18 @@ export const agentJobs = sqliteTable("agent_jobs", {
   completedAt: text("completed_at"),
 });
 
+// ── Visitor logs (analytics) ─────────────────────────────────────────
+export const visitorLogs = sqliteTable("visitor_logs", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  sessionId: text("session_id").notNull(),
+  path: text("path").notNull(),
+  country: text("country"),
+  city: text("city"),
+  referer: text("referer"),
+  userAgent: text("user_agent"),
+  createdAt: text("created_at").default(sql`(datetime('now'))`),
+});
+
 // ── Type exports ─────────────────────────────────────────────────────
 export type User = typeof users.$inferSelect;
 export type Domain = typeof domains.$inferSelect;

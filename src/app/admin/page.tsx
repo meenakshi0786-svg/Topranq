@@ -31,6 +31,22 @@ interface Summary {
   totalArticles: number;
 }
 
+interface VisitorData {
+  summary: {
+    liveNow: number;
+    pageViewsToday: number;
+    pageViews7d: number;
+    pageViews30d: number;
+    uniqueToday: number;
+    unique7d: number;
+    unique30d: number;
+  };
+  topCountries: { country: string | null; count: number }[];
+  topPages: { path: string; count: number }[];
+  topReferers: { referer: string; count: number }[];
+  dailyTrend: { day: string; pageviews: number; visitors: number }[];
+}
+
 const PLAN_LABEL: Record<string, string> = { free: "Free", dollar1: "$1", dollar5: "$5" };
 const PLAN_COLOR: Record<string, { bg: string; text: string }> = {
   free: { bg: "#f3f4f6", text: "#6b7280" },
@@ -42,6 +58,7 @@ export default function AdminPage() {
   const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
   const [summary, setSummary] = useState<Summary | null>(null);
+  const [visitorData, setVisitorData] = useState<VisitorData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "free" | "dollar1" | "dollar5">("all");
@@ -52,19 +69,26 @@ export default function AdminPage() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/users");
-      if (res.status === 403) {
+      const [uRes, vRes] = await Promise.all([
+        fetch("/api/admin/users"),
+        fetch("/api/admin/visitors"),
+      ]);
+      if (uRes.status === 403 || vRes.status === 403) {
         router.replace("/dashboard");
         return;
       }
-      if (!res.ok) {
+      if (!uRes.ok) {
         setError("Failed to load admin data");
         setLoading(false);
         return;
       }
-      const data = await res.json();
-      setUsers(data.users);
-      setSummary(data.summary);
+      const uData = await uRes.json();
+      setUsers(uData.users);
+      setSummary(uData.summary);
+      if (vRes.ok) {
+        const vData = await vRes.json();
+        setVisitorData(vData);
+      }
     } catch {
       setError("Network error");
     } finally {
@@ -167,6 +191,45 @@ export default function AdminPage() {
                 <Stat label="Articles Generated" value={summary.totalArticles} icon="article" />
               </div>
             )}
+
+            {/* Visitor Analytics */}
+            {visitorData && (
+              <section style={{ marginBottom: 40 }}>
+                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 14 }}>
+                  <h2 style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>
+                    Site Traffic
+                  </h2>
+                  {visitorData.summary.liveNow > 0 && (
+                    <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, color: "#16a34a" }}>
+                      <span style={{ position: "relative", display: "flex", width: 8, height: 8 }}>
+                        <span style={{ position: "absolute", inset: 0, borderRadius: "50%", background: "#22c55e", opacity: 0.7, animation: "ranq-ping 1.6s cubic-bezier(0,0,.2,1) infinite" }} />
+                        <span style={{ position: "relative", width: 8, height: 8, borderRadius: "50%", background: "#22c55e" }} />
+                      </span>
+                      {visitorData.summary.liveNow} active now
+                    </div>
+                  )}
+                </div>
+
+                {/* Visitor stat cards */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 16 }}>
+                  <Stat label="Visitors Today" value={visitorData.summary.uniqueToday} icon="users" color="#4F6EF7" />
+                  <Stat label="Page Views Today" value={visitorData.summary.pageViewsToday} icon="users" />
+                  <Stat label="Visitors (7d)" value={visitorData.summary.unique7d} icon="users" />
+                  <Stat label="Visitors (30d)" value={visitorData.summary.unique30d} icon="users" />
+                </div>
+
+                {/* Top countries / pages / referrers */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
+                  <RankList title="Top Countries" emptyMsg="No country data yet" items={visitorData.topCountries.map(r => ({ label: r.country || "Unknown", count: r.count }))} />
+                  <RankList title="Top Pages" emptyMsg="No page views yet" items={visitorData.topPages.map(r => ({ label: r.path, count: r.count }))} />
+                  <RankList title="Top Referrers" emptyMsg="Mostly direct traffic" items={visitorData.topReferers.map(r => ({ label: r.referer, count: r.count }))} />
+                </div>
+              </section>
+            )}
+
+            <div style={{ display: "flex", alignItems: "baseline", marginBottom: 14 }}>
+              <h2 style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>Users</h2>
+            </div>
 
             {/* Filter bar */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 16, flexWrap: "wrap" }}>
@@ -324,6 +387,32 @@ function Stat({ label, value, color = "var(--text-primary)" }: { label: string; 
     <div style={{ background: "#fff", border: "1px solid var(--border-light)", borderRadius: 12, padding: "16px 20px" }}>
       <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)", margin: "0 0 6px" }}>{label}</p>
       <p style={{ fontSize: 24, fontWeight: 800, color, margin: 0, letterSpacing: "-0.02em" }}>{value}</p>
+    </div>
+  );
+}
+
+function RankList({ title, items, emptyMsg }: { title: string; items: { label: string; count: number }[]; emptyMsg: string }) {
+  const max = items.reduce((m, i) => Math.max(m, i.count), 0) || 1;
+  return (
+    <div style={{ background: "#fff", border: "1px solid var(--border-light)", borderRadius: 12, padding: 18 }}>
+      <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)", margin: "0 0 12px" }}>{title}</p>
+      {items.length === 0 ? (
+        <p style={{ fontSize: 12, color: "var(--text-muted)", margin: 0, padding: "12px 0" }}>{emptyMsg}</p>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {items.slice(0, 6).map((item, i) => (
+            <div key={i} style={{ position: "relative" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 12, marginBottom: 4 }}>
+                <span style={{ color: "var(--text-primary)", fontWeight: 500, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.label}</span>
+                <span style={{ color: "var(--text-muted)", fontWeight: 600, marginLeft: 8 }}>{item.count}</span>
+              </div>
+              <div style={{ width: "100%", height: 4, borderRadius: 2, background: "var(--border-light)" }}>
+                <div style={{ width: `${(item.count / max) * 100}%`, height: 4, borderRadius: 2, background: "linear-gradient(90deg, #4F6EF7, #7C5CFC)" }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
