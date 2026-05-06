@@ -34,7 +34,7 @@ export async function PATCH(
   const planPurchasedAt = plan === "free" ? null : new Date().toISOString();
 
   db.update(schema.users)
-    .set({ plan, planPurchasedAt })
+    .set({ plan: plan as Plan, planPurchasedAt })
     .where(eq(schema.users.id, id))
     .run();
 
