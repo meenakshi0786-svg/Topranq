@@ -281,7 +281,7 @@ export default function DomainOverview() {
                 Unlock full potential
               </p>
               <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                You&apos;re on the Free plan (25 pages, 3 articles/mo). Upgrade to crawl up to 2,000 pages and publish 100 articles.
+                You&apos;re on the Free plan — audit + keyword planning only. Upgrade to $1 for 10 AI articles, or $5 for 15 articles with the premium Opus model + 50-page crawls.
               </p>
             </div>
             <Link href="/pricing" className="px-4 py-2 rounded-xl text-xs font-semibold text-white shrink-0" style={{ background: "var(--accent)" }}>
