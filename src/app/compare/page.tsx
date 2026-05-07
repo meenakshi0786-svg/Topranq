@@ -11,9 +11,6 @@ const features = [
   { category: "Site Audit", feature: "Per-page analysis with fix suggestions", ranqapex: true, surfer: true, jasper: false, frase: false },
   { category: "Site Audit", feature: "AI Readiness Score (GEO)", ranqapex: true, surfer: false, jasper: false, frase: false },
   { category: "GEO", feature: "llms.txt generator", ranqapex: true, surfer: false, jasper: false, frase: false },
-  { category: "GEO", feature: "AI Citation Snippets", ranqapex: true, surfer: false, jasper: false, frase: false },
-  { category: "GEO", feature: "Entity Map (JSON-LD)", ranqapex: true, surfer: false, jasper: false, frase: false },
-  { category: "GEO", feature: "AI crawler detection", ranqapex: true, surfer: false, jasper: false, frase: false },
   { category: "Content", feature: "AI article generation", ranqapex: true, surfer: true, jasper: true, frase: true },
   { category: "Content", feature: "Pillar & Cluster strategy", ranqapex: true, surfer: false, jasper: false, frase: true },
   { category: "Content", feature: "SERP-based content briefs", ranqapex: true, surfer: true, jasper: false, frase: true },
@@ -127,7 +124,7 @@ export default function ComparePage() {
           <p style={{ fontSize: 13, color: "#444", lineHeight: 1.7, margin: 0 }}>
             Ranqapex is the only tool that combines traditional SEO (audits, keyword research, content generation) with
             Generative Engine Optimization (GEO) — helping your site get cited by ChatGPT, Perplexity, and Google AI Overviews.
-            No other tool generates llms.txt, entity maps, or AI citation snippets. And it starts at $1 instead of $49-99/mo.
+            No other tool generates llms.txt for your site. And it starts at $1 instead of $49-99/mo.
           </p>
         </div>
 

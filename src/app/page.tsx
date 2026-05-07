@@ -99,7 +99,7 @@ export default function LandingPage() {
       {
         "@type": "Question",
         name: "What is Generative Engine Optimization (GEO)?",
-        acceptedAnswer: { "@type": "Answer", text: "GEO is the practice of optimizing your website for AI search engines like ChatGPT, Perplexity, Claude, and Google AI Overviews. Ranqapex generates llms.txt, entity maps, and AI citation snippets to help AI models accurately understand and cite your content." },
+        acceptedAnswer: { "@type": "Answer", text: "GEO is the practice of optimizing your website for AI search engines like ChatGPT, Perplexity, Claude, and Google AI Overviews. Ranqapex generates an optimized llms.txt file to help AI models accurately understand and cite your content." },
       },
       {
         "@type": "Question",
@@ -109,7 +109,7 @@ export default function LandingPage() {
       {
         "@type": "Question",
         name: "How is Ranqapex different from SurferSEO or Jasper?",
-        acceptedAnswer: { "@type": "Answer", text: "Ranqapex combines technical SEO audits, keyword research, and AI article generation in a single tool, plus exclusive GEO features (llms.txt, entity maps, citation snippets) that competitors don't offer. Pricing starts at $1 vs $49-99/month for SurferSEO, Jasper, and Frase." },
+        acceptedAnswer: { "@type": "Answer", text: "Ranqapex combines technical SEO audits, keyword research, and AI article generation in a single tool, plus an exclusive GEO feature (llms.txt generator) that competitors don't offer. Pricing starts at $1 vs $49-99/month for SurferSEO, Jasper, and Frase." },
       },
     ],
   };
@@ -194,7 +194,7 @@ export default function LandingPage() {
               style={{ color: "var(--text-primary)" }}
             >
               Audit, fix, and publish<br />
-              <RotatingText words={["SEO content", "AI articles", "pillar strategies", "GEO assets", "citation snippets"]} /> — on autopilot
+              <RotatingText words={["SEO content", "AI articles", "pillar strategies", "llms.txt files"]} /> — on autopilot
             </h1>
             <p className="text-base md:text-lg mb-8 max-w-xl mx-auto leading-relaxed" style={{ color: "var(--text-secondary)" }}>
               Enter your URL, sign in with Google, and we&rsquo;ll crawl your site, find content gaps, and generate SEO-optimized articles.
@@ -451,7 +451,7 @@ export default function LandingPage() {
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold mb-4" style={{ background: "#f9731615", color: "#f97316" }}>Step 4</div>
                 <h3 className="text-xl font-bold mb-2" style={{ color: "var(--text-primary)" }}>GEO optimization + interlinking</h3>
                 <p className="text-sm mb-4" style={{ color: "var(--text-secondary)", lineHeight: 1.7 }}>
-                  Get cited by ChatGPT, Claude, and Perplexity. Download llms.txt, entity maps, and citation snippets. AI suggests internal links between your articles automatically.
+                  Get cited by ChatGPT, Claude, and Perplexity. Download an optimized llms.txt for your site. AI suggests internal links between your articles automatically.
                 </p>
                 <div className="flex items-center gap-4 text-xs" style={{ color: "var(--text-muted)" }}>
                   <span className="flex items-center gap-1"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg> 4 GEO assets</span>
@@ -520,7 +520,7 @@ export default function LandingPage() {
             <BigFeatureCard
               imageUrl=""
               title="GEO Optimization"
-              desc="AI Readiness Score, llms.txt, entity maps, citation snippets. Get cited by ChatGPT, Claude, and Perplexity."
+              desc="AI Readiness Score and llms.txt generator. Get cited by ChatGPT, Claude, and Perplexity."
               tag="GEO"
               icon="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
               gradient="linear-gradient(135deg, #7C5CFC20, #4F6EF710)"

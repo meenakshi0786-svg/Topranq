@@ -23,8 +23,6 @@ const features: Array<{
   // GEO assets
   { category: "GEO Assets", feature: "llms.txt generator", ranqapex: true, peec: false, vizby: true },
   { category: "GEO Assets", feature: "Frequent llms.txt updates", ranqapex: "1 / domain", peec: false, vizby: "30 / month" },
-  { category: "GEO Assets", feature: "AI citation snippets", ranqapex: true, peec: false, vizby: false },
-  { category: "GEO Assets", feature: "Entity map (JSON-LD)", ranqapex: true, peec: false, vizby: false },
 
   // Visibility tracking
   { category: "Visibility Tracking", feature: "Brand mention tracking in ChatGPT/Gemini/Perplexity", ranqapex: false, peec: true, vizby: true },
