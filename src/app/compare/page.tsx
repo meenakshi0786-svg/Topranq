@@ -61,9 +61,12 @@ export default function ComparePage() {
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-3" style={{ color: "var(--text-primary)" }}>
             Ranqapex vs Top SEO Tools
           </h1>
-          <p className="text-base" style={{ color: "var(--text-secondary)" }}>
+          <p className="text-base mb-4" style={{ color: "var(--text-secondary)" }}>
             How Ranqapex compares to SurferSEO, Jasper, and Frase in 2026
           </p>
+          <Link href="/compare/geo" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600, color: "var(--accent)", textDecoration: "none" }}>
+            Looking for GEO tools? Compare Ranqapex vs Peec AI vs Vizby →
+          </Link>
         </div>
 
         {/* Score summary */}
