@@ -40,6 +40,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const path = (body.path as string || "/").slice(0, 500);
     const sessionId = (body.sessionId as string || "").slice(0, 100);
+    const visitorId = (body.visitorId as string || "").slice(0, 100) || null;
     const referer = (body.referer as string || "").slice(0, 500);
     if (!sessionId || !path) {
       return NextResponse.json({ ok: false }, { status: 400 });
@@ -63,6 +64,7 @@ export async function POST(request: NextRequest) {
 
     db.insert(schema.visitorLogs)
       .values({
+        visitorId,
         sessionId,
         path,
         country: country || null,

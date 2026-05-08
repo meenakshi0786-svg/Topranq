@@ -3,13 +3,11 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 
-function getOrCreateSessionId(): string {
-  if (typeof window === "undefined") return "";
-  const KEY = "ranq_session_id";
-  let id = sessionStorage.getItem(KEY);
+function getOrCreate(key: string, storage: Storage): string {
+  let id = storage.getItem(key);
   if (!id) {
     id = crypto.randomUUID();
-    sessionStorage.setItem(KEY, id);
+    storage.setItem(key, id);
   }
   return id;
 }
@@ -19,15 +17,19 @@ export function VisitorTracker() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    // Skip admin/api paths
     if (pathname.startsWith("/admin") || pathname.startsWith("/api/")) return;
 
-    const sessionId = getOrCreateSessionId();
+    // Persistent visitor ID (across sessions, days, weeks)
+    const visitorId = getOrCreate("ranq_visitor_id", localStorage);
+    // Per-browser-session ID (cleared when browser closes)
+    const sessionId = getOrCreate("ranq_session_id", sessionStorage);
+
     fetch("/api/track-visit", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         path: pathname,
+        visitorId,
         sessionId,
         referer: document.referrer || "",
       }),

@@ -138,6 +138,7 @@ if (!tables.find(t => t.name === "store_products")) {
 if (!tables.find(t => t.name === "visitor_logs")) {
   sqlite.exec(`CREATE TABLE visitor_logs (
     id TEXT PRIMARY KEY NOT NULL,
+    visitor_id TEXT,
     session_id TEXT NOT NULL,
     path TEXT NOT NULL,
     country TEXT,
@@ -148,7 +149,15 @@ if (!tables.find(t => t.name === "visitor_logs")) {
   )`);
   sqlite.exec(`CREATE INDEX idx_visitor_logs_created_at ON visitor_logs(created_at)`);
   sqlite.exec(`CREATE INDEX idx_visitor_logs_session ON visitor_logs(session_id)`);
+  sqlite.exec(`CREATE INDEX idx_visitor_logs_visitor ON visitor_logs(visitor_id)`);
   console.log("  + visitor_logs table");
+} else {
+  // Add visitor_id column if missing (for existing installations)
+  addColumnIfMissing("visitor_logs", "visitor_id", "TEXT");
+  const visitorLogIndexes = sqlite.prepare(`PRAGMA index_list(visitor_logs)`).all() as { name: string }[];
+  if (!visitorLogIndexes.find(i => i.name === "idx_visitor_logs_visitor")) {
+    sqlite.exec(`CREATE INDEX idx_visitor_logs_visitor ON visitor_logs(visitor_id)`);
+  }
 }
 
 console.log("Migration complete.");

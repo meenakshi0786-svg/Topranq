@@ -327,7 +327,8 @@ export const agentJobs = sqliteTable("agent_jobs", {
 // ── Visitor logs (analytics) ─────────────────────────────────────────
 export const visitorLogs = sqliteTable("visitor_logs", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
-  sessionId: text("session_id").notNull(),
+  visitorId: text("visitor_id"), // long-lived (localStorage) — same across sessions
+  sessionId: text("session_id").notNull(), // per-browser-session (sessionStorage)
   path: text("path").notNull(),
   country: text("country"),
   city: text("city"),
