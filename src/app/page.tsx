@@ -7,7 +7,7 @@ import { Logo } from "@/components/logo";
 import { SiteFooter } from "@/components/site-footer";
 import { NewsletterSignup } from "@/components/newsletter-signup";
 import { AsFeaturedOn } from "@/components/as-featured-on";
-import { DemoVideo } from "@/components/demo-video";
+import { AnimatedDemo } from "@/components/animated-demo";
 
 export default function LandingPage() {
   const [url, setUrl] = useState("");
@@ -681,8 +681,8 @@ export default function LandingPage() {
       {/* Listed on (As Featured On) */}
       <AsFeaturedOn />
 
-      {/* Demo Video */}
-      <DemoVideo />
+      {/* Animated workflow demo */}
+      <AnimatedDemo />
 
       {/* How it works */}
       <section id="how-it-works" style={{ background: "var(--bg-white)", borderTop: "1px solid var(--border-light)" }}>
