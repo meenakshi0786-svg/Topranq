@@ -13,7 +13,12 @@ export async function GET() {
   // Time windows
   const now = Date.now();
   const isoFromMsAgo = (ms: number) => new Date(now - ms).toISOString().replace("T", " ").slice(0, 19);
-  const last24h = isoFromMsAgo(24 * 60 * 60 * 1000);
+  // "Today" means since 00:00 UTC today (calendar day), not a rolling 24h window.
+  const startOfToday = (() => {
+    const d = new Date();
+    d.setUTCHours(0, 0, 0, 0);
+    return d.toISOString().replace("T", " ").slice(0, 19);
+  })();
   const last7d = isoFromMsAgo(7 * 24 * 60 * 60 * 1000);
   const last30d = isoFromMsAgo(30 * 24 * 60 * 60 * 1000);
   const last5min = isoFromMsAgo(5 * 60 * 1000);
@@ -22,7 +27,7 @@ export async function GET() {
   const pageViewsToday = db
     .select({ c: sql<number>`count(*)` })
     .from(schema.visitorLogs)
-    .where(gte(schema.visitorLogs.createdAt, last24h))
+    .where(gte(schema.visitorLogs.createdAt, startOfToday))
     .get()?.c || 0;
 
   const pageViews7d = db
@@ -41,7 +46,7 @@ export async function GET() {
   const uniqueToday = db
     .select({ c: sql<number>`count(distinct session_id)` })
     .from(schema.visitorLogs)
-    .where(gte(schema.visitorLogs.createdAt, last24h))
+    .where(gte(schema.visitorLogs.createdAt, startOfToday))
     .get()?.c || 0;
 
   const unique7d = db
