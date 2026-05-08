@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { SiteFooter } from "@/components/site-footer";
+import { NewsletterSignup } from "@/components/newsletter-signup";
+import { AsFeaturedOn } from "@/components/as-featured-on";
+import { DemoVideo } from "@/components/demo-video";
 
 export default function LandingPage() {
   const [url, setUrl] = useState("");
@@ -675,6 +678,12 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Listed on (As Featured On) */}
+      <AsFeaturedOn />
+
+      {/* Demo Video */}
+      <DemoVideo />
+
       {/* How it works */}
       <section id="how-it-works" style={{ background: "var(--bg-white)", borderTop: "1px solid var(--border-light)" }}>
         <div className="max-w-[1200px] mx-auto px-6 py-20">
@@ -887,6 +896,22 @@ export default function LandingPage() {
               </div>
             </div>
           </form>
+        </div>
+      </section>
+
+      {/* Newsletter signup */}
+      <section style={{ background: "linear-gradient(135deg, #f0f5ff, #f5f3ff)", borderTop: "1px solid var(--border-light)", borderBottom: "1px solid var(--border-light)" }}>
+        <div style={{ maxWidth: 720, margin: "0 auto", padding: "64px 24px", textAlign: "center" }}>
+          <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--accent)", marginBottom: 12 }}>
+            Newsletter
+          </p>
+          <h2 style={{ fontSize: 28, fontWeight: 800, letterSpacing: "-0.02em", color: "var(--text-primary)", margin: "0 0 12px" }}>
+            Stay ahead of AI search
+          </h2>
+          <p style={{ fontSize: 15, color: "var(--text-secondary)", marginBottom: 24, lineHeight: 1.6 }}>
+            One email per week. What ChatGPT is citing, GEO updates, and one practical tip you can ship today.
+          </p>
+          <NewsletterSignup source="landing-bottom" />
         </div>
       </section>
 

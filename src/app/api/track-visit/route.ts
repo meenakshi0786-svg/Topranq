@@ -42,6 +42,9 @@ export async function POST(request: NextRequest) {
     const sessionId = (body.sessionId as string || "").slice(0, 100);
     const visitorId = (body.visitorId as string || "").slice(0, 100) || null;
     const referer = (body.referer as string || "").slice(0, 500);
+    const utmSource = (body.utmSource as string || "").slice(0, 100) || null;
+    const utmMedium = (body.utmMedium as string || "").slice(0, 100) || null;
+    const utmCampaign = (body.utmCampaign as string || "").slice(0, 200) || null;
     if (!sessionId || !path) {
       return NextResponse.json({ ok: false }, { status: 400 });
     }
@@ -71,6 +74,9 @@ export async function POST(request: NextRequest) {
         city: city || null,
         referer: referer || null,
         userAgent: userAgent || null,
+        utmSource,
+        utmMedium,
+        utmCampaign,
       })
       .run();
 

@@ -145,6 +145,9 @@ if (!tables.find(t => t.name === "visitor_logs")) {
     city TEXT,
     referer TEXT,
     user_agent TEXT,
+    utm_source TEXT,
+    utm_medium TEXT,
+    utm_campaign TEXT,
     created_at TEXT DEFAULT (datetime('now'))
   )`);
   sqlite.exec(`CREATE INDEX idx_visitor_logs_created_at ON visitor_logs(created_at)`);
@@ -152,12 +155,23 @@ if (!tables.find(t => t.name === "visitor_logs")) {
   sqlite.exec(`CREATE INDEX idx_visitor_logs_visitor ON visitor_logs(visitor_id)`);
   console.log("  + visitor_logs table");
 } else {
-  // Add visitor_id column if missing (for existing installations)
   addColumnIfMissing("visitor_logs", "visitor_id", "TEXT");
+  addColumnIfMissing("visitor_logs", "utm_source", "TEXT");
+  addColumnIfMissing("visitor_logs", "utm_medium", "TEXT");
+  addColumnIfMissing("visitor_logs", "utm_campaign", "TEXT");
   const visitorLogIndexes = sqlite.prepare(`PRAGMA index_list(visitor_logs)`).all() as { name: string }[];
   if (!visitorLogIndexes.find(i => i.name === "idx_visitor_logs_visitor")) {
     sqlite.exec(`CREATE INDEX idx_visitor_logs_visitor ON visitor_logs(visitor_id)`);
   }
+}
+if (!tables.find(t => t.name === "newsletter_subscribers")) {
+  sqlite.exec(`CREATE TABLE newsletter_subscribers (
+    id TEXT PRIMARY KEY NOT NULL,
+    email TEXT NOT NULL UNIQUE,
+    source TEXT,
+    created_at TEXT DEFAULT (datetime('now'))
+  )`);
+  console.log("  + newsletter_subscribers table");
 }
 
 console.log("Migration complete.");

@@ -327,13 +327,23 @@ export const agentJobs = sqliteTable("agent_jobs", {
 // ── Visitor logs (analytics) ─────────────────────────────────────────
 export const visitorLogs = sqliteTable("visitor_logs", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
-  visitorId: text("visitor_id"), // long-lived (localStorage) — same across sessions
-  sessionId: text("session_id").notNull(), // per-browser-session (sessionStorage)
+  visitorId: text("visitor_id"),
+  sessionId: text("session_id").notNull(),
   path: text("path").notNull(),
   country: text("country"),
   city: text("city"),
   referer: text("referer"),
   userAgent: text("user_agent"),
+  utmSource: text("utm_source"),
+  utmMedium: text("utm_medium"),
+  utmCampaign: text("utm_campaign"),
+  createdAt: text("created_at").default(sql`(datetime('now'))`),
+});
+
+export const newsletterSubscribers = sqliteTable("newsletter_subscribers", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  email: text("email").notNull().unique(),
+  source: text("source"),
   createdAt: text("created_at").default(sql`(datetime('now'))`),
 });
 

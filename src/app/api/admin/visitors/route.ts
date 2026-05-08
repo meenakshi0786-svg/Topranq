@@ -151,6 +151,28 @@ export async function GET() {
     .slice(0, 10)
     .map(r => ({ referer: r.host, count: r.count }));
 
+  // ── Top UTM sources (last 30d) ─────────────────────────
+  const topUtmSources = db.select({
+    utmSource: schema.visitorLogs.utmSource,
+    count: sql<number>`count(distinct coalesce(visitor_id, session_id))`,
+  }).from(schema.visitorLogs)
+    .where(gte(schema.visitorLogs.createdAt, last30d))
+    .groupBy(schema.visitorLogs.utmSource)
+    .orderBy(desc(sql`count(distinct coalesce(visitor_id, session_id))`))
+    .all()
+    .filter(r => r.utmSource && r.utmSource.length > 0)
+    .slice(0, 10)
+    .map(r => ({ source: r.utmSource as string, count: r.count }));
+
+  // ── Newsletter signups count ───────────────────────────
+  const newsletterTotal = db.select({ c: sql<number>`count(*)` })
+    .from(schema.newsletterSubscribers)
+    .get()?.c || 0;
+  const newsletter30d = db.select({ c: sql<number>`count(*)` })
+    .from(schema.newsletterSubscribers)
+    .where(gte(schema.newsletterSubscribers.createdAt, last30d))
+    .get()?.c || 0;
+
   // ── Daily trend (last 14 days) ─────────────────────────
   const dailyTrend = db.select({
     day: sql<string>`substr(created_at, 1, 10)`,
@@ -175,6 +197,8 @@ export async function GET() {
     topCountries,
     topPages,
     topReferers,
+    topUtmSources,
+    newsletter: { total: newsletterTotal, recent30d: newsletter30d },
     dailyTrend,
   });
 }

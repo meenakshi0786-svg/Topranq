@@ -52,6 +52,8 @@ interface VisitorData {
   topCountries: { country: string | null; count: number }[];
   topPages: { path: string; count: number }[];
   topReferers: { referer: string; count: number }[];
+  topUtmSources: { source: string; count: number }[];
+  newsletter: { total: number; recent30d: number };
   dailyTrend: { day: string; pageviews: number; visitors: number }[];
 }
 
@@ -269,9 +271,29 @@ export default function AdminPage() {
                 </div>
 
                 {/* Visit frequency + Exit pages */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
                   <FrequencyCard frequency={visitorData.frequency} />
                   <RankList title="Top Exit Pages (30d)" emptyMsg="No exit data yet" items={visitorData.exitPages.map(r => ({ label: r.path, count: r.count }))} />
+                </div>
+
+                {/* UTM sources + Newsletter */}
+                <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16 }}>
+                  <RankList
+                    title="Top UTM Sources (30d)"
+                    emptyMsg="No tagged visits yet — tag your campaigns with ?utm_source=..."
+                    items={visitorData.topUtmSources.map(r => ({ label: r.source, count: r.count }))}
+                  />
+                  <div style={{ background: "#fff", border: "1px solid var(--border-light)", borderRadius: 12, padding: 18 }}>
+                    <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)", margin: "0 0 12px" }}>
+                      Newsletter Subscribers
+                    </p>
+                    <p style={{ fontSize: 28, fontWeight: 800, color: "var(--text-primary)", margin: "0 0 6px", letterSpacing: "-0.02em" }}>
+                      {visitorData.newsletter.total}
+                    </p>
+                    <p style={{ fontSize: 12, color: "var(--text-muted)", margin: 0 }}>
+                      total · <strong style={{ color: "#16a34a" }}>+{visitorData.newsletter.recent30d}</strong> in last 30d
+                    </p>
+                  </div>
                 </div>
               </section>
             )}

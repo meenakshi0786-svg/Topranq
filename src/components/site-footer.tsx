@@ -39,6 +39,9 @@ export function SiteFooter() {
             <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 8 }}>
               <li><Link href="/blog" style={linkStyle}>Blog</Link></li>
               <li><Link href="/sample-article" style={linkStyle}>Sample Article</Link></li>
+              <li><Link href="/alternatives/surferseo" style={linkStyle}>vs SurferSEO</Link></li>
+              <li><Link href="/alternatives/jasper" style={linkStyle}>vs Jasper</Link></li>
+              <li><Link href="/alternatives/frase" style={linkStyle}>vs Frase</Link></li>
               <li><a href="https://t.me/+zoz0403pg_45NTFl" target="_blank" rel="noopener noreferrer" style={linkStyle}>Telegram</a></li>
               <li><a href="mailto:ranqapexcontact@gmail.com" style={linkStyle}>Contact</a></li>
             </ul>
