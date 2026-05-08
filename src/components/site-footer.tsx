@@ -11,11 +11,8 @@ export function SiteFooter() {
         <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr 1fr", gap: 32, marginBottom: 32 }}>
           {/* Brand column */}
           <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+            <div style={{ marginBottom: 12 }}>
               <Logo size={28} />
-              <span style={{ fontSize: 16, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.03em" }}>
-                Ranqapex
-              </span>
             </div>
             <p style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.6, margin: 0, maxWidth: 280 }}>
               AI agents that audit, strategize, write, and publish SEO content — and get cited by ChatGPT, Perplexity, and Google AI Overviews.
