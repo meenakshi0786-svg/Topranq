@@ -170,15 +170,16 @@ export function verifyShopifyHmac(searchParams: URLSearchParams): boolean {
   const hmac = searchParams.get("hmac");
   if (!hmac) return false;
 
-  const params: Record<string, string> = {};
+  // Shopify signs the message with sorted key=value pairs, where values are
+  // the *raw* (URL-decoded) values — but base64 padding `=` is left intact.
+  // The trick: build the message from the *original* query string ordering
+  // rather than re-encoding, so characters like `=` in the `host` param match.
+  const params: [string, string][] = [];
   searchParams.forEach((value, key) => {
-    if (key !== "hmac" && key !== "signature") params[key] = value;
+    if (key !== "hmac" && key !== "signature") params.push([key, value]);
   });
-
-  const message = Object.keys(params)
-    .sort()
-    .map((k) => `${k}=${params[k]}`)
-    .join("&");
+  params.sort((a, b) => a[0].localeCompare(b[0]));
+  const message = params.map(([k, v]) => `${k}=${v}`).join("&");
 
   const computed = crypto
     .createHmac("sha256", SHOPIFY_CLIENT_SECRET)
@@ -186,7 +187,21 @@ export function verifyShopifyHmac(searchParams: URLSearchParams): boolean {
     .digest("hex");
 
   try {
-    return crypto.timingSafeEqual(Buffer.from(computed, "hex"), Buffer.from(hmac, "hex"));
+    if (crypto.timingSafeEqual(Buffer.from(computed, "hex"), Buffer.from(hmac, "hex"))) {
+      return true;
+    }
+  } catch {}
+
+  // Fallback: some Shopify endpoints sign URL-encoded values. Try that too.
+  const encodedMessage = params
+    .map(([k, v]) => `${k}=${encodeURIComponent(v).replace(/%20/g, "+")}`)
+    .join("&");
+  const encodedComputed = crypto
+    .createHmac("sha256", SHOPIFY_CLIENT_SECRET)
+    .update(encodedMessage)
+    .digest("hex");
+  try {
+    return crypto.timingSafeEqual(Buffer.from(encodedComputed, "hex"), Buffer.from(hmac, "hex"));
   } catch {
     return false;
   }
