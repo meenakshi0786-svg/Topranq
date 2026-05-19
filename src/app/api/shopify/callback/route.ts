@@ -31,9 +31,58 @@ export async function GET(request: NextRequest) {
     const accessToken = await exchangeCodeForToken(shop, code);
 
     const siteUrl = `https://${shop}`;
+
+    // Two flows:
+    //   1. "app-install" — user installed from Shopify App Store. No Ranqapex domainId yet.
+    //   2. legacy — user clicked "Connect Shopify" from within Ranqapex (has domainId).
+    if (parsed.flow === "app-install") {
+      // Store a global Shopify install record (one per shop) using domainId = "shopify-app:" prefix
+      // The merchant will link to a real Ranqapex account later from inside the embedded app.
+      const placeholderDomainId = `shopify-app:${shop}`;
+
+      const existing = db
+        .select()
+        .from(schema.connectors)
+        .where(
+          and(
+            eq(schema.connectors.platform, "shopify"),
+            eq(schema.connectors.siteUrl, siteUrl),
+          )
+        )
+        .get();
+
+      if (existing) {
+        db.update(schema.connectors)
+          .set({
+            status: "connected",
+            connectedAt: new Date().toISOString(),
+            authCredentialsEncrypted: accessToken,
+          })
+          .where(eq(schema.connectors.id, existing.id))
+          .run();
+      } else {
+        db.insert(schema.connectors)
+          .values({
+            domainId: placeholderDomainId,
+            platform: "shopify",
+            siteUrl,
+            status: "connected",
+            connectedAt: new Date().toISOString(),
+            authCredentialsEncrypted: accessToken,
+          })
+          .run();
+      }
+
+      // Redirect to embedded app
+      return NextResponse.redirect(`${APP_URL}/api/shopify/app?shop=${encodeURIComponent(shop)}`);
+    }
+
+    // Legacy flow: connect from within Ranqapex (requires existing domainId)
+    if (!parsed.domainId) {
+      return NextResponse.redirect(`${APP_URL}?error=shopify_missing_domain`);
+    }
     const domainId = parsed.domainId;
 
-    // Upsert connector
     const existing = db
       .select()
       .from(schema.connectors)
@@ -68,7 +117,6 @@ export async function GET(request: NextRequest) {
         .run();
     }
 
-    // Redirect back to review page or connectors page
     if (parsed.reviewToken) {
       return NextResponse.redirect(`${APP_URL}/review/${parsed.reviewToken}?shopify=connected`);
     }
