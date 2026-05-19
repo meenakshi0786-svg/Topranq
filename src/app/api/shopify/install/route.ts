@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
 
   // Verify HMAC if present (Shopify signs install requests from App Store)
   if (sp.get("hmac") && !verifyShopifyHmac(sp)) {
+    console.error("[shopify install] HMAC verify failed. query=", request.nextUrl.search);
     return NextResponse.json({ error: "Invalid HMAC signature" }, { status: 401 });
   }
 
