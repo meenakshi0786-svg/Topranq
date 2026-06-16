@@ -174,5 +174,51 @@ if (!tables.find(t => t.name === "newsletter_subscribers")) {
   console.log("  + newsletter_subscribers table");
 }
 
+// ── AI Visibility Tracking tables ──
+if (!tables.find(t => t.name === "visibility_prompts")) {
+  sqlite.exec(`CREATE TABLE visibility_prompts (
+    id TEXT PRIMARY KEY NOT NULL,
+    domain_id TEXT NOT NULL REFERENCES domains(id) ON DELETE CASCADE,
+    text TEXT NOT NULL,
+    source TEXT NOT NULL DEFAULT 'auto',
+    active INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT DEFAULT (datetime('now'))
+  )`);
+  sqlite.exec(`CREATE INDEX idx_visibility_prompts_domain ON visibility_prompts(domain_id)`);
+  console.log("  + visibility_prompts table");
+}
+if (!tables.find(t => t.name === "visibility_runs")) {
+  sqlite.exec(`CREATE TABLE visibility_runs (
+    id TEXT PRIMARY KEY NOT NULL,
+    domain_id TEXT NOT NULL REFERENCES domains(id) ON DELETE CASCADE,
+    status TEXT NOT NULL DEFAULT 'running',
+    overall_score REAL,
+    prompt_count INTEGER,
+    engines TEXT,
+    error_message TEXT,
+    started_at TEXT DEFAULT (datetime('now')),
+    completed_at TEXT
+  )`);
+  sqlite.exec(`CREATE INDEX idx_visibility_runs_domain ON visibility_runs(domain_id)`);
+  console.log("  + visibility_runs table");
+}
+if (!tables.find(t => t.name === "visibility_results")) {
+  sqlite.exec(`CREATE TABLE visibility_results (
+    id TEXT PRIMARY KEY NOT NULL,
+    run_id TEXT NOT NULL REFERENCES visibility_runs(id) ON DELETE CASCADE,
+    prompt_id TEXT NOT NULL,
+    prompt_text TEXT NOT NULL,
+    engine TEXT NOT NULL,
+    mentioned INTEGER NOT NULL DEFAULT 0,
+    cited INTEGER NOT NULL DEFAULT 0,
+    citation_url TEXT,
+    competitors TEXT,
+    raw_snippet TEXT,
+    created_at TEXT DEFAULT (datetime('now'))
+  )`);
+  sqlite.exec(`CREATE INDEX idx_visibility_results_run ON visibility_results(run_id)`);
+  console.log("  + visibility_results table");
+}
+
 console.log("Migration complete.");
 sqlite.close();

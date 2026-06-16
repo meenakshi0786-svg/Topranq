@@ -347,6 +347,44 @@ export const newsletterSubscribers = sqliteTable("newsletter_subscribers", {
   createdAt: text("created_at").default(sql`(datetime('now'))`),
 });
 
+// ── AI Visibility Tracking ───────────────────────────────────────────
+// Tracks whether a brand is mentioned / cited by AI search engines
+// (ChatGPT, Perplexity, Gemini, Claude) for a set of buyer questions.
+export const visibilityPrompts = sqliteTable("visibility_prompts", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  domainId: text("domain_id").notNull().references(() => domains.id, { onDelete: "cascade" }),
+  text: text("text").notNull(),
+  source: text("source", { enum: ["auto", "user"] }).notNull().default("auto"),
+  active: integer("active", { mode: "boolean" }).notNull().default(true),
+  createdAt: text("created_at").default(sql`(datetime('now'))`),
+});
+
+export const visibilityRuns = sqliteTable("visibility_runs", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  domainId: text("domain_id").notNull().references(() => domains.id, { onDelete: "cascade" }),
+  status: text("status", { enum: ["running", "complete", "failed"] }).notNull().default("running"),
+  overallScore: real("overall_score"), // 0-100
+  promptCount: integer("prompt_count"),
+  engines: text("engines"), // JSON array of engine keys queried
+  errorMessage: text("error_message"),
+  startedAt: text("started_at").default(sql`(datetime('now'))`),
+  completedAt: text("completed_at"),
+});
+
+export const visibilityResults = sqliteTable("visibility_results", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  runId: text("run_id").notNull().references(() => visibilityRuns.id, { onDelete: "cascade" }),
+  promptId: text("prompt_id").notNull(),
+  promptText: text("prompt_text").notNull(),
+  engine: text("engine").notNull(), // perplexity | chatgpt | gemini | claude
+  mentioned: integer("mentioned", { mode: "boolean" }).notNull().default(false),
+  cited: integer("cited", { mode: "boolean" }).notNull().default(false),
+  citationUrl: text("citation_url"),
+  competitors: text("competitors"), // JSON array of other cited source domains
+  rawSnippet: text("raw_snippet"),
+  createdAt: text("created_at").default(sql`(datetime('now'))`),
+});
+
 // ── Type exports ─────────────────────────────────────────────────────
 export type User = typeof users.$inferSelect;
 export type Domain = typeof domains.$inferSelect;
