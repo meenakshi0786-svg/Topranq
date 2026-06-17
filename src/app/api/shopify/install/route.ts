@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateAppInstallAuthUrl, validateShopDomain, verifyShopifyHmac, getShopAccessToken } from "@/lib/shopify";
-
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://ranqapex.com";
+import { generateAppInstallAuthUrl, validateShopDomain, verifyShopifyHmac } from "@/lib/shopify";
 
 // GET /api/shopify/install?shop=xxx.myshopify.com&...
 // Entry point when a merchant clicks "Install app" from the Shopify App Store
@@ -20,13 +18,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Invalid HMAC signature" }, { status: 401 });
   }
 
-  // If the shop is already connected, redirect to the embedded app
-  const existing = await getShopAccessToken(shop);
-  if (existing) {
-    return NextResponse.redirect(`${APP_URL}/api/shopify/app?shop=${encodeURIComponent(shop)}`);
-  }
-
-  // Otherwise begin OAuth
+  // Always (re)run OAuth so the stored token reflects the app's CURRENT scopes
+  // (write_content, read_content, read_products). Previously this short-circuited
+  // when any token already existed, which meant a reinstall never re-granted —
+  // leaving an under-scoped token that 403'd on the blog API. If the merchant has
+  // already approved these scopes, Shopify re-grants silently and redirects back.
   const authUrl = generateAppInstallAuthUrl(shop);
   return NextResponse.redirect(authUrl);
 }
