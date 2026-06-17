@@ -4,7 +4,7 @@ const SHOPIFY_CLIENT_ID = process.env.SHOPIFY_CLIENT_ID || "";
 const SHOPIFY_CLIENT_SECRET = process.env.SHOPIFY_CLIENT_SECRET || "";
 const SHOPIFY_REDIRECT_URI =
   process.env.SHOPIFY_REDIRECT_URI || "https://ranqapex.com/api/shopify/callback";
-const SHOPIFY_SCOPES = "write_content,read_content";
+const SHOPIFY_SCOPES = "write_content,read_content,read_products";
 
 export function validateShopDomain(shop: string): boolean {
   return /^[a-zA-Z0-9][a-zA-Z0-9-]*\.myshopify\.com$/.test(shop);
@@ -229,6 +229,38 @@ export async function getShopAccessToken(shop: string): Promise<{ token: string;
 
   if (!connector || !connector.authCredentialsEncrypted) return null;
   return { token: connector.authCredentialsEncrypted, domainId: connector.domainId };
+}
+
+/**
+ * Fetch a few products from a connected store via the Admin API (needs the
+ * read_products scope). Best-effort: returns [] on any failure.
+ */
+export async function fetchStoreProducts(
+  shop: string,
+  accessToken: string,
+  limit = 8,
+): Promise<Array<{ title: string; description: string; url: string; price: string | null }>> {
+  try {
+    const res = await fetch(
+      `https://${shop}/admin/api/2024-01/products.json?limit=${limit}&fields=id,title,handle,body_html,variants`,
+      { headers: { "X-Shopify-Access-Token": accessToken } },
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    const storeHandle = shop.replace(".myshopify.com", "");
+    return (data.products || []).map((p: Record<string, unknown>) => {
+      const variants = (p.variants as Array<{ price?: string }>) || [];
+      const body = typeof p.body_html === "string" ? p.body_html.replace(/<[^>]+>/g, " ").trim() : "";
+      return {
+        title: String(p.title || ""),
+        description: body.slice(0, 200),
+        url: `https://${storeHandle}.myshopify.com/products/${p.handle}`,
+        price: variants[0]?.price ? String(variants[0].price) : null,
+      };
+    });
+  } catch {
+    return [];
+  }
 }
 
 /**

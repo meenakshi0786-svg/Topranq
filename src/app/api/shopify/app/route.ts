@@ -9,7 +9,6 @@ const SHOPIFY_CLIENT_ID = process.env.SHOPIFY_CLIENT_ID || "";
 export async function GET(request: NextRequest) {
   const sp = request.nextUrl.searchParams;
   const shop = sp.get("shop") || "";
-  const host = sp.get("host") || "";
 
   if (!shop || !validateShopDomain(shop)) {
     return new NextResponse("Invalid shop parameter", { status: 400 });
@@ -28,7 +27,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${APP_URL}/api/shopify/install?shop=${encodeURIComponent(shop)}`);
   }
 
-  const html = renderAppHtml(shop, host, SHOPIFY_CLIENT_ID, APP_URL);
+  const html = renderAppHtml(shop, SHOPIFY_CLIENT_ID);
 
   return new NextResponse(html, {
     headers: {
@@ -39,13 +38,17 @@ export async function GET(request: NextRequest) {
   });
 }
 
-function renderAppHtml(shop: string, host: string, apiKey: string, appUrl: string): string {
+function renderAppHtml(shop: string, apiKey: string): string {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Ranqapex — SEO + GEO Autopilot</title>
+  <!-- App Bridge: meta tag must precede the app-bridge.js script, which must be
+       the first script on the page. App Bridge auto-attaches the session token
+       as a Bearer header to same-origin fetch requests. -->
+  <meta name="shopify-api-key" content="${apiKey}" />
   <script src="https://cdn.shopify.com/shopifycloud/app-bridge.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -178,53 +181,135 @@ function renderAppHtml(shop: string, host: string, apiKey: string, appUrl: strin
 
   <script>
     const SHOP = ${JSON.stringify(shop)};
-    const HOST = ${JSON.stringify(host)};
-    const API_KEY = ${JSON.stringify(apiKey)};
-    const APP_URL = ${JSON.stringify(appUrl)};
 
-    // Initialize Shopify App Bridge
-    if (window["app-bridge"] && HOST) {
-      window["app-bridge"].createApp({
-        apiKey: API_KEY,
-        host: HOST,
-      });
+    function alertBox(msg, kind) {
+      document.getElementById("alert-area").innerHTML =
+        '<div class="alert ' + (kind || "") + '">' + msg + '</div>';
     }
 
-    // For now, the embedded app simply asks the user to sign into Ranqapex
-    // and pick which of their Ranqapex articles to publish.
-    function render() {
+    // App Bridge auto-attaches the session token to same-origin fetches, so this
+    // call to our backend is authenticated without cookies — required for review.
+    async function loadAccount() {
+      try {
+        const res = await fetch("/api/shopify/embedded/me", { headers: { "Accept": "application/json" } });
+        if (res.status === 401) {
+          alertBox("Couldn't authenticate this session. Try reloading the app from your Shopify admin.", "error");
+          renderError();
+          return;
+        }
+        if (!res.ok) throw new Error("Request failed (" + res.status + ")");
+        const data = await res.json();
+        renderHome(data);
+      } catch (e) {
+        alertBox("Something went wrong loading your account. Please reload.", "error");
+        renderError();
+      }
+    }
+
+    function renderHome(data) {
       const content = document.getElementById("content");
       content.innerHTML = \`
-        <div class="card connect-box">
-          <h2>Connect this store to your Ranqapex account</h2>
-          <p style="margin: 8px 0 16px;">
-            You're installed! To start publishing AI-generated articles to your Shopify blog,
-            sign in to Ranqapex and link this store to a domain.
-          </p>
-          <a href="\${APP_URL}/dashboard?shopify_link=\${encodeURIComponent(SHOP)}" target="_blank" class="btn btn-primary">
-            Open Ranqapex Dashboard →
-          </a>
+        <div class="card">
+          <div class="stat-row">
+            <div class="stat"><div class="stat-value" id="stat-articles">\${data.articleCount}</div><div class="stat-label">Articles</div></div>
+            <div class="stat"><div class="stat-value" style="text-transform:capitalize;">\${data.plan}</div><div class="stat-label">Plan</div></div>
+            <div class="stat"><div class="stat-value" style="font-size:13px;word-break:break-all;">\${data.shop}</div><div class="stat-label">Store</div></div>
+          </div>
         </div>
 
         <div class="card">
-          <h2>What happens next</h2>
-          <ol style="margin: 12px 0 0 18px; color: #6b7177; font-size: 13px; line-height: 1.8;">
-            <li>Open the Ranqapex dashboard (link above) and sign in with Google</li>
-            <li>Go to your domain's "Connectors" page</li>
-            <li>You'll see this Shopify store listed as connected</li>
-            <li>Generate articles in Ranqapex, then click "Publish to Shopify" — they appear in your store's blog</li>
-          </ol>
+          <h2>AI Blog Post Generator</h2>
+          <p style="margin:8px 0 16px;">Generate an SEO + GEO-optimized article with your products woven in, then publish it to your store blog.</p>
+          <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Topic</label>
+          <input id="gen-topic" placeholder="e.g. How to choose running shoes for flat feet"
+            style="width:100%;padding:10px 12px;border:1px solid #c9cccf;border-radius:8px;font-size:14px;margin-bottom:12px;" />
+          <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Target keywords <span style="color:#8c9196;font-weight:400;">(optional, comma-separated)</span></label>
+          <input id="gen-keywords" placeholder="running shoes, flat feet, arch support"
+            style="width:100%;padding:10px 12px;border:1px solid #c9cccf;border-radius:8px;font-size:14px;margin-bottom:16px;" />
+          <button id="gen-btn" class="btn btn-primary" onclick="generate()">Generate article</button>
+          <div id="gen-result" style="margin-top:16px;"></div>
         </div>
 
         <div class="card">
-          <h2>About Ranqapex</h2>
-          <p>Ranqapex is an AI-powered SEO and GEO platform that audits your site, finds keyword opportunities, generates editorial articles with your products woven in, and creates llms.txt so ChatGPT and Perplexity can cite your content. Plans from $1.</p>
-          <a href="\${APP_URL}" target="_blank" style="display:inline-block;margin-top:10px;color:#4F6EF7;text-decoration:none;font-size:13px;font-weight:600;">Learn more at ranqapex.com →</a>
+          <h2>Your articles</h2>
+          <div id="articles-list" style="margin-top:8px;"><p style="color:#6b7177;font-size:13px;">Loading…</p></div>
         </div>
       \`;
+      loadArticles();
     }
 
-    render();
+    async function generate() {
+      const topic = document.getElementById("gen-topic").value.trim();
+      const keywords = document.getElementById("gen-keywords").value.trim();
+      const btn = document.getElementById("gen-btn");
+      const result = document.getElementById("gen-result");
+      if (!topic) { result.innerHTML = '<div class="alert error">Please enter a topic.</div>'; return; }
+      btn.disabled = true; btn.innerHTML = '<span class="loading"></span> Generating… (~30s)';
+      result.innerHTML = "";
+      try {
+        const res = await fetch("/api/shopify/embedded/generate", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ topic, keywords }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Generation failed");
+        result.innerHTML = \`
+          <div class="alert success">Generated "\${data.title}" — \${data.wordCount} words\${data.qualityScore != null ? ", quality " + data.qualityScore + "/100" : ""}\${data.usedProducts ? " · products woven in" : ""}.</div>
+          <button class="btn btn-primary" onclick="publish('\${data.articleId}', this)">Publish to store blog</button>
+        \`;
+        document.getElementById("gen-topic").value = "";
+        document.getElementById("gen-keywords").value = "";
+        loadArticles();
+      } catch (e) {
+        result.innerHTML = '<div class="alert error">' + e.message + '</div>';
+      }
+      btn.disabled = false; btn.innerHTML = "Generate article";
+    }
+
+    async function publish(articleId, btn) {
+      btn.disabled = true; btn.innerHTML = '<span class="loading"></span> Publishing…';
+      try {
+        const res = await fetch("/api/shopify/embedded/publish", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ articleId }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Publish failed");
+        btn.outerHTML = '<a class="btn btn-secondary" href="' + data.url + '" target="_blank">View published post →</a>';
+        loadArticles();
+      } catch (e) {
+        btn.disabled = false; btn.innerHTML = "Publish to store blog";
+        alertBox(e.message, "error");
+      }
+    }
+
+    async function loadArticles() {
+      try {
+        const res = await fetch("/api/shopify/embedded/articles");
+        if (!res.ok) return;
+        const rows = await res.json();
+        const el = document.getElementById("articles-list");
+        if (!el) return;
+        const statEl = document.getElementById("stat-articles");
+        if (statEl) statEl.textContent = rows.length;
+        if (!rows.length) { el.innerHTML = '<p style="color:#6b7177;font-size:13px;">No articles yet. Generate your first one above.</p>'; return; }
+        el.innerHTML = rows.map(function(a) {
+          const badgeClass = a.status === "published" ? "" : (a.status === "rejected" ? "failed" : "pending");
+          const right = a.publishedUrl
+            ? '<a href="' + a.publishedUrl + '" target="_blank" style="font-size:12px;color:#4F6EF7;text-decoration:none;font-weight:600;">View →</a>'
+            : '<button class="btn btn-secondary" style="padding:6px 12px;font-size:12px;" onclick="publish(\\'' + a.id + '\\', this)">Publish</button>';
+          return '<div class="article-row"><div class="article-info"><div class="article-title">' + a.title +
+            '</div><div class="article-meta"><span class="badge ' + badgeClass + '">' + a.status + '</span></div></div>' + right + '</div>';
+        }).join("");
+      } catch (e) { /* ignore */ }
+    }
+
+    function renderError() {
+      document.getElementById("content").innerHTML =
+        '<div class="empty"><h2 style="font-size:18px;">Unable to load</h2><p>Reopen the app from your Shopify admin.</p></div>';
+    }
+
+    loadAccount();
   </script>
 </body>
 </html>`;

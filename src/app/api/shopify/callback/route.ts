@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyAndParseState, exchangeCodeForToken } from "@/lib/shopify";
+import { getOrCreateShopAccount } from "@/lib/shopify-embedded";
 import { db, schema } from "@/lib/db";
 import { eq, and } from "drizzle-orm";
 
@@ -72,6 +73,10 @@ export async function GET(request: NextRequest) {
           })
           .run();
       }
+
+      // Provision a RanqApex account (user + domain) for this shop and point
+      // the connector at it, so the embedded app's AI features have a domain.
+      getOrCreateShopAccount(shop);
 
       // Redirect to embedded app
       return NextResponse.redirect(`${APP_URL}/api/shopify/app?shop=${encodeURIComponent(shop)}`);

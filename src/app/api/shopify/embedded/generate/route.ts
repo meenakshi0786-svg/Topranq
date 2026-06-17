@@ -1,0 +1,87 @@
+import { NextRequest, NextResponse } from "next/server";
+import { db, schema } from "@/lib/db";
+import { eq, sql } from "drizzle-orm";
+import { PLAN_LIMITS } from "@/lib/agents/orchestrator";
+import { runBlogWriter, BLOG_WRITER_CREDITS, type BlogWriterConfig } from "@/lib/agents/blog-writer-agent";
+import { getShopFromRequest, getOrCreateShopAccount } from "@/lib/shopify-embedded";
+import { getShopAccessToken, fetchStoreProducts } from "@/lib/shopify";
+
+// POST /api/shopify/embedded/generate
+// Body: { topic: string, keywords?: string }
+// Generates an AI article for the shop's domain, weaving in store products.
+export async function POST(request: NextRequest) {
+  const claims = getShopFromRequest(request);
+  if (!claims) return NextResponse.json({ error: "Invalid session token" }, { status: 401 });
+
+  const body = await request.json().catch(() => ({}));
+  const topic = (body.topic || "").trim();
+  if (!topic) return NextResponse.json({ error: "Please enter a topic." }, { status: 400 });
+  const keywords = (body.keywords || "")
+    .split(",")
+    .map((k: string) => k.trim())
+    .filter(Boolean);
+
+  const { userId, domainId } = getOrCreateShopAccount(claims.shop);
+  const user = db.select().from(schema.users).where(eq(schema.users.id, userId)).get();
+  const plan = (user?.plan || "free") as keyof typeof PLAN_LIMITS;
+  const limits = PLAN_LIMITS[plan];
+
+  // Credit gating (shared ledger). Shopify billing in Phase 2 will grant credits per plan.
+  const used = db
+    .select({ total: sql<number>`COALESCE(SUM(credits_used), 0)` })
+    .from(schema.creditLedger)
+    .where(eq(schema.creditLedger.userId, userId))
+    .get();
+  const remaining = limits.credits - (used?.total || 0);
+  if (remaining < BLOG_WRITER_CREDITS) {
+    return NextResponse.json(
+      { error: "You're out of article credits. Upgrade your plan to generate more." },
+      { status: 402 },
+    );
+  }
+
+  // Best-effort: pull store products to weave in naturally.
+  let productContext: string | undefined;
+  const connected = await getShopAccessToken(claims.shop);
+  if (connected) {
+    const products = await fetchStoreProducts(claims.shop, connected.token);
+    if (products.length) {
+      productContext = "Reference these store products naturally where relevant:\n" +
+        products.map((p) => `- ${p.title}${p.price ? ` ($${p.price})` : ""} — ${p.url}${p.description ? `: ${p.description}` : ""}`).join("\n");
+    }
+  }
+
+  const config: BlogWriterConfig = {
+    topic,
+    keywords: keywords.length ? keywords : [topic],
+    tone: "professional",
+    wordCount: 1500,
+    intent: "informational",
+    audience: "shoppers",
+    productContext,
+    preferredModel: plan === "dollar5" ? "opus" : "sonnet",
+  };
+
+  try {
+    const output = await runBlogWriter(domainId, config);
+
+    db.update(schema.articles).set({ status: "draft" }).where(eq(schema.articles.id, output.articleId)).run();
+
+    db.insert(schema.creditLedger)
+      .values({ userId, action: "blog_writer", creditsUsed: BLOG_WRITER_CREDITS, balanceAfter: remaining - BLOG_WRITER_CREDITS, agent: "shopify_embedded" })
+      .run();
+
+    return NextResponse.json({
+      articleId: output.articleId,
+      title: output.title,
+      wordCount: output.estimatedWordCount,
+      qualityScore: output.qualityChecks?.overallScore ?? null,
+      usedProducts: !!productContext,
+    });
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Generation failed" },
+      { status: 500 },
+    );
+  }
+}
