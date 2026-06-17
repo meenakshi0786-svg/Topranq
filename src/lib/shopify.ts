@@ -5,6 +5,8 @@ const SHOPIFY_CLIENT_SECRET = process.env.SHOPIFY_CLIENT_SECRET || "";
 const SHOPIFY_REDIRECT_URI =
   process.env.SHOPIFY_REDIRECT_URI || "https://ranqapex.com/api/shopify/callback";
 const SHOPIFY_SCOPES = "write_content,read_content,read_products";
+// Shopify Admin API version. Keep within Shopify's ~12-month support window.
+const SHOPIFY_API_VERSION = "2025-10";
 
 export function validateShopDomain(shop: string): boolean {
   return /^[a-zA-Z0-9][a-zA-Z0-9-]*\.myshopify\.com$/.test(shop);
@@ -242,7 +244,7 @@ export async function fetchStoreProducts(
 ): Promise<Array<{ title: string; description: string; url: string; price: string | null }>> {
   try {
     const res = await fetch(
-      `https://${shop}/admin/api/2024-01/products.json?limit=${limit}&fields=id,title,handle,body_html,variants`,
+      `https://${shop}/admin/api/${SHOPIFY_API_VERSION}/products.json?limit=${limit}&fields=id,title,handle,body_html,variants`,
       { headers: { "X-Shopify-Access-Token": accessToken } },
     );
     if (!res.ok) return [];
@@ -273,21 +275,27 @@ export async function publishArticleToShopify(
   article: { title: string; bodyHtml: string; tags?: string; featuredImageUrl?: string | null }
 ): Promise<{ url: string; id: number }> {
   // 1. Find or create a default blog
-  const blogsRes = await fetch(`https://${shop}/admin/api/2024-01/blogs.json`, {
+  const blogsRes = await fetch(`https://${shop}/admin/api/${SHOPIFY_API_VERSION}/blogs.json`, {
     headers: { "X-Shopify-Access-Token": accessToken },
   });
-  if (!blogsRes.ok) throw new Error(`Failed to list blogs: ${blogsRes.status}`);
+  if (!blogsRes.ok) {
+    const errText = await blogsRes.text().catch(() => "");
+    throw new Error(`Failed to list blogs: ${blogsRes.status} ${errText.slice(0, 300)}`);
+  }
   const blogsData = await blogsRes.json();
   let blogId: number | null = blogsData.blogs?.[0]?.id || null;
 
   // Create default blog if none exists
   if (!blogId) {
-    const createBlogRes = await fetch(`https://${shop}/admin/api/2024-01/blogs.json`, {
+    const createBlogRes = await fetch(`https://${shop}/admin/api/${SHOPIFY_API_VERSION}/blogs.json`, {
       method: "POST",
       headers: { "X-Shopify-Access-Token": accessToken, "Content-Type": "application/json" },
       body: JSON.stringify({ blog: { title: "News" } }),
     });
-    if (!createBlogRes.ok) throw new Error(`Failed to create blog: ${createBlogRes.status}`);
+    if (!createBlogRes.ok) {
+      const errText = await createBlogRes.text().catch(() => "");
+      throw new Error(`Failed to create blog: ${createBlogRes.status} ${errText.slice(0, 300)}`);
+    }
     const newBlog = await createBlogRes.json();
     blogId = newBlog.blog.id;
   }
@@ -306,7 +314,7 @@ export async function publishArticleToShopify(
   }
 
   const postRes = await fetch(
-    `https://${shop}/admin/api/2024-01/blogs/${blogId}/articles.json`,
+    `https://${shop}/admin/api/${SHOPIFY_API_VERSION}/blogs/${blogId}/articles.json`,
     {
       method: "POST",
       headers: { "X-Shopify-Access-Token": accessToken, "Content-Type": "application/json" },
