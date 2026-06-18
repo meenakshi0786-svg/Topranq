@@ -265,6 +265,20 @@ export async function fetchStoreProducts(
   }
 }
 
+/** A featured image is only usable by Shopify if it's a public http(s) URL. */
+function isPublicImageUrl(url?: string | null): boolean {
+  if (!url) return false;
+  try {
+    const u = new URL(url);
+    if (u.protocol !== "https:" && u.protocol !== "http:") return false;
+    const host = u.hostname.toLowerCase();
+    if (host === "localhost" || host.startsWith("127.") || host.endsWith(".local")) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Publish an article to a Shopify blog as a blog post.
  * Returns the published article URL on success.
@@ -300,30 +314,42 @@ export async function publishArticleToShopify(
     blogId = newBlog.blog.id;
   }
 
-  // 2. Publish article
-  const body: Record<string, unknown> = {
-    article: {
+  // 2. Publish article. Only attach the featured image if it's a public http(s)
+  // URL Shopify can fetch — and if Shopify still rejects the image, retry without
+  // it so a bad/unreachable image never blocks publishing the article.
+  const articleUrl = `https://${shop}/admin/api/${SHOPIFY_API_VERSION}/blogs/${blogId}/articles.json`;
+  const imageOk = isPublicImageUrl(article.featuredImageUrl);
+
+  const postArticle = (includeImage: boolean) => {
+    const articleBody: Record<string, unknown> = {
       title: article.title,
       body_html: article.bodyHtml,
       tags: article.tags || "",
       published: true,
-    },
-  };
-  if (article.featuredImageUrl) {
-    (body.article as Record<string, unknown>).image = { src: article.featuredImageUrl };
-  }
-
-  const postRes = await fetch(
-    `https://${shop}/admin/api/${SHOPIFY_API_VERSION}/blogs/${blogId}/articles.json`,
-    {
+    };
+    if (includeImage && article.featuredImageUrl) {
+      articleBody.image = { src: article.featuredImageUrl };
+    }
+    return fetch(articleUrl, {
       method: "POST",
       headers: { "X-Shopify-Access-Token": accessToken, "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+      body: JSON.stringify({ article: articleBody }),
+    });
+  };
+
+  let postRes = await postArticle(imageOk);
+  if (!postRes.ok && imageOk) {
+    const errText = await postRes.text().catch(() => "");
+    // If the failure is about the image, retry without it.
+    if (/image/i.test(errText)) {
+      postRes = await postArticle(false);
+    } else {
+      throw new Error(`Failed to publish: ${postRes.status} ${errText.slice(0, 300)}`);
     }
-  );
+  }
   if (!postRes.ok) {
-    const errText = await postRes.text();
-    throw new Error(`Failed to publish: ${postRes.status} ${errText}`);
+    const errText = await postRes.text().catch(() => "");
+    throw new Error(`Failed to publish: ${postRes.status} ${errText.slice(0, 300)}`);
   }
 
   const result = await postRes.json();
