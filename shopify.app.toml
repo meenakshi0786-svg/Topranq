@@ -1,0 +1,20 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "d30f51d705f71b344c5ad4c1bec35b4a"
+name = "Ranqapex Blog Publisher"
+application_url = "https://ranqapex.com/api/shopify/app"
+embedded = true
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "write_content,read_content,read_products"
+
+[auth]
+redirect_urls = [ "https://ranqapex.com/api/shopify/callback" ]
+
+[webhooks]
+api_version = "2025-10"
+
+[build]
+include_config_on_deploy = true
+automatically_update_urls_on_dev = false
