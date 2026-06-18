@@ -355,8 +355,9 @@ export async function publishArticleToShopify(
   const result = await postRes.json();
   const articleId = result.article.id;
   const handle = result.article.handle;
+  // Use the full shop domain — stripping ".myshopify.com" produces an invalid host.
   return {
     id: articleId,
-    url: `https://${shop.replace(".myshopify.com", "")}/blogs/${blogsData.blogs?.[0]?.handle || "news"}/${handle}`,
+    url: `https://${shop}/blogs/${blogsData.blogs?.[0]?.handle || "news"}/${handle}`,
   };
 }
