@@ -6,7 +6,7 @@ const SHOPIFY_REDIRECT_URI =
   process.env.SHOPIFY_REDIRECT_URI || "https://ranqapex.com/api/shopify/callback";
 const SHOPIFY_SCOPES = "write_content,read_content,read_products";
 // Shopify Admin API version. Keep within Shopify's ~12-month support window.
-const SHOPIFY_API_VERSION = "2025-10";
+export const SHOPIFY_API_VERSION = "2025-10";
 
 export function validateShopDomain(shop: string): boolean {
   return /^[a-zA-Z0-9][a-zA-Z0-9-]*\.myshopify\.com$/.test(shop);

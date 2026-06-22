@@ -43,6 +43,9 @@ public/article-images/
 *.db-wal
 *.db-shm
 
+# local runtime data (sqlite db + generated images) — never commit
+/data/
+
 # vercel
 .vercel
 

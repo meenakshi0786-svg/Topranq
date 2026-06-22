@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db, schema } from "@/lib/db";
-import { eq, sql } from "drizzle-orm";
-import { PLAN_LIMITS } from "@/lib/agents/orchestrator";
+import { eq } from "drizzle-orm";
 import { runBlogWriter, BLOG_WRITER_CREDITS, type BlogWriterConfig } from "@/lib/agents/blog-writer-agent";
-import { getShopFromRequest, getOrCreateShopAccount } from "@/lib/shopify-embedded";
+import { getShopFromRequest } from "@/lib/shopify-embedded";
 import { getShopAccessToken, fetchStoreProducts } from "@/lib/shopify";
+import { getShopBillingState } from "@/lib/shopify-billing";
 
 // POST /api/shopify/embedded/generate
 // Body: { topic: string, keywords?: string }
@@ -21,18 +21,9 @@ export async function POST(request: NextRequest) {
     .map((k: string) => k.trim())
     .filter(Boolean);
 
-  const { userId, domainId } = getOrCreateShopAccount(claims.shop);
-  const user = db.select().from(schema.users).where(eq(schema.users.id, userId)).get();
-  const plan = (user?.plan || "free") as keyof typeof PLAN_LIMITS;
-  const limits = PLAN_LIMITS[plan];
-
-  // Credit gating (shared ledger). Shopify billing in Phase 2 will grant credits per plan.
-  const used = db
-    .select({ total: sql<number>`COALESCE(SUM(credits_used), 0)` })
-    .from(schema.creditLedger)
-    .where(eq(schema.creditLedger.userId, userId))
-    .get();
-  const remaining = limits.credits - (used?.total || 0);
+  // Syncs the plan from Shopify (managed pricing) and gates on period-scoped credits,
+  // so an upgrade takes effect immediately and credits reset each billing cycle.
+  const { userId, domainId, plan, creditsRemaining: remaining } = await getShopBillingState(claims.shop);
   if (remaining < BLOG_WRITER_CREDITS) {
     return NextResponse.json(
       { error: "You're out of article credits. Upgrade your plan to generate more." },

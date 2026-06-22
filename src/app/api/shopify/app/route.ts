@@ -208,12 +208,25 @@ function renderAppHtml(shop: string, apiKey: string): string {
 
     function renderHome(data) {
       const content = document.getElementById("content");
+      const planLabels = { free: "Free", dollar1: "Starter", dollar5: "Pro" };
+      const planName = planLabels[data.plan] || data.plan;
+      const credits = data.creditsRemaining != null
+        ? data.creditsRemaining + " / " + data.creditsAllowance
+        : "—";
+      const trialNote = data.trialDaysRemaining > 0
+        ? '<span style="font-size:11px;font-weight:600;color:#166534;background:#dcfce7;padding:2px 8px;border-radius:4px;margin-left:8px;">' + data.trialDaysRemaining + '-day trial</span>'
+        : "";
+      const upgradeLabel = data.plan === "dollar5" ? "Manage plan" : "Upgrade plan";
       content.innerHTML = \`
         <div class="card">
           <div class="stat-row">
+            <div class="stat"><div class="stat-value" id="stat-credits">\${credits}</div><div class="stat-label">Credits left</div></div>
+            <div class="stat"><div class="stat-value">\${planName}\${trialNote}</div><div class="stat-label">Plan</div></div>
             <div class="stat"><div class="stat-value" id="stat-articles">\${data.articleCount}</div><div class="stat-label">Articles</div></div>
-            <div class="stat"><div class="stat-value" style="text-transform:capitalize;">\${data.plan}</div><div class="stat-label">Plan</div></div>
-            <div class="stat"><div class="stat-value" style="font-size:13px;word-break:break-all;">\${data.shop}</div><div class="stat-label">Store</div></div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:8px;flex-wrap:wrap;">
+            <p style="color:#6b7177;font-size:13px;margin:0;">Each article uses 3 credits. Credits refresh every billing cycle.</p>
+            \${data.upgradeUrl ? '<a class="btn btn-primary" href="' + data.upgradeUrl + '" target="_top">' + upgradeLabel + '</a>' : ""}
           </div>
         </div>
 
@@ -260,6 +273,7 @@ function renderAppHtml(shop: string, apiKey: string): string {
         document.getElementById("gen-topic").value = "";
         document.getElementById("gen-keywords").value = "";
         loadArticles();
+        refreshCredits();
       } catch (e) {
         result.innerHTML = '<div class="alert error">' + e.message + '</div>';
       }
@@ -281,6 +295,16 @@ function renderAppHtml(shop: string, apiKey: string): string {
         btn.disabled = false; btn.innerHTML = "Publish to store blog";
         alertBox(e.message, "error");
       }
+    }
+
+    async function refreshCredits() {
+      try {
+        const res = await fetch("/api/shopify/embedded/me", { headers: { "Accept": "application/json" } });
+        if (!res.ok) return;
+        const data = await res.json();
+        const el = document.getElementById("stat-credits");
+        if (el && data.creditsRemaining != null) el.textContent = data.creditsRemaining + " / " + data.creditsAllowance;
+      } catch (e) { /* ignore */ }
     }
 
     async function loadArticles() {
