@@ -175,3 +175,62 @@ flags → **Submit for review**. Initial review is typically **4–7 business da
 - [ ] Reviewer instructions pasted
 - [ ] Automated checks pass
 - [ ] Submitted
+
+---
+
+## 8. App support & resources (listing asks for these)
+
+**Support email** (required):
+```
+support@ranqapex.com
+```
+> ⚠️ Make sure this inbox exists and is monitored. If you haven't set it up, add a free
+> forwarding alias on your domain (e.g. forward `support@ranqapex.com` → your Gmail) before
+> submitting — reviewers and merchants will email it. If you can't set up the alias in time,
+> use your real working email instead; it just must be one you actually check.
+
+**Privacy policy URL** (required): `https://ranqapex.com/privacy`
+**Terms of service URL:** `https://ranqapex.com/terms`
+**Developer website:** `https://ranqapex.com`
+**Support / help URL** (optional): `https://ranqapex.com` (or a dedicated help page if you build one)
+**Demo store URL** (optional): leave blank, or provide a store where the app is visibly used.
+
+---
+
+## 9. FAQ — paste into the listing's FAQ section (or your site)
+
+**What does Ranqapex do?**
+Ranqapex is an AI content tool inside your Shopify admin. You give it a topic and it writes a
+complete, SEO- and AI-optimized blog article — then publishes it to your store blog in one click.
+
+**Do I need SEO or writing experience?**
+No. Type a topic (and optional keywords) and click Generate. Ranqapex handles the structure,
+meta title and description, FAQ schema, and internal product links automatically.
+
+**What is "GEO" and why does it matter?**
+GEO (Generative Engine Optimization) means your content is written to be cited by AI answer
+engines like ChatGPT, Perplexity, and Google AI Overviews — not just ranked in classic search.
+Ranqapex optimizes for both.
+
+**How are my products used in the articles?**
+With your permission (read-only product access), Ranqapex naturally references your real products
+and links to them inside relevant articles, turning readers into buyers.
+
+**Will this slow down my storefront?**
+No. Ranqapex runs inside the Shopify admin and publishes finished posts to your blog. It adds no
+scripts or tracking to your live storefront, so it has no effect on store speed.
+
+**Can I review an article before it goes live?**
+Yes. Generated articles are saved as drafts. You publish to your store blog only when you click
+Publish.
+
+**How much does it cost?**
+Start free (5 articles/month). Paid plans are Starter ($1/month) and Pro ($5/month, higher-quality
+AI model), each with a 7-day free trial. Billing is handled securely by Shopify.
+
+**How do credits work?**
+Each article uses 3 credits. Your monthly credit allowance refreshes at the start of every billing
+cycle.
+
+**What languages are supported?**
+English at launch.
