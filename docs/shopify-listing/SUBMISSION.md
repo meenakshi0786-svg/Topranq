@@ -182,12 +182,9 @@ flags → **Submit for review**. Initial review is typically **4–7 business da
 
 **Support email** (required):
 ```
-support@ranqapex.com
+ranqapexcontact@gmail.com
 ```
-> ⚠️ Make sure this inbox exists and is monitored. If you haven't set it up, add a free
-> forwarding alias on your domain (e.g. forward `support@ranqapex.com` → your Gmail) before
-> submitting — reviewers and merchants will email it. If you can't set up the alias in time,
-> use your real working email instead; it just must be one you actually check.
+> ⚠️ Make sure this inbox is monitored — reviewers and merchants will email it.
 
 **Privacy policy URL** (required): `https://ranqapex.com/privacy`
 **Terms of service URL:** `https://ranqapex.com/terms`
