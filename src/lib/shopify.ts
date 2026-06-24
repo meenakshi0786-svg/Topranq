@@ -127,17 +127,23 @@ export async function exchangeSessionTokenForOfflineToken(
   shop: string,
   sessionToken: string,
 ): Promise<string> {
+  // Shopify's token-exchange endpoint expects form-encoded params — sending JSON
+  // causes requested_token_type to be ignored and an ONLINE token issued instead.
+  const body = new URLSearchParams({
+    client_id: SHOPIFY_CLIENT_ID,
+    client_secret: SHOPIFY_CLIENT_SECRET,
+    grant_type: "urn:ietf:params:oauth:grant-type:token-exchange",
+    subject_token: sessionToken,
+    subject_token_type: "urn:ietf:params:oauth:token-type:id_token",
+    requested_token_type: "urn:shopify:params:oauth:token-type:offline-access-token",
+  });
   const res = await fetch(`https://${shop}/admin/oauth/access_token`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      client_id: SHOPIFY_CLIENT_ID,
-      client_secret: SHOPIFY_CLIENT_SECRET,
-      grant_type: "urn:ietf:params:oauth:grant-type:token-exchange",
-      subject_token: sessionToken,
-      subject_token_type: "urn:ietf:params:oauth:token-type:id_token",
-      requested_token_type: "urn:shopify:params:oauth:token-type:offline-access-token",
-    }),
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      Accept: "application/json",
+    },
+    body: body.toString(),
   });
   if (!res.ok) {
     const text = await res.text().catch(() => "");
@@ -145,6 +151,10 @@ export async function exchangeSessionTokenForOfflineToken(
   }
   const data = await res.json();
   if (!data.access_token) throw new Error("Token exchange returned no access_token");
+  // Guard: we explicitly requested offline; reject an online token so callers can fall back.
+  if (typeof data.access_token === "string" && data.access_token.startsWith("shpua_")) {
+    throw new Error("Token exchange returned an online token despite requesting offline");
+  }
   return data.access_token as string;
 }
 
