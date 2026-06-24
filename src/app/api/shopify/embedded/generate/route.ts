@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { db, schema } from "@/lib/db";
 import { eq } from "drizzle-orm";
 import { runBlogWriter, BLOG_WRITER_CREDITS, type BlogWriterConfig } from "@/lib/agents/blog-writer-agent";
-import { getShopFromRequest } from "@/lib/shopify-embedded";
-import { getShopAccessToken, fetchStoreProducts } from "@/lib/shopify";
+import { getShopFromRequest, getRawSessionToken, resolveOfflineToken } from "@/lib/shopify-embedded";
+import { fetchStoreProducts } from "@/lib/shopify";
 import { getShopBillingState } from "@/lib/shopify-billing";
 
 // POST /api/shopify/embedded/generate
@@ -33,9 +33,9 @@ export async function POST(request: NextRequest) {
 
   // Best-effort: pull store products to weave in naturally.
   let productContext: string | undefined;
-  const connected = await getShopAccessToken(claims.shop);
-  if (connected) {
-    const products = await fetchStoreProducts(claims.shop, connected.token);
+  const token = await resolveOfflineToken(claims.shop, getRawSessionToken(request));
+  if (token) {
+    const products = await fetchStoreProducts(claims.shop, token);
     if (products.length) {
       productContext = "Reference these store products naturally where relevant:\n" +
         products.map((p) => `- ${p.title}${p.price ? ` ($${p.price})` : ""} — ${p.url}${p.description ? `: ${p.description}` : ""}`).join("\n");

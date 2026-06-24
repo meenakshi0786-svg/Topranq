@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db, schema } from "@/lib/db";
 import { eq } from "drizzle-orm";
-import { getShopFromRequest, getOrCreateShopAccount } from "@/lib/shopify-embedded";
-import { getShopAccessToken, publishArticleToShopify } from "@/lib/shopify";
+import { getShopFromRequest, getRawSessionToken, getOrCreateShopAccount, resolveOfflineToken } from "@/lib/shopify-embedded";
+import { publishArticleToShopify } from "@/lib/shopify";
 
 // POST /api/shopify/embedded/publish
 // Body: { articleId: string } — publishes the article to the shop's store blog.
@@ -21,8 +21,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Article not found for this store" }, { status: 404 });
   }
 
-  const connected = await getShopAccessToken(claims.shop);
-  if (!connected) {
+  // Mint a fresh OFFLINE token via token exchange (the stored token may be an
+  // expired online token). Falls back to the stored token if exchange fails.
+  const token = await resolveOfflineToken(claims.shop, getRawSessionToken(request));
+  if (!token) {
     return NextResponse.json({ error: "Store access token missing — reinstall the app." }, { status: 400 });
   }
 
@@ -34,7 +36,7 @@ export async function POST(request: NextRequest) {
     .get();
 
   try {
-    const result = await publishArticleToShopify(claims.shop, connected.token, {
+    const result = await publishArticleToShopify(claims.shop, token, {
       title: article.h1 || article.metaTitle || "Untitled",
       bodyHtml: article.bodyHtml || (article.bodyMarkdown || "").replace(/\n/g, "<br>"),
       tags: article.targetKeyword || "",

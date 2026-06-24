@@ -114,6 +114,68 @@ export async function exchangeCodeForToken(
   return data.access_token;
 }
 
+/**
+ * Exchange a valid App Bridge session token for a durable OFFLINE Admin API
+ * access token (shpat_).
+ *
+ * Why this exists: the classic OAuth redirect was yielding short-lived ONLINE
+ * tokens (shpua_) that expire in ~24h, which broke publishing every day. Token
+ * exchange lets the embedded app mint an offline token on demand from the
+ * session token it already has on every request — the reliable modern pattern.
+ */
+export async function exchangeSessionTokenForOfflineToken(
+  shop: string,
+  sessionToken: string,
+): Promise<string> {
+  const res = await fetch(`https://${shop}/admin/oauth/access_token`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      client_id: SHOPIFY_CLIENT_ID,
+      client_secret: SHOPIFY_CLIENT_SECRET,
+      grant_type: "urn:ietf:params:oauth:grant-type:token-exchange",
+      subject_token: sessionToken,
+      subject_token_type: "urn:ietf:params:oauth:token-type:id_token",
+      requested_token_type: "urn:shopify:params:oauth:token-type:offline-access-token",
+    }),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Token exchange failed: ${res.status} ${text.slice(0, 200)}`);
+  }
+  const data = await res.json();
+  if (!data.access_token) throw new Error("Token exchange returned no access_token");
+  return data.access_token as string;
+}
+
+/**
+ * Mint a fresh offline token via token exchange and persist it on the shop's
+ * connector (overwriting any stale/online token). Returns the offline token.
+ */
+export async function refreshAndStoreOfflineToken(
+  shop: string,
+  sessionToken: string,
+): Promise<string> {
+  const normalized = normalizeShop(shop);
+  const token = await exchangeSessionTokenForOfflineToken(normalized, sessionToken);
+
+  const { db, schema } = await import("@/lib/db");
+  const { eq, and } = await import("drizzle-orm");
+  const siteUrl = `https://${normalized}`;
+  const connector = db
+    .select()
+    .from(schema.connectors)
+    .where(and(eq(schema.connectors.platform, "shopify"), eq(schema.connectors.siteUrl, siteUrl)))
+    .get();
+  if (connector) {
+    db.update(schema.connectors)
+      .set({ authCredentialsEncrypted: token, status: "connected", connectedAt: new Date().toISOString() })
+      .where(eq(schema.connectors.id, connector.id))
+      .run();
+  }
+  return token;
+}
+
 // ── App Store install flow (no pre-existing Ranqapex domainId required) ──
 
 /**

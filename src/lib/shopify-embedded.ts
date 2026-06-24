@@ -89,10 +89,37 @@ export function verifySessionToken(token: string): SessionTokenClaims | null {
  * (App Bridge sends `Authorization: Bearer <token>`).
  */
 export function getShopFromRequest(request: NextRequest): SessionTokenClaims | null {
+  const token = getRawSessionToken(request);
+  if (!token) return null;
+  return verifySessionToken(token);
+}
+
+/** Return the raw bearer session token (unverified) for token-exchange use. */
+export function getRawSessionToken(request: NextRequest): string | null {
   const auth = request.headers.get("authorization") || "";
   const m = auth.match(/^Bearer\s+(.+)$/i);
-  if (!m) return null;
-  return verifySessionToken(m[1]);
+  return m ? m[1] : null;
+}
+
+/**
+ * Resolve a usable OFFLINE Admin API token for an embedded request: mint a fresh
+ * offline token via token exchange (durable), falling back to any stored token.
+ * Returns null only if we have neither.
+ */
+export async function resolveOfflineToken(
+  shop: string,
+  sessionToken: string | null,
+): Promise<string | null> {
+  const { refreshAndStoreOfflineToken, getShopAccessToken } = await import("./shopify");
+  if (sessionToken) {
+    try {
+      return await refreshAndStoreOfflineToken(shop, sessionToken);
+    } catch {
+      // fall through to whatever is stored
+    }
+  }
+  const stored = await getShopAccessToken(shop);
+  return stored?.token ?? null;
 }
 
 /**
