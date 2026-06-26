@@ -151,18 +151,13 @@ export async function exchangeSessionTokenForOfflineToken(
     throw new Error(`Token exchange failed: ${res.status} ${text.slice(0, 200)}`);
   }
   const data = await res.json();
-  console.log(
-    "[token-exchange] ok status=%s keys=%s prefix=%s expires_in=%s",
-    res.status,
-    Object.keys(data).join("|"),
-    typeof data.access_token === "string" ? data.access_token.slice(0, 6) : "none",
-    data.expires_in ?? "-",
-  );
   if (!data.access_token) throw new Error("Token exchange returned no access_token");
-  // Guard: we explicitly requested offline; reject an online token so callers can fall back.
-  if (typeof data.access_token === "string" && data.access_token.startsWith("shpua_")) {
-    throw new Error("Token exchange returned an online token despite requesting offline");
-  }
+  // Note: this app's install grant yields online-prefixed tokens (shpua_) even when
+  // we request offline — both classic OAuth and token exchange behave this way here.
+  // That's fine: callers re-mint on every Admin API operation (the session token is
+  // always present on embedded requests), so the token is always fresh and never goes
+  // stale. We deliberately do NOT reject by prefix — doing so forced a fallback to the
+  // stale stored token, which was the original cause of daily publish failures.
   return data.access_token as string;
 }
 
