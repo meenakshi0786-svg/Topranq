@@ -114,8 +114,8 @@ export async function resolveOfflineToken(
   if (sessionToken) {
     try {
       return await refreshAndStoreOfflineToken(shop, sessionToken);
-    } catch {
-      // fall through to whatever is stored
+    } catch (e) {
+      console.error("[resolveOfflineToken] exchange failed, falling back:", e instanceof Error ? e.message : String(e));
     }
   }
   const stored = await getShopAccessToken(shop);

@@ -147,9 +147,17 @@ export async function exchangeSessionTokenForOfflineToken(
   });
   if (!res.ok) {
     const text = await res.text().catch(() => "");
+    console.error("[token-exchange] HTTP error", res.status, text.slice(0, 300));
     throw new Error(`Token exchange failed: ${res.status} ${text.slice(0, 200)}`);
   }
   const data = await res.json();
+  console.log(
+    "[token-exchange] ok status=%s keys=%s prefix=%s expires_in=%s",
+    res.status,
+    Object.keys(data).join("|"),
+    typeof data.access_token === "string" ? data.access_token.slice(0, 6) : "none",
+    data.expires_in ?? "-",
+  );
   if (!data.access_token) throw new Error("Token exchange returned no access_token");
   // Guard: we explicitly requested offline; reject an online token so callers can fall back.
   if (typeof data.access_token === "string" && data.access_token.startsWith("shpua_")) {
