@@ -121,6 +121,15 @@ function renderAppHtml(shop: string, apiKey: string): string {
     .stat-value { font-size: 22px; font-weight: 800; color: #202223; }
     .stat-label { font-size: 11px; color: #6b7177; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
 
+    .tabs { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 1px solid #e1e3e5; }
+    .tab {
+      padding: 10px 16px; font-size: 14px; font-weight: 600; cursor: pointer;
+      background: none; border: none; color: #6b7177;
+      border-bottom: 2px solid transparent; margin-bottom: -1px;
+    }
+    .tab:hover { color: #202223; }
+    .tab.active { color: #4F6EF7; border-bottom-color: #4F6EF7; }
+
     .article-row {
       display: flex; align-items: center; justify-content: space-between;
       padding: 14px 0; border-bottom: 1px solid #e1e3e5;
@@ -230,25 +239,49 @@ function renderAppHtml(shop: string, apiKey: string): string {
           </div>
         </div>
 
-        <div class="card">
-          <h2>AI Blog Post Generator</h2>
-          <p style="margin:8px 0 16px;">Generate an SEO + GEO-optimized article with your products woven in, then publish it to your store blog.</p>
-          <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Topic</label>
-          <input id="gen-topic" placeholder="e.g. How to choose running shoes for flat feet"
-            style="width:100%;padding:10px 12px;border:1px solid #c9cccf;border-radius:8px;font-size:14px;margin-bottom:12px;" />
-          <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Target keywords <span style="color:#8c9196;font-weight:400;">(optional, comma-separated)</span></label>
-          <input id="gen-keywords" placeholder="running shoes, flat feet, arch support"
-            style="width:100%;padding:10px 12px;border:1px solid #c9cccf;border-radius:8px;font-size:14px;margin-bottom:16px;" />
-          <button id="gen-btn" class="btn btn-primary" onclick="generate()">Generate article</button>
-          <div id="gen-result" style="margin-top:16px;"></div>
+        <div class="tabs">
+          <button class="tab active" data-tab="generate" onclick="switchTab('generate')">Blog Generator</button>
+          <button class="tab" data-tab="audit" onclick="switchTab('audit')">SEO Audit</button>
         </div>
 
-        <div class="card">
-          <h2>Your articles</h2>
-          <div id="articles-list" style="margin-top:8px;"><p style="color:#6b7177;font-size:13px;">Loading…</p></div>
+        <div id="tab-generate" class="tab-panel">
+          <div class="card">
+            <h2>AI Blog Post Generator</h2>
+            <p style="margin:8px 0 16px;">Generate an SEO + GEO-optimized article with your products woven in, then publish it to your store blog.</p>
+            <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Topic</label>
+            <input id="gen-topic" placeholder="e.g. How to choose running shoes for flat feet"
+              style="width:100%;padding:10px 12px;border:1px solid #c9cccf;border-radius:8px;font-size:14px;margin-bottom:12px;" />
+            <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Target keywords <span style="color:#8c9196;font-weight:400;">(optional, comma-separated)</span></label>
+            <input id="gen-keywords" placeholder="running shoes, flat feet, arch support"
+              style="width:100%;padding:10px 12px;border:1px solid #c9cccf;border-radius:8px;font-size:14px;margin-bottom:16px;" />
+            <button id="gen-btn" class="btn btn-primary" onclick="generate()">Generate article</button>
+            <div id="gen-result" style="margin-top:16px;"></div>
+          </div>
+
+          <div class="card">
+            <h2>Your articles</h2>
+            <div id="articles-list" style="margin-top:8px;"><p style="color:#6b7177;font-size:13px;">Loading…</p></div>
+          </div>
+        </div>
+
+        <div id="tab-audit" class="tab-panel" style="display:none;">
+          <div class="card">
+            <h2>SEO Audit</h2>
+            <p style="margin:8px 0 16px;">Crawl your storefront and score its SEO health — meta tags, headings, speed, structured data — with prioritized fixes.</p>
+            <button id="audit-btn" class="btn btn-primary" onclick="runAudit()">Run SEO audit</button>
+            <div id="audit-result" style="margin-top:16px;"></div>
+          </div>
         </div>
       \`;
       loadArticles();
+      loadAudit();
+    }
+
+    function switchTab(name) {
+      document.querySelectorAll(".tab-panel").forEach(function(p) { p.style.display = "none"; });
+      document.querySelectorAll(".tab").forEach(function(t) { t.classList.toggle("active", t.dataset.tab === name); });
+      const panel = document.getElementById("tab-" + name);
+      if (panel) panel.style.display = "block";
     }
 
     async function generate() {
@@ -305,6 +338,74 @@ function renderAppHtml(shop: string, apiKey: string): string {
         const el = document.getElementById("stat-credits");
         if (el && data.creditsRemaining != null) el.textContent = data.creditsRemaining + " / " + data.creditsAllowance;
       } catch (e) { /* ignore */ }
+    }
+
+    let auditPoll = null;
+    async function runAudit() {
+      const btn = document.getElementById("audit-btn");
+      const result = document.getElementById("audit-result");
+      btn.disabled = true; btn.innerHTML = '<span class="loading"></span> Auditing your store…';
+      try {
+        const res = await fetch("/api/shopify/embedded/audit", { method: "POST" });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Audit failed to start");
+        result.innerHTML = '<div class="alert">Audit started — crawling and analyzing your store. This can take a minute…</div>';
+        if (auditPoll) clearInterval(auditPoll);
+        auditPoll = setInterval(loadAudit, 5000);
+      } catch (e) {
+        btn.disabled = false; btn.innerHTML = "Run SEO audit";
+        result.innerHTML = '<div class="alert error">' + e.message + '</div>';
+      }
+    }
+
+    async function loadAudit() {
+      try {
+        const res = await fetch("/api/shopify/embedded/audit");
+        if (!res.ok) return;
+        const d = await res.json();
+        const btn = document.getElementById("audit-btn");
+        const result = document.getElementById("audit-result");
+        if (!result) return;
+        if (d.status === "none") { if (btn) { btn.disabled = false; btn.innerHTML = "Run SEO audit"; } return; }
+
+        const running = ["queued", "crawling", "analyzing"].includes(d.status);
+        if (btn) { btn.disabled = running; btn.innerHTML = running ? '<span class="loading"></span> Auditing…' : "Re-run SEO audit"; }
+        if (running) {
+          result.innerHTML = '<div class="alert">Audit in progress (' + d.status + ')… crawled ' + (d.pagesCrawled || 0) + ' pages so far.</div>';
+          if (!auditPoll) auditPoll = setInterval(loadAudit, 5000);
+          return;
+        }
+        if (auditPoll) { clearInterval(auditPoll); auditPoll = null; }
+        if (d.status === "failed") {
+          result.innerHTML = '<div class="alert error">Audit failed: ' + (d.errorMessage || "unknown error") + '. If your storefront is password-protected, disable it and try again.</div>';
+          return;
+        }
+        renderAudit(d, result);
+      } catch (e) { /* ignore */ }
+    }
+
+    function renderAudit(d, result) {
+      const score = d.overallScore != null ? Math.round(d.overallScore) : "—";
+      const ic = d.issueCounts || {};
+      const scoreColor = score >= 80 ? "#166534" : (score >= 50 ? "#92400e" : "#991b1b");
+      let html = \`
+        <div class="stat-row" style="grid-template-columns:repeat(4,1fr);">
+          <div class="stat"><div class="stat-value" style="color:\${scoreColor}">\${score}</div><div class="stat-label">SEO Score</div></div>
+          <div class="stat"><div class="stat-value" style="color:#991b1b">\${ic.critical || 0}</div><div class="stat-label">Critical</div></div>
+          <div class="stat"><div class="stat-value" style="color:#92400e">\${ic.high || 0}</div><div class="stat-label">High</div></div>
+          <div class="stat"><div class="stat-value">\${d.pagesCrawled || 0}</div><div class="stat-label">Pages</div></div>
+        </div>\`;
+      if (d.topIssues && d.topIssues.length) {
+        html += '<div style="margin-top:8px;">' + d.topIssues.map(function(i) {
+          const bc = i.severity === "critical" ? "failed" : (i.severity === "low" ? "" : "pending");
+          return '<div class="article-row"><div class="article-info"><div class="article-title">' +
+            (i.description || i.issueType) + '</div><div class="article-meta"><span class="badge ' + bc + '">' + i.severity + '</span>' +
+            (i.recommendation ? ' &nbsp;' + i.recommendation : '') + '</div></div></div>';
+        }).join("") + '</div>';
+      } else {
+        html += '<p style="color:#166534;font-size:13px;margin-top:12px;">No issues found. 🎉</p>';
+      }
+      result.innerHTML = html;
     }
 
     async function loadArticles() {
