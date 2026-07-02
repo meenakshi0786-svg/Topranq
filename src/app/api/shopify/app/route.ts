@@ -242,6 +242,10 @@ function renderAppHtml(shop: string, apiKey: string): string {
         <div class="tabs">
           <button class="tab active" data-tab="generate" onclick="switchTab('generate')">Blog Generator</button>
           <button class="tab" data-tab="audit" onclick="switchTab('audit')">SEO Audit</button>
+          <button class="tab" data-tab="visibility" onclick="switchTab('visibility')">AI Visibility</button>
+          <button class="tab" data-tab="keywords" onclick="switchTab('keywords')">Keywords</button>
+          <button class="tab" data-tab="links" onclick="switchTab('links')">Internal Links</button>
+          <button class="tab" data-tab="products" onclick="switchTab('products')">Product Links</button>
         </div>
 
         <div id="tab-generate" class="tab-panel">
@@ -272,9 +276,51 @@ function renderAppHtml(shop: string, apiKey: string): string {
             <div id="audit-result" style="margin-top:16px;"></div>
           </div>
         </div>
+
+        <div id="tab-visibility" class="tab-panel" style="display:none;">
+          <div class="card">
+            <h2>AI Visibility (GEO)</h2>
+            <p style="margin:8px 0 16px;">See whether AI search engines — ChatGPT, Perplexity, Gemini, Claude — mention and cite your brand for real buyer questions.</p>
+            <button id="vis-btn" class="btn btn-primary" onclick="runVisibility()">Run AI visibility scan</button>
+            <span style="font-size:12px;color:#8c9196;margin-left:8px;" id="vis-cost"></span>
+            <div id="vis-result" style="margin-top:16px;"></div>
+          </div>
+        </div>
+
+        <div id="tab-keywords" class="tab-panel" style="display:none;">
+          <div class="card">
+            <h2>Keyword Discovery</h2>
+            <p style="margin:8px 0 16px;">Find keyword and topic opportunities for your store. Click any keyword to start an article on it.</p>
+            <button id="kw-btn" class="btn btn-primary" onclick="runKeywords()">Discover keywords</button>
+            <span style="font-size:12px;color:#8c9196;margin-left:8px;" id="kw-cost"></span>
+            <div id="kw-result" style="margin-top:16px;"></div>
+          </div>
+        </div>
+
+        <div id="tab-links" class="tab-panel" style="display:none;">
+          <div class="card">
+            <h2>Internal Link Suggestions</h2>
+            <p style="margin:8px 0 16px;">Find high-value internal links between your store pages to boost SEO and keep visitors browsing. Run an SEO audit first so we have your pages.</p>
+            <button id="links-btn" class="btn btn-primary" onclick="runInternalLinks()">Suggest internal links</button>
+            <span style="font-size:12px;color:#8c9196;margin-left:8px;">Uses 2 credits.</span>
+            <div id="links-result" style="margin-top:16px;"></div>
+          </div>
+        </div>
+
+        <div id="tab-products" class="tab-panel" style="display:none;">
+          <div class="card">
+            <h2>Product Links in Articles</h2>
+            <p style="margin:8px 0 16px;">Automatically weave links to your real products into your existing blog articles — turning readers into buyers.</p>
+            <button id="prod-btn" class="btn btn-primary" onclick="runProductLinks()">Add product links to articles</button>
+            <span style="font-size:12px;color:#8c9196;margin-left:8px;">Uses 2 credits.</span>
+            <div id="prod-result" style="margin-top:16px;"></div>
+          </div>
+        </div>
       \`;
       loadArticles();
       loadAudit();
+      loadVisibility();
+      loadKeywords();
     }
 
     function switchTab(name) {
@@ -406,6 +452,165 @@ function renderAppHtml(shop: string, apiKey: string): string {
         html += '<p style="color:#166534;font-size:13px;margin-top:12px;">No issues found. 🎉</p>';
       }
       result.innerHTML = html;
+    }
+
+    const ENGINE_LABELS = { perplexity: "Perplexity", chatgpt: "ChatGPT", gemini: "Gemini", claude: "Claude" };
+
+    async function loadVisibility() {
+      try {
+        const res = await fetch("/api/shopify/embedded/visibility");
+        if (!res.ok) return;
+        const d = await res.json();
+        const costEl = document.getElementById("vis-cost");
+        if (costEl) costEl.textContent = "Uses " + (d.cost || 20) + " credits per scan.";
+        if (d.status === "complete") renderVisibility(d, document.getElementById("vis-result"), true);
+      } catch (e) { /* ignore */ }
+    }
+
+    async function runVisibility() {
+      const btn = document.getElementById("vis-btn");
+      const result = document.getElementById("vis-result");
+      btn.disabled = true; btn.innerHTML = '<span class="loading"></span> Scanning AI engines… (~1 min)';
+      result.innerHTML = "";
+      try {
+        const res = await fetch("/api/shopify/embedded/visibility", { method: "POST" });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.error || "Scan failed");
+        renderVisibility(d, result, false);
+        refreshCredits();
+      } catch (e) {
+        result.innerHTML = '<div class="alert error">' + e.message + '</div>';
+      }
+      btn.disabled = false; btn.innerHTML = "Re-run AI visibility scan";
+    }
+
+    function renderVisibility(d, result, cached) {
+      if (!result) return;
+      const score = d.overallScore != null ? Math.round(d.overallScore) : "—";
+      const scoreColor = score >= 60 ? "#166534" : (score >= 30 ? "#92400e" : "#991b1b");
+      let html = \`
+        <div class="stat-row">
+          <div class="stat"><div class="stat-value" style="color:\${scoreColor}">\${score}</div><div class="stat-label">AI Visibility</div></div>
+          <div class="stat"><div class="stat-value">\${d.mentionRate != null ? d.mentionRate + "%" : "—"}</div><div class="stat-label">Mentioned</div></div>
+          <div class="stat"><div class="stat-value">\${d.citationRate != null ? d.citationRate + "%" : "—"}</div><div class="stat-label">Cited</div></div>
+        </div>\`;
+      if (d.engines && d.engines.length && d.engines[0].score != null) {
+        html += '<div style="margin-top:8px;">' + d.engines.map(function(e) {
+          return '<div class="article-row"><div class="article-info"><div class="article-title">' +
+            (ENGINE_LABELS[e.engine] || e.engine) + '</div><div class="article-meta">mentioned ' + e.mentionRate + '% · cited ' + e.citationRate + '%</div></div>' +
+            '<span class="stat-value" style="font-size:18px;">' + e.score + '</span></div>';
+        }).join("") + '</div>';
+      }
+      if (cached) html += '<p style="color:#8c9196;font-size:12px;margin-top:10px;">Last scan result. Re-run for fresh data.</p>';
+      result.innerHTML = html;
+    }
+
+    async function loadKeywords() {
+      try {
+        const res = await fetch("/api/shopify/embedded/keywords");
+        if (!res.ok) return;
+        const d = await res.json();
+        const costEl = document.getElementById("kw-cost");
+        if (costEl) costEl.textContent = "Uses " + (d.cost || 2) + " credits per run.";
+        if (d.keywords && d.keywords.length) renderKeywords(d.keywords, document.getElementById("kw-result"));
+      } catch (e) { /* ignore */ }
+    }
+
+    async function runKeywords() {
+      const btn = document.getElementById("kw-btn");
+      const result = document.getElementById("kw-result");
+      btn.disabled = true; btn.innerHTML = '<span class="loading"></span> Discovering keywords…';
+      result.innerHTML = "";
+      try {
+        const res = await fetch("/api/shopify/embedded/keywords", { method: "POST" });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.error || "Discovery failed");
+        if (!d.keywords || !d.keywords.length) { result.innerHTML = '<div class="alert">No keywords found. Try running an SEO audit first so we have store data to work from.</div>'; }
+        else renderKeywords(d.keywords, result);
+        refreshCredits();
+      } catch (e) {
+        result.innerHTML = '<div class="alert error">' + e.message + '</div>';
+      }
+      btn.disabled = false; btn.innerHTML = "Re-discover keywords";
+    }
+
+    function renderKeywords(keywords, result) {
+      if (!result) return;
+      result.innerHTML = keywords.map(function(k) {
+        const diff = (k.difficulty || "").toLowerCase();
+        const bc = diff === "high" ? "failed" : (diff === "low" ? "" : "pending");
+        return '<div class="article-row"><div class="article-info"><div class="article-title">' + k.keyword +
+          '</div><div class="article-meta"><span class="badge ' + bc + '">' + (k.difficulty || "") + '</span> &nbsp;' +
+          (k.intent || "") + (k.relevancyScore != null ? ' · relevance ' + k.relevancyScore : '') + '</div></div>' +
+          '<button class="btn btn-secondary" style="padding:6px 12px;font-size:12px;" onclick="useKeyword(\\'' + k.keyword.replace(/'/g, "\\\\'") + '\\')">Write article</button></div>';
+      }).join("");
+    }
+
+    function useKeyword(kw) {
+      switchTab("generate");
+      const t = document.getElementById("gen-topic");
+      const k = document.getElementById("gen-keywords");
+      if (t) t.value = kw;
+      if (k) k.value = kw;
+      if (t) t.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+    async function runInternalLinks() {
+      const btn = document.getElementById("links-btn");
+      const result = document.getElementById("links-result");
+      btn.disabled = true; btn.innerHTML = '<span class="loading"></span> Analyzing…';
+      result.innerHTML = "";
+      try {
+        const res = await fetch("/api/shopify/embedded/internal-links", { method: "POST" });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.error || "Failed");
+        const s = d.stats || {};
+        let html = '<div class="alert success">Analyzed ' + (s.totalPages || 0) + ' pages · ' + (d.suggestions ? d.suggestions.length : 0) + ' suggestions · ' + (s.orphanCount || 0) + ' orphan pages.</div>';
+        if (d.suggestions && d.suggestions.length) {
+          html += d.suggestions.map(function(x) {
+            const bc = x.priority === "high" ? "failed" : (x.priority === "low" ? "" : "pending");
+            return '<div class="article-row"><div class="article-info"><div class="article-title">' + x.sourceTitle + ' → ' + x.targetTitle +
+              '</div><div class="article-meta"><span class="badge ' + bc + '">' + x.priority + '</span> &nbsp;anchor: "' + x.anchorText + '" · ' + x.reason + '</div></div></div>';
+          }).join("");
+        } else {
+          html += '<p style="color:#6b7177;font-size:13px;margin-top:8px;">No suggestions yet. Run an SEO audit first so we can crawl your store pages.</p>';
+        }
+        result.innerHTML = html;
+        refreshCredits();
+      } catch (e) {
+        result.innerHTML = '<div class="alert error">' + e.message + '</div>';
+      }
+      btn.disabled = false; btn.innerHTML = "Re-analyze internal links";
+    }
+
+    async function runProductLinks() {
+      const btn = document.getElementById("prod-btn");
+      const result = document.getElementById("prod-result");
+      btn.disabled = true; btn.innerHTML = '<span class="loading"></span> Weaving products in…';
+      result.innerHTML = "";
+      try {
+        const res = await fetch("/api/shopify/embedded/product-links", { method: "POST" });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.error || "Failed");
+        const s = d.stats || {};
+        let html = \`
+          <div class="stat-row">
+            <div class="stat"><div class="stat-value">\${s.totalLinksInserted || 0}</div><div class="stat-label">Links added</div></div>
+            <div class="stat"><div class="stat-value">\${s.articlesAnalyzed || 0}</div><div class="stat-label">Articles</div></div>
+            <div class="stat"><div class="stat-value">\${s.productsMatched || 0}</div><div class="stat-label">Products used</div></div>
+          </div>\`;
+        if (d.articleDetails && d.articleDetails.length) {
+          html += d.articleDetails.filter(function(a){return a.linksAdded > 0;}).map(function(a) {
+            return '<div class="article-row"><div class="article-info"><div class="article-title">' + a.title +
+              '</div><div class="article-meta">' + a.linksAdded + ' product link(s): ' + (a.products || []).join(", ") + '</div></div></div>';
+          }).join("");
+        }
+        result.innerHTML = html;
+        refreshCredits();
+      } catch (e) {
+        result.innerHTML = '<div class="alert error">' + e.message + '</div>';
+      }
+      btn.disabled = false; btn.innerHTML = "Re-run product links";
     }
 
     async function loadArticles() {
