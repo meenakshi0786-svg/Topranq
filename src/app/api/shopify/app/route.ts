@@ -291,6 +291,9 @@ function renderAppHtml(shop: string, apiKey: string): string {
           <div class="card">
             <h2>Keyword Discovery</h2>
             <p style="margin:8px 0 16px;">Find keyword and topic opportunities for your store. Click any keyword to start an article on it.</p>
+            <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Competitor domain <span style="color:#8c9196;font-weight:400;">(optional — steal their keywords)</span></label>
+            <input id="kw-competitor" placeholder="e.g. competitor.com — leave empty for general discovery"
+              style="width:100%;padding:10px 12px;border:1px solid #c9cccf;border-radius:8px;font-size:14px;margin-bottom:14px;" />
             <button id="kw-btn" class="btn btn-primary" onclick="runKeywords()">Discover keywords</button>
             <span style="font-size:12px;color:#8c9196;margin-left:8px;" id="kw-cost"></span>
             <div id="kw-result" style="margin-top:16px;"></div>
@@ -519,10 +522,15 @@ function renderAppHtml(shop: string, apiKey: string): string {
     async function runKeywords() {
       const btn = document.getElementById("kw-btn");
       const result = document.getElementById("kw-result");
-      btn.disabled = true; btn.innerHTML = '<span class="loading"></span> Discovering keywords…';
+      const competitorDomain = (document.getElementById("kw-competitor").value || "").trim();
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loading"></span> ' + (competitorDomain ? 'Mining ' + competitorDomain + '…' : 'Discovering keywords…');
       result.innerHTML = "";
       try {
-        const res = await fetch("/api/shopify/embedded/keywords", { method: "POST" });
+        const res = await fetch("/api/shopify/embedded/keywords", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ competitorDomain }),
+        });
         const d = await res.json();
         if (!res.ok) throw new Error(d.error || "Discovery failed");
         if (!d.keywords || !d.keywords.length) { result.innerHTML = '<div class="alert">No keywords found. Try running an SEO audit first so we have store data to work from.</div>'; }

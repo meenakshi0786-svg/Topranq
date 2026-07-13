@@ -371,6 +371,105 @@ RULES:
 }
 
 // ══════════════════════════════════════════════════════════════════════
+// Competitor keyword discovery: mine a SPECIFIC competitor domain
+// ══════════════════════════════════════════════════════════════════════
+
+/**
+ * Discover the keywords a specific competitor domain ranks for / writes about,
+ * filtered to ones relevant for OUR site to target. Powers the
+ * "generate blogs from competitor keywords" flow.
+ */
+export async function discoverCompetitorKeywords(
+  domainId: string,
+  competitorInput: string,
+): Promise<DiscoveredKeyword[]> {
+  const serperKey = process.env.SERPER_API_KEY;
+  if (!serperKey) throw new Error("SERPER_API_KEY is not set");
+
+  // Normalize the competitor domain: strip protocol/path, lowercase.
+  const comp = competitorInput
+    .trim()
+    .toLowerCase()
+    .replace(/^https?:\/\//, "")
+    .replace(/^www\./, "")
+    .split("/")[0];
+  if (!/^[a-z0-9][a-z0-9.-]*\.[a-z]{2,}$/.test(comp)) {
+    throw new Error("Please enter a valid competitor domain, e.g. competitor.com");
+  }
+
+  const domain = db.select().from(schema.domains).where(eq(schema.domains.id, domainId)).get();
+  if (!domain) throw new Error("Domain not found");
+  const language = domain.language || "English";
+
+  // What is the competitor publishing / ranking for? site: queries surface their
+  // indexed pages; titles + snippets reveal their content strategy.
+  const [sitePages, siteBlog] = await Promise.all([
+    fetchSERP(`site:${comp}`, serperKey),
+    fetchSERP(`site:${comp} blog OR guide OR how`, serperKey),
+  ]);
+  const compPages = [...(sitePages?.organic || []), ...(siteBlog?.organic || [])];
+  if (!compPages.length) {
+    throw new Error(`Couldn't find indexed pages for "${comp}". Check the domain and try again.`);
+  }
+
+  const pageList = compPages
+    .slice(0, 18)
+    .map((p: { title: string; link: string; snippet: string }) => `- ${p.title} (${p.link})${p.snippet ? ` — ${p.snippet.slice(0, 120)}` : ""}`)
+    .join("\n");
+
+  const prompt = `You are an SEO strategist. A store owner wants to steal keyword opportunities from a competitor.
+
+OUR SITE: ${domain.domainUrl}
+COMPETITOR: ${comp}
+
+COMPETITOR'S INDEXED PAGES (titles reveal what they target):
+${pageList}
+
+TASK: Extract the keyword opportunities this competitor is targeting that OUR site could also rank for with blog content. Infer search intent from their page titles/snippets. Prefer specific long-tail keywords over generic ones.
+
+Return STRICT JSON array only (no markdown, no fences, no prose):
+[
+  {
+    "keyword": "keyword phrase in ${language}",
+    "difficulty": "Low",
+    "intent": "informational",
+    "relevancyScore": 92,
+    "source": "competitor_gap",
+    "sourceDetail": "from ${comp} page: <short title>",
+    "competitorUrl": "https://${comp}/..."
+  }
+]
+
+RULES:
+- Exactly 20 keywords, all in ${language}
+- relevancyScore 85-100 (drop anything generic or brand-specific to the competitor)
+- NO competitor brand-name keywords
+- difficulty mix: at least 8 Low, 6-8 Medium, rest High
+- intent mix: mostly informational, some commercial/transactional
+- source must be "competitor_gap" for every row
+- Sort by relevancyScore descending`;
+
+  const response = await callAI(prompt, 6000);
+  const parsed = repairAndParseJSON(response) as DiscoveredKeyword[];
+
+  const validated = (Array.isArray(parsed) ? parsed : []).filter(k => {
+    if (!k.keyword || typeof k.keyword !== "string") return false;
+    if (!["Low", "Medium", "High"].includes(k.difficulty)) k.difficulty = "Medium";
+    if (!["informational", "commercial", "transactional", "navigational"].includes(k.intent)) k.intent = "informational";
+    if (typeof k.relevancyScore !== "number") k.relevancyScore = 85;
+    k.relevancyScore = Math.max(0, Math.min(100, Math.round(k.relevancyScore)));
+    k.source = "competitor_gap";
+    if (!k.sourceDetail) k.sourceDetail = `from ${comp}`;
+    if (!k.competitorUrl) k.competitorUrl = `https://${comp}`;
+    return k.relevancyScore >= 85;
+  });
+
+  validated.sort((a, b) => b.relevancyScore - a.relevancyScore);
+  console.log(`[keyword-discovery] Competitor ${comp}: ${validated.length} keywords`);
+  return validated;
+}
+
+// ══════════════════════════════════════════════════════════════════════
 // Group selected keywords into pillar/cluster structure
 // ══════════════════════════════════════════════════════════════════════
 

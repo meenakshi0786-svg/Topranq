@@ -3,7 +3,7 @@ import { db, schema } from "@/lib/db";
 import { eq, desc } from "drizzle-orm";
 import { getShopFromRequest, getOrCreateShopAccount } from "@/lib/shopify-embedded";
 import { getShopBillingState } from "@/lib/shopify-billing";
-import { discoverKeywords } from "@/lib/keyword-discovery";
+import { discoverKeywords, discoverCompetitorKeywords } from "@/lib/keyword-discovery";
 
 const KEYWORD_DISCOVERY_CREDITS = 2;
 
@@ -49,8 +49,14 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Optional: mine a specific competitor domain instead of general discovery.
+  const body = await request.json().catch(() => ({}));
+  const competitorDomain = (body.competitorDomain || "").trim();
+
   try {
-    const keywords = await discoverKeywords(domainId);
+    const keywords = competitorDomain
+      ? await discoverCompetitorKeywords(domainId, competitorDomain)
+      : await discoverKeywords(domainId);
     const runId = `run_${crypto.randomUUID()}`;
 
     for (const kw of keywords) {
