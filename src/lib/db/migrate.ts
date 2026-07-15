@@ -135,6 +135,19 @@ if (!tables.find(t => t.name === "store_products")) {
   )`);
   console.log("  + store_products table");
 }
+if (!tables.find(t => t.name === "store_collections")) {
+  sqlite.exec(`CREATE TABLE store_collections (
+    id TEXT PRIMARY KEY NOT NULL,
+    domain_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    handle TEXT,
+    url TEXT,
+    description TEXT,
+    product_count INTEGER,
+    created_at TEXT DEFAULT (datetime('now'))
+  )`);
+  console.log("  + store_collections table");
+}
 if (!tables.find(t => t.name === "visitor_logs")) {
   sqlite.exec(`CREATE TABLE visitor_logs (
     id TEXT PRIMARY KEY NOT NULL,

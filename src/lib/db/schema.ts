@@ -309,6 +309,18 @@ export const storeProducts = sqliteTable("store_products", {
   createdAt: text("created_at").default(sql`(datetime('now'))`),
 });
 
+// ── Store Collections (synced from Shopify on install) ───────────────
+export const storeCollections = sqliteTable("store_collections", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  domainId: text("domain_id").notNull().references(() => domains.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  handle: text("handle"),
+  url: text("url"),
+  description: text("description"),
+  productCount: integer("product_count"),
+  createdAt: text("created_at").default(sql`(datetime('now'))`),
+});
+
 // ── Agent Jobs (deployable agents) ───────────────────────────────────
 export const agentJobs = sqliteTable("agent_jobs", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),

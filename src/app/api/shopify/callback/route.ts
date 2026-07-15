@@ -75,6 +75,12 @@ export async function GET(request: NextRequest) {
           .run();
       }
 
+      // Kick off catalog sync (products + collections) in the background so the
+      // onboarding wizard has data to work with. Best-effort — never blocks install.
+      import("@/app/api/shopify/embedded/sync/route")
+        .then((m) => m.syncShopCatalog(shop, domainId, accessToken))
+        .catch((e) => console.error("[shopify install] catalog sync failed:", e));
+
       // Redirect to embedded app
       return NextResponse.redirect(`${APP_URL}/api/shopify/app?shop=${encodeURIComponent(shop)}`);
     }

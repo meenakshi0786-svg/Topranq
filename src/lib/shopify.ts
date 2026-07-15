@@ -340,6 +340,45 @@ export async function fetchStoreProducts(
   }
 }
 
+/**
+ * Fetch the store's collections (custom + smart) via the Admin API (needs the
+ * read_products scope). Best-effort: returns [] on any failure.
+ */
+export async function fetchStoreCollections(
+  shop: string,
+  accessToken: string,
+  limit = 50,
+): Promise<Array<{ title: string; handle: string; description: string; url: string; productCount: number | null }>> {
+  const storeHandle = shop.replace(".myshopify.com", "");
+  const headers = { "X-Shopify-Access-Token": accessToken };
+  const out: Array<{ title: string; handle: string; description: string; url: string; productCount: number | null }> = [];
+
+  for (const kind of ["custom_collections", "smart_collections"]) {
+    try {
+      const res = await fetch(
+        `https://${shop}/admin/api/${SHOPIFY_API_VERSION}/${kind}.json?limit=${limit}&fields=id,title,handle,body_html,products_count`,
+        { headers },
+      );
+      if (!res.ok) continue;
+      const data = await res.json();
+      const rows = (data[kind] || []) as Array<Record<string, unknown>>;
+      for (const c of rows) {
+        const body = typeof c.body_html === "string" ? c.body_html.replace(/<[^>]+>/g, " ").trim() : "";
+        out.push({
+          title: String(c.title || ""),
+          handle: String(c.handle || ""),
+          description: body.slice(0, 300),
+          url: `https://${storeHandle}.myshopify.com/collections/${c.handle}`,
+          productCount: typeof c.products_count === "number" ? c.products_count : null,
+        });
+      }
+    } catch {
+      // best-effort per collection type
+    }
+  }
+  return out;
+}
+
 /** A featured image is only usable by Shopify if it's a public http(s) URL. */
 function isPublicImageUrl(url?: string | null): boolean {
   if (!url) return false;
