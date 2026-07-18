@@ -199,6 +199,18 @@ function renderAppHtml(shop: string, apiKey: string): string {
   </style>
 </head>
 <body>
+  <!-- App Bridge nav menu: renders sub-links under the app in Shopify's sidebar.
+       The rel="home" link is required and is hidden from the rendered menu. -->
+  <ui-nav-menu>
+    <a href="/api/shopify/app?shop=${shop}" rel="home">Ranqapex</a>
+    <a href="/api/shopify/app?shop=${shop}&tab=generate">Blog Generator</a>
+    <a href="/api/shopify/app?shop=${shop}&tab=audit">SEO Audit</a>
+    <a href="/api/shopify/app?shop=${shop}&tab=visibility">AI Visibility</a>
+    <a href="/api/shopify/app?shop=${shop}&tab=keywords">Keywords</a>
+    <a href="/api/shopify/app?shop=${shop}&tab=links">Internal Links</a>
+    <a href="/api/shopify/app?shop=${shop}&tab=products">Product Links</a>
+  </ui-nav-menu>
+
   <div class="container">
 
     <!-- Header -->
@@ -366,6 +378,12 @@ function renderAppHtml(shop: string, apiKey: string): string {
       loadAudit();
       loadVisibility();
       loadKeywords();
+
+      // Honor ?tab= from the sidebar nav menu (and make tabs deep-linkable).
+      try {
+        const wanted = new URLSearchParams(window.location.search).get("tab");
+        if (wanted && document.getElementById("tab-" + wanted)) switchTab(wanted);
+      } catch (e) { /* ignore */ }
 
       // First run after install → launch the onboarding wizard automatically.
       wizState.upgradeUrl = data.upgradeUrl || null;
