@@ -436,6 +436,7 @@ function renderAppHtml(shop: string, apiKey: string): string {
           body: JSON.stringify({ competitors: wizState.competitors }),
         });
         const kw = await kwRes.json();
+        if (kw.emptyCatalog) { renderWizEmptyCatalog(); return; }
         if (!kwRes.ok) throw new Error(kw.error || "Keyword research failed");
         wizState.keywords = kw.keywords || [];
         renderWizKeywords(kw);
@@ -450,6 +451,19 @@ function renderAppHtml(shop: string, apiKey: string): string {
             '</div>' +
           '</div></div>';
       }
+    }
+
+    function renderWizEmptyCatalog() {
+      document.getElementById("wiz-root").innerHTML =
+        '<div class="wiz-overlay"><div class="wiz">' +
+          '<h2>Add products to unlock your SEO plan</h2>' +
+          '<p class="sub">Ranqapex builds your keyword plan from your real product catalogue and collections — but your store doesn\\'t have any yet.</p>' +
+          '<div class="alert">Add at least one product (and ideally a collection) in <strong>Products</strong>, then come back and click <strong>Build my SEO plan</strong>.</div>' +
+          '<div style="margin-top:16px;display:flex;gap:8px;">' +
+            '<a class="btn btn-primary" href="https://admin.shopify.com/store/' + SHOP.replace(".myshopify.com","") + '/products/new" target="_top">Add a product</a>' +
+            '<button class="btn btn-secondary" onclick="closeWizard()">Close</button>' +
+          '</div>' +
+        '</div></div>';
     }
 
     function renderWizKeywords(kw) {

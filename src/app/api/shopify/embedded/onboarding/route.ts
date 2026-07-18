@@ -34,9 +34,17 @@ async function stepCompetitors(domainId: string) {
     ...collections.slice(0, 4).map((c) => c.title),
     ...products.slice(0, 4).map((p) => p.name),
   ].filter(Boolean).slice(0, 6);
+
+  // No catalog = nothing meaningful to research. Searching the store's own
+  // handle just surfaces unrelated sites (news, gov, etc.) and would poison the
+  // keyword step, so bail out honestly instead.
   if (!seeds.length) {
-    const host = new URL(domain.domainUrl).hostname.replace(".myshopify.com", "").replace(/-/g, " ");
-    seeds.push(host);
+    return NextResponse.json({
+      competitors: [],
+      seedsUsed: [],
+      emptyCatalog: true,
+      message: "Add products or collections to your store so we can find your real competitors.",
+    });
   }
 
   const ownHost = new URL(domain.domainUrl).hostname.replace("www.", "");
@@ -88,6 +96,18 @@ async function stepKeywords(shop: string, domainId: string, competitors: string[
 
   const products = db.select().from(schema.storeProducts).where(eq(schema.storeProducts.domainId, domainId)).all();
   const collections = db.select().from(schema.storeCollections).where(eq(schema.storeCollections.domainId, domainId)).all();
+
+  // Guard: with no catalog the model has nothing to ground on and will invent a
+  // fictional store. Refuse rather than return confidently wrong keywords.
+  if (!products.length && !collections.length) {
+    return NextResponse.json(
+      {
+        error: "Add some products or collections to your store first — we build your keyword plan from your real catalog.",
+        emptyCatalog: true,
+      },
+      { status: 400 },
+    );
+  }
 
   const productList = products.slice(0, 40).map((p) => `- ${p.name}${p.price ? ` ($${p.price})` : ""}`).join("\n") || "(none synced)";
   const collectionList = collections.slice(0, 20).map((c) => `- ${c.title}`).join("\n") || "(none synced)";
