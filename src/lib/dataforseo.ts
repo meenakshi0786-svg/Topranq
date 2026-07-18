@@ -58,6 +58,10 @@ export async function keywordMetrics(
   keywords: string[],
   locationName = "United States",
   languageName = "English",
+  // How many keywords get a full SERP lookup (top competitor + PAA). SERP is
+  // billed per keyword, so free/Starter uses the default 5; Pro can pass a
+  // higher number (or Infinity) to enrich every keyword.
+  serpDepth = 5,
 ): Promise<KeywordMetricsResult> {
   const list = [...new Set(keywords.map((k) => k.trim().toLowerCase()).filter(Boolean))].slice(0, 100);
   if (!list.length) return { metrics: [], peopleAlsoAsk: [] };
@@ -98,7 +102,7 @@ export async function keywordMetrics(
   // 3. SERP for the highest-volume keyword → PAA + top competitor for a few keywords.
   const sorted = [...byKeyword.values()].sort((a, b) => (b.volume || 0) - (a.volume || 0));
   const peopleAlsoAsk: string[] = [];
-  const serpTargets = sorted.slice(0, 5); // cap SERP calls
+  const serpTargets = sorted.slice(0, Math.max(0, serpDepth)); // SERP is billed per keyword
   await Promise.all(
     serpTargets.map(async (m) => {
       try {

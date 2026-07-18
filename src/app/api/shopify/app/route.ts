@@ -130,6 +130,42 @@ function renderAppHtml(shop: string, apiKey: string): string {
     .tab:hover { color: #202223; }
     .tab.active { color: #4F6EF7; border-bottom-color: #4F6EF7; }
 
+    /* ── Onboarding wizard ── */
+    .wiz-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px; z-index: 999;
+    }
+    .wiz {
+      background: #fff; border-radius: 14px; width: 100%; max-width: 720px;
+      max-height: 88vh; overflow-y: auto; padding: 28px;
+      box-shadow: 0 18px 50px rgba(0,0,0,0.25);
+    }
+    .wiz h2 { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+    .wiz .sub { color: #6b7177; font-size: 14px; margin-bottom: 20px; }
+    .step { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f1f2f3; }
+    .step:last-child { border-bottom: none; }
+    .step-icon {
+      width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; background: #f1f2f3; color: #8c9196;
+    }
+    .step.active .step-icon { background: #e7ecff; color: #4F6EF7; }
+    .step.done .step-icon { background: #dcfce7; color: #166534; }
+    .step-label { font-size: 14px; font-weight: 600; color: #8c9196; }
+    .step.active .step-label, .step.done .step-label { color: #202223; }
+    .step-note { font-size: 12px; color: #6b7177; margin-left: auto; }
+    .kw-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; }
+    .kw-table th {
+      text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .05em;
+      color: #6b7177; padding: 8px 10px; border-bottom: 1px solid #e1e3e5; white-space: nowrap;
+    }
+    .kw-table td { padding: 9px 10px; border-bottom: 1px solid #f1f2f3; }
+    .kw-table tr:last-child td { border-bottom: none; }
+    .kw-scroll { max-height: 320px; overflow-y: auto; border: 1px solid #e1e3e5; border-radius: 10px; margin-top: 12px; }
+    .faq-item { padding: 9px 0; border-bottom: 1px solid #f1f2f3; font-size: 13px; color: #202223; }
+    .faq-item:last-child { border-bottom: none; }
+
     .article-row {
       display: flex; align-items: center; justify-content: space-between;
       padding: 14px 0; border-bottom: 1px solid #e1e3e5;
@@ -173,6 +209,9 @@ function renderAppHtml(shop: string, apiKey: string): string {
         <p class="subtitle">Shop: ${shop}</p>
       </div>
     </div>
+
+    <!-- Onboarding wizard (shown on first run) -->
+    <div id="wiz-root"></div>
 
     <!-- Status -->
     <div id="alert-area"></div>
@@ -235,7 +274,10 @@ function renderAppHtml(shop: string, apiKey: string): string {
           </div>
           <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:8px;flex-wrap:wrap;">
             <p style="color:#6b7177;font-size:13px;margin:0;">Each article uses 3 credits. Credits refresh every billing cycle.</p>
-            \${data.upgradeUrl ? '<a class="btn btn-primary" href="' + data.upgradeUrl + '" target="_top">' + upgradeLabel + '</a>' : ""}
+            <div style="display:flex;gap:8px;align-items:center;">
+              <button class="btn btn-secondary" onclick="startOnboarding()">Build my SEO plan</button>
+              \${data.upgradeUrl ? '<a class="btn btn-primary" href="' + data.upgradeUrl + '" target="_top">' + upgradeLabel + '</a>' : ""}
+            </div>
           </div>
         </div>
 
@@ -324,6 +366,181 @@ function renderAppHtml(shop: string, apiKey: string): string {
       loadAudit();
       loadVisibility();
       loadKeywords();
+
+      // First run after install → launch the onboarding wizard automatically.
+      wizState.upgradeUrl = data.upgradeUrl || null;
+      let onboarded = true;
+      try { onboarded = localStorage.getItem(WIZ_KEY) === "1"; } catch (e) { onboarded = true; }
+      if (!onboarded) startOnboarding();
+    }
+
+    // ── Onboarding wizard ────────────────────────────────────────────
+    const WIZ_KEY = "ranqapex_onboarded_" + SHOP;
+    let wizState = { competitors: [], keywords: [], metrics: null, upgradeUrl: null };
+
+    function wizStepsHtml(active, notes) {
+      const steps = [
+        ["sync-p", "Syncing your products"],
+        ["sync-c", "Syncing your collections"],
+        ["comp",   "Researching your competition"],
+        ["kw",     "Finding your best keywords"],
+      ];
+      return steps.map(function(s, i) {
+        const state = i < active ? "done" : (i === active ? "active" : "");
+        const icon = i < active ? "✓" : (i === active ? '<span class="loading"></span>' : String(i + 1));
+        const note = notes[s[0]] ? '<span class="step-note">' + notes[s[0]] + '</span>' : "";
+        return '<div class="step ' + state + '"><div class="step-icon">' + icon + '</div>' +
+               '<div class="step-label">' + s[1] + '</div>' + note + '</div>';
+      }).join("");
+    }
+
+    function renderWizProgress(active, notes) {
+      document.getElementById("wiz-root").innerHTML =
+        '<div class="wiz-overlay"><div class="wiz">' +
+          '<h2>Setting up Ranqapex for your store</h2>' +
+          '<p class="sub">We\\'re analyzing your catalog and competition to build your SEO plan. This takes about a minute.</p>' +
+          wizStepsHtml(active, notes || {}) +
+        '</div></div>';
+    }
+
+    function closeWizard() {
+      try { localStorage.setItem(WIZ_KEY, "1"); } catch (e) {}
+      document.getElementById("wiz-root").innerHTML = "";
+    }
+
+    async function startOnboarding() {
+      const notes = {};
+      try {
+        // Step 1 + 2: sync products and collections
+        renderWizProgress(0, notes);
+        const syncRes = await fetch("/api/shopify/embedded/onboarding?step=sync", { method: "POST" });
+        const sync = await syncRes.json();
+        if (!syncRes.ok) throw new Error(sync.error || "Product sync failed");
+        notes["sync-p"] = sync.products + " products";
+        renderWizProgress(1, notes);
+        await new Promise(function(r) { setTimeout(r, 400); });
+        notes["sync-c"] = sync.collections + " collections";
+
+        // Step 3: competitor research
+        renderWizProgress(2, notes);
+        const compRes = await fetch("/api/shopify/embedded/onboarding?step=competitors", { method: "POST" });
+        const comp = await compRes.json();
+        if (!compRes.ok) throw new Error(comp.error || "Competitor research failed");
+        wizState.competitors = (comp.competitors || []).map(function(c) { return c.domain; });
+        notes["comp"] = wizState.competitors.length + " competitors";
+
+        // Step 4: keyword research (Opus)
+        renderWizProgress(3, notes);
+        const kwRes = await fetch("/api/shopify/embedded/onboarding?step=keywords", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ competitors: wizState.competitors }),
+        });
+        const kw = await kwRes.json();
+        if (!kwRes.ok) throw new Error(kw.error || "Keyword research failed");
+        wizState.keywords = kw.keywords || [];
+        renderWizKeywords(kw);
+      } catch (e) {
+        document.getElementById("wiz-root").innerHTML =
+          '<div class="wiz-overlay"><div class="wiz">' +
+            '<h2>Setup didn\\'t finish</h2>' +
+            '<div class="alert error" style="margin-top:12px;">' + e.message + '</div>' +
+            '<div style="margin-top:16px;display:flex;gap:8px;">' +
+              '<button class="btn btn-primary" onclick="startOnboarding()">Try again</button>' +
+              '<button class="btn btn-secondary" onclick="closeWizard()">Skip for now</button>' +
+            '</div>' +
+          '</div></div>';
+      }
+    }
+
+    function renderWizKeywords(kw) {
+      const rows = wizState.keywords.map(function(k) {
+        return '<tr><td><strong>' + k.keyword + '</strong></td>' +
+               '<td><span class="badge ' + (k.intent === "informational" ? "pending" : "") + '">' + k.intent + '</span></td>' +
+               '<td style="color:#6b7177;">' + (k.rationale || "") + '</td></tr>';
+      }).join("");
+      document.getElementById("wiz-root").innerHTML =
+        '<div class="wiz-overlay"><div class="wiz">' +
+          '<h2>' + wizState.keywords.length + ' high-intent keywords for your store</h2>' +
+          '<p class="sub">Based on your ' + kw.productCount + ' products, ' + kw.collectionCount +
+            ' collections, and ' + wizState.competitors.length + ' competitors' +
+            (wizState.competitors.length ? ' (' + wizState.competitors.slice(0, 3).join(", ") + ')' : '') + '.</p>' +
+          '<div class="kw-scroll"><table class="kw-table">' +
+            '<thead><tr><th>Keyword</th><th>Intent</th><th>Targets</th></tr></thead><tbody>' + rows + '</tbody>' +
+          '</table></div>' +
+          '<div style="margin-top:18px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">' +
+            '<button id="wiz-metrics-btn" class="btn btn-primary" onclick="fetchWizMetrics()">Let\\'s find these metrics</button>' +
+            '<button class="btn btn-secondary" onclick="closeWizard()">Skip for now</button>' +
+            '<span style="font-size:12px;color:#8c9196;">Fetches real search volume &amp; difficulty.</span>' +
+          '</div>' +
+        '</div></div>';
+    }
+
+    async function fetchWizMetrics() {
+      const btn = document.getElementById("wiz-metrics-btn");
+      btn.disabled = true; btn.innerHTML = '<span class="loading"></span> Fetching live metrics…';
+      try {
+        const res = await fetch("/api/shopify/embedded/keyword-metrics", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ keywords: wizState.keywords.map(function(k) { return k.keyword; }) }),
+        });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.error || "Couldn't fetch metrics");
+        wizState.metrics = d;
+        renderWizPlan(d);
+        refreshCredits();
+      } catch (e) {
+        btn.disabled = false; btn.innerHTML = "Let's find these metrics";
+        const box = document.createElement("div");
+        box.className = "alert error"; box.style.marginTop = "12px"; box.textContent = e.message;
+        btn.parentNode.appendChild(box);
+      }
+    }
+
+    function renderWizPlan(d) {
+      const withVol = (d.metrics || []).filter(function(m) { return m.volume != null; });
+      const totalVol = withVol.reduce(function(s, m) { return s + (m.volume || 0); }, 0);
+      const easy = withVol.filter(function(m) { return (m.difficulty || 0) <= 30; }).length;
+
+      const rows = (d.metrics || []).slice(0, 50).map(function(m) {
+        const diff = m.difficulty == null ? "—" : m.difficulty;
+        const diffColor = m.difficulty == null ? "#6b7177" : (m.difficulty <= 30 ? "#166534" : (m.difficulty <= 60 ? "#92400e" : "#991b1b"));
+        return '<tr><td><strong>' + m.keyword + '</strong></td>' +
+               '<td>' + (m.volume != null ? m.volume.toLocaleString() : "—") + '</td>' +
+               '<td style="color:' + diffColor + ';font-weight:700;">' + diff + '</td>' +
+               '<td style="color:#6b7177;">' + (m.topCompetitor || "—") + '</td></tr>';
+      }).join("");
+
+      const faqs = (d.peopleAlsoAsk || []).map(function(q) {
+        return '<div class="faq-item">• ' + q + '</div>';
+      }).join("");
+
+      document.getElementById("wiz-root").innerHTML =
+        '<div class="wiz-overlay"><div class="wiz">' +
+          '<h2>Your page-1 ranking plan</h2>' +
+          '<p class="sub">Based on your product catalogue, collections, and competitor research, these are the keywords we\\'re aiming to rank you on page 1 for.</p>' +
+          '<div class="stat-row">' +
+            '<div class="stat"><div class="stat-value">' + wizState.keywords.length + '</div><div class="stat-label">Keywords</div></div>' +
+            '<div class="stat"><div class="stat-value">' + totalVol.toLocaleString() + '</div><div class="stat-label">Monthly searches</div></div>' +
+            '<div class="stat"><div class="stat-value" style="color:#166534;">' + easy + '</div><div class="stat-label">Easy wins</div></div>' +
+          '</div>' +
+          '<div class="kw-scroll"><table class="kw-table">' +
+            '<thead><tr><th>Keyword</th><th>Volume</th><th>Difficulty</th><th>Ranking now</th></tr></thead>' +
+            '<tbody>' + rows + '</tbody></table></div>' +
+          (faqs ? '<h2 style="font-size:15px;margin-top:20px;">People also ask</h2>' +
+                  '<p class="sub" style="margin-bottom:8px;">We\\'ll answer these in your content to win featured snippets.</p>' + faqs : "") +
+          '<div style="margin-top:22px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">' +
+            '<button class="btn btn-primary" onclick="executePlan()">Execute this plan</button>' +
+            '<button class="btn btn-secondary" onclick="closeWizard()">Maybe later</button>' +
+          '</div>' +
+        '</div></div>';
+    }
+
+    function executePlan() {
+      // Executing the plan requires a paid subscription — send them to Shopify's
+      // managed pricing page. Mark onboarding done so it doesn't re-trigger.
+      try { localStorage.setItem(WIZ_KEY, "1"); } catch (e) {}
+      if (wizState.upgradeUrl) window.open(wizState.upgradeUrl, "_top");
+      else closeWizard();
     }
 
     function switchTab(name) {
