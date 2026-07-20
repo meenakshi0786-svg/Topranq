@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
     intent: "informational",
     audience: "shoppers",
     productContext,
-    preferredModel: plan === "dollar5" ? "opus" : "sonnet",
+    preferredModel: plan === "growth" ? "opus" : "sonnet",
   };
 
   try {

@@ -48,7 +48,7 @@ Generate SEO and AI-optimized blog posts featuring your products, then publish t
 
 **App details** (max 500) — ~490 chars:
 ```
-Ranqapex is your AI SEO content team inside Shopify. Give it a topic and it writes a complete, structured blog article optimized for both Google and AI answer engines like ChatGPT, Perplexity and Google AI Overviews. It automatically weaves in your real products with links, adds meta title, description and FAQ schema, then publishes straight to your store blog in one click. No writing or SEO skills needed. Start free; paid plans from $1/month with a 7-day free trial.
+Ranqapex is your AI SEO content team inside Shopify. Give it a topic and it writes a complete, structured blog article optimized for both Google and AI answer engines like ChatGPT, Perplexity and Google AI Overviews. It automatically weaves in your real products with links, adds meta title, description and FAQ schema, then publishes straight to your store blog in one click. No writing or SEO skills needed. Start free; paid plans from $29/month with a 7-day free trial.
 ```
 
 **Key benefits** (exactly 3 — title max 40, description max 100):
@@ -81,11 +81,11 @@ Create these on the app's **Pricing** page (if not already done from Phase 2):
 
 | Plan | Price | Trial | What to list |
 |---|---|---|---|
-| Free | $0 | — | 5 articles/month, SEO + GEO optimization, product weaving, 1-click publish |
-| **Starter** | $1/month | 7-day free | ~33 articles/month |
-| **Pro** | $5/month | 7-day free | ~66 articles/month, higher-quality AI model |
+| Free | $0 | — | 1 trial article, SEO audit, keyword research taste, 2 free templates |
+| **Starter** | $29/month | 7-day free | 25 credits/mo (~8 articles), all 10 templates, keyword research + live metrics, 100-page audits |
+| **Growth** | $99/month | 7-day free | 75 credits/mo (~25 articles), highest-quality AI model (Opus), AI Visibility scans, 500-page audits |
 
-> Plan **names must be exactly `Starter` and `Pro`** — the app maps those names to credits.
+> Plan **names must be exactly `Starter` and `Growth`** — the app maps those names to credits.
 
 ---
 
@@ -147,12 +147,13 @@ webhooks* → paste the three URLs:
 > 1. Install the app on a development store.
 > 2. The app opens inside Shopify admin and loads automatically.
 > 3. In **Topic**, enter e.g. "How to choose a gift for coffee lovers" and click
->    **Generate article** (~30s). The free plan includes credits for ~5 test articles,
->    so no payment is needed to evaluate.
+>    **Generate article** (~30s). The free plan includes enough credits for a test
+>    article, and development-store subscriptions are test charges — so nothing is
+>    ever actually billed while reviewing.
 > 4. When it finishes, click **Publish to store blog** — the article appears on the
 >    store's blog. A "View published post" link is shown.
-> 5. Billing: click **Upgrade plan** to see the Shopify-hosted plan page (Starter $1 /
->    Pro $5, 7-day trial). Dev-store charges are test charges.
+> 5. Billing: click **Upgrade plan** to see the Shopify-hosted plan page (Starter $29 /
+>    Growth $99, 7-day trial). Dev-store charges are test charges.
 
 ---
 
@@ -167,7 +168,7 @@ flags → **Submit for review**. Initial review is typically **4–7 business da
 ## Quick status
 
 - [ ] §5 webhooks registered (`shopify app deploy` or dashboard)
-- [ ] Plans created/named exactly `Starter` / `Pro` (Phase 2)
+- [ ] Plans created/named exactly `Starter` / `Growth`
 - [ ] App handle verified (Phase 2)
 - [ ] Icon uploaded
 - [ ] 3–6 screenshots captured + uploaded
@@ -222,8 +223,9 @@ Yes. Generated articles are saved as drafts. You publish to your store blog only
 Publish.
 
 **How much does it cost?**
-Start free (5 articles/month). Paid plans are Starter ($1/month) and Pro ($5/month, higher-quality
-AI model), each with a 7-day free trial. Billing is handled securely by Shopify.
+Start free with a trial article and the SEO audit. Paid plans are Starter ($29/month, ~8 articles)
+and Growth ($99/month, ~25 articles with our highest-quality AI model), each with a 7-day free
+trial. Billing is handled securely by Shopify.
 
 **How do credits work?**
 Each article uses 3 credits. Your monthly credit allowance refreshes at the start of every billing

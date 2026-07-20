@@ -5,7 +5,10 @@ import { getShopFromRequest, getRawSessionToken, getOrCreateShopAccount, resolve
 import { getShopBillingState } from "@/lib/shopify-billing";
 import { syncShopCatalog } from "@/app/api/shopify/embedded/sync/route";
 
-const ONBOARDING_KEYWORDS_CREDITS = 3;
+// Free: the wizard is the acquisition funnel. With a 5-credit free tier, charging
+// here would kill the flow before the plan reveal — the paywall lives at Execute
+// (article generation) instead, after the merchant has seen the full value.
+const ONBOARDING_KEYWORDS_CREDITS = 0;
 
 // ── Step 1: sync ──────────────────────────────────────────────────────
 // POST /api/shopify/embedded/onboarding?step=sync
@@ -84,7 +87,7 @@ async function stepCompetitors(domainId: string) {
 // Opus proposes ~50 high-intent commercial keywords from catalog + competitors.
 async function stepKeywords(shop: string, domainId: string, competitors: string[]) {
   const { userId, creditsRemaining } = await getShopBillingState(shop);
-  if (creditsRemaining < ONBOARDING_KEYWORDS_CREDITS) {
+  if (ONBOARDING_KEYWORDS_CREDITS > 0 && creditsRemaining < ONBOARDING_KEYWORDS_CREDITS) {
     return NextResponse.json(
       { error: `Keyword research needs ${ONBOARDING_KEYWORDS_CREDITS} credits (you have ${creditsRemaining}). Upgrade your plan.` },
       { status: 402 },
@@ -192,15 +195,17 @@ RULES:
     .filter((k) => { const key = k.keyword.toLowerCase(); if (seen.has(key)) return false; seen.add(key); return true; })
     .slice(0, 50);
 
-  db.insert(schema.creditLedger)
-    .values({
-      userId,
-      action: "onboarding_keywords",
-      creditsUsed: ONBOARDING_KEYWORDS_CREDITS,
-      balanceAfter: creditsRemaining - ONBOARDING_KEYWORDS_CREDITS,
-      agent: "shopify_embedded",
-    })
-    .run();
+  if (ONBOARDING_KEYWORDS_CREDITS > 0) {
+    db.insert(schema.creditLedger)
+      .values({
+        userId,
+        action: "onboarding_keywords",
+        creditsUsed: ONBOARDING_KEYWORDS_CREDITS,
+        balanceAfter: creditsRemaining - ONBOARDING_KEYWORDS_CREDITS,
+        agent: "shopify_embedded",
+      })
+      .run();
+  }
 
   return NextResponse.json({ keywords, productCount: products.length, collectionCount: collections.length });
 }

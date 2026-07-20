@@ -22,14 +22,15 @@ const SHOPIFY_APP_HANDLE = process.env.SHOPIFY_APP_HANDLE || "";
 // Map the Shopify plan *name* (as configured in the Partner Dashboard pricing page)
 // onto our internal plan enum. Keys are lowercased for a forgiving match.
 // IMPORTANT: the plans you create in the dashboard must be named to match these.
-const PLAN_BY_SHOPIFY_NAME: Record<string, "dollar1" | "dollar5"> = {
-  starter: "dollar1", // $1/mo
-  pro: "dollar5", // $5/mo
+// Pricing ladder (2026-07): Starter $29/mo (25cr), Growth $99/mo (75cr, Opus).
+const PLAN_BY_SHOPIFY_NAME: Record<string, "starter" | "growth"> = {
+  starter: "starter", // $29/mo
+  growth: "growth", // $99/mo
 };
 
-// Shopify free tier gets a smaller allowance than the web app's free plan, so the
-// $1 Starter is a genuine upgrade (web `free` stays 100 via PLAN_LIMITS).
-const SHOPIFY_FREE_CREDITS = 15;
+// Shopify free tier: ~1 article + one taste of keyword tools, then upgrade.
+// (Web `free` stays 100 via PLAN_LIMITS — this override is Shopify-only.)
+const SHOPIFY_FREE_CREDITS = 5;
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const BILLING_PERIOD_MS = 30 * MS_PER_DAY; // Shopify recurring charges run on 30-day cycles.
@@ -37,7 +38,7 @@ const BILLING_PERIOD_MS = 30 * MS_PER_DAY; // Shopify recurring charges run on 3
 export interface ShopBillingState {
   userId: string;
   domainId: string;
-  plan: "free" | "dollar1" | "dollar5";
+  plan: "free" | "starter" | "growth";
   creditsAllowance: number;
   creditsUsed: number;
   creditsRemaining: number;

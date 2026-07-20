@@ -303,7 +303,7 @@ function renderAppHtml(shop: string, apiKey: string): string {
 
     function renderHome(data) {
       const content = document.getElementById("content");
-      const planLabels = { free: "Free", dollar1: "Starter", dollar5: "Pro" };
+      const planLabels = { free: "Free", starter: "Starter", growth: "Growth", dollar1: "Starter", dollar5: "Pro" };
       const planName = planLabels[data.plan] || data.plan;
       const credits = data.creditsRemaining != null
         ? data.creditsRemaining + " / " + data.creditsAllowance
@@ -311,7 +311,7 @@ function renderAppHtml(shop: string, apiKey: string): string {
       const trialNote = data.trialDaysRemaining > 0
         ? '<span style="font-size:11px;font-weight:600;color:#166534;background:#dcfce7;padding:2px 8px;border-radius:4px;margin-left:8px;">' + data.trialDaysRemaining + '-day trial</span>'
         : "";
-      const upgradeLabel = data.plan === "dollar5" ? "Manage plan" : "Upgrade plan";
+      const upgradeLabel = data.plan === "growth" ? "Manage plan" : "Upgrade plan";
       content.innerHTML = \`
         <div class="card">
           <div class="stat-row">
@@ -362,7 +362,7 @@ function renderAppHtml(shop: string, apiKey: string): string {
         <div id="tab-templates" class="tab-panel" style="display:none;">
           <div class="card">
             <h2>Article Templates</h2>
-            <p style="margin:8px 0 4px;">Proven article formats that rank. Pick one — it structures your next generated post. <strong>2 free</strong>, 8 with Starter/Pro.</p>
+            <p style="margin:8px 0 4px;">Proven article formats that rank. Pick one — it structures your next generated post. <strong>2 free</strong>, 8 with Starter/Growth.</p>
             <div id="tpl-grid" class="tpl-grid"></div>
           </div>
         </div>
@@ -672,7 +672,7 @@ function renderAppHtml(shop: string, apiKey: string): string {
           '<div class="pay-modal">' +
             '<div class="pay-lock">🔒</div>' +
             '<h3>' + t.icon + ' ' + t.name + ' is a premium template</h3>' +
-            '<p>Unlock all 10 proven article templates — comparisons, buying guides, gift guides and more — with the Starter ($1/mo) or Pro ($5/mo) plan. 7-day free trial.</p>' +
+            '<p>Unlock all 10 proven article templates — comparisons, buying guides, gift guides and more — with the Starter ($29/mo) or Growth ($99/mo) plan. 7-day free trial.</p>' +
             '<div style="display:flex;gap:8px;justify-content:center;">' +
               (wizState.upgradeUrl ? '<a class="btn btn-primary" href="' + wizState.upgradeUrl + '" target="_top">Start free trial</a>' : "") +
               '<button class="btn btn-secondary" onclick="document.querySelector(\\'.pay-overlay\\').remove()">Maybe later</button>' +
