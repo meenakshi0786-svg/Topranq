@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateShopDomain, verifyShopifyHmac, getShopAccessToken } from "@/lib/shopify";
+import { templatesForClient } from "@/lib/blog-templates";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://ranqapex.com";
 const SHOPIFY_CLIENT_ID = process.env.SHOPIFY_CLIENT_ID || "";
@@ -130,6 +131,36 @@ function renderAppHtml(shop: string, apiKey: string): string {
     .tab:hover { color: #202223; }
     .tab.active { color: #4F6EF7; border-bottom-color: #4F6EF7; }
 
+    /* ── Templates gallery ── */
+    .tpl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; margin-top: 16px; }
+    .tpl-card {
+      position: relative; background: #fff; border: 1px solid #e1e3e5; border-radius: 12px;
+      padding: 18px; cursor: pointer; transition: transform .15s, box-shadow .15s, border-color .15s;
+    }
+    .tpl-card:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(31,33,36,.09); border-color: #c7d7fe; }
+    .tpl-icon { font-size: 26px; margin-bottom: 10px; }
+    .tpl-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .tpl-desc { font-size: 12.5px; color: #6b7177; line-height: 1.45; }
+    .tpl-badge {
+      position: absolute; top: 12px; right: 12px; font-size: 10px; font-weight: 800;
+      letter-spacing: .06em; padding: 3px 8px; border-radius: 5px;
+    }
+    .tpl-badge.free { background: #dcfce7; color: #166534; }
+    .tpl-badge.pro { background: linear-gradient(135deg, #4F6EF7, #7C5CFC); color: #fff; }
+    .tpl-selected-chip {
+      display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600;
+      background: #f0f5ff; color: #4F6EF7; border: 1px solid #c7d7fe;
+      padding: 6px 10px; border-radius: 8px; margin-bottom: 12px;
+    }
+    .tpl-selected-chip button { background: none; border: none; cursor: pointer; color: #6b7177; font-size: 13px; padding: 0; }
+
+    /* ── Paywall modal ── */
+    .pay-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; padding: 24px; z-index: 1000; }
+    .pay-modal { background: #fff; border-radius: 14px; max-width: 440px; width: 100%; padding: 28px; text-align: center; box-shadow: 0 18px 50px rgba(0,0,0,.25); }
+    .pay-lock { width: 54px; height: 54px; margin: 0 auto 14px; border-radius: 14px; background: linear-gradient(135deg, #4F6EF7, #7C5CFC); display: flex; align-items: center; justify-content: center; font-size: 24px; }
+    .pay-modal h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+    .pay-modal p { font-size: 13.5px; color: #6b7177; margin-bottom: 18px; }
+
     /* ── Onboarding wizard ── */
     .wiz-overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,0.45);
@@ -204,6 +235,7 @@ function renderAppHtml(shop: string, apiKey: string): string {
   <ui-nav-menu>
     <a href="/api/shopify/app?shop=${shop}" rel="home">Ranqapex</a>
     <a href="/api/shopify/app?shop=${shop}&tab=generate">Blog Generator</a>
+    <a href="/api/shopify/app?shop=${shop}&tab=templates">Templates</a>
     <a href="/api/shopify/app?shop=${shop}&tab=audit">SEO Audit</a>
     <a href="/api/shopify/app?shop=${shop}&tab=visibility">AI Visibility</a>
     <a href="/api/shopify/app?shop=${shop}&tab=keywords">Keywords</a>
@@ -241,6 +273,9 @@ function renderAppHtml(shop: string, apiKey: string): string {
 
   <script>
     const SHOP = ${JSON.stringify(shop)};
+    const TEMPLATES = ${JSON.stringify(templatesForClient())};
+    let PLAN = "free";
+    let selectedTemplate = null;
 
     function alertBox(msg, kind) {
       document.getElementById("alert-area").innerHTML =
@@ -294,18 +329,20 @@ function renderAppHtml(shop: string, apiKey: string): string {
         </div>
 
         <div class="tabs">
-          <button class="tab active" data-tab="generate" onclick="switchTab('generate')">Blog Generator</button>
-          <button class="tab" data-tab="audit" onclick="switchTab('audit')">SEO Audit</button>
-          <button class="tab" data-tab="visibility" onclick="switchTab('visibility')">AI Visibility</button>
-          <button class="tab" data-tab="keywords" onclick="switchTab('keywords')">Keywords</button>
-          <button class="tab" data-tab="links" onclick="switchTab('links')">Internal Links</button>
-          <button class="tab" data-tab="products" onclick="switchTab('products')">Product Links</button>
+          <button class="tab active" data-tab="generate" onclick="switchTab('generate')">✍️ Blog Generator</button>
+          <button class="tab" data-tab="templates" onclick="switchTab('templates')">📐 Templates</button>
+          <button class="tab" data-tab="audit" onclick="switchTab('audit')">🔍 SEO Audit</button>
+          <button class="tab" data-tab="visibility" onclick="switchTab('visibility')">🤖 AI Visibility</button>
+          <button class="tab" data-tab="keywords" onclick="switchTab('keywords')">🎯 Keywords</button>
+          <button class="tab" data-tab="links" onclick="switchTab('links')">🔗 Internal Links</button>
+          <button class="tab" data-tab="products" onclick="switchTab('products')">🛍️ Product Links</button>
         </div>
 
         <div id="tab-generate" class="tab-panel">
           <div class="card">
             <h2>AI Blog Post Generator</h2>
             <p style="margin:8px 0 16px;">Generate an SEO + GEO-optimized article with your products woven in, then publish it to your store blog.</p>
+            <div id="tpl-chip"></div>
             <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Topic</label>
             <input id="gen-topic" placeholder="e.g. How to choose running shoes for flat feet"
               style="width:100%;padding:10px 12px;border:1px solid #c9cccf;border-radius:8px;font-size:14px;margin-bottom:12px;" />
@@ -319,6 +356,14 @@ function renderAppHtml(shop: string, apiKey: string): string {
           <div class="card">
             <h2>Your articles</h2>
             <div id="articles-list" style="margin-top:8px;"><p style="color:#6b7177;font-size:13px;">Loading…</p></div>
+          </div>
+        </div>
+
+        <div id="tab-templates" class="tab-panel" style="display:none;">
+          <div class="card">
+            <h2>Article Templates</h2>
+            <p style="margin:8px 0 4px;">Proven article formats that rank. Pick one — it structures your next generated post. <strong>2 free</strong>, 8 with Starter/Pro.</p>
+            <div id="tpl-grid" class="tpl-grid"></div>
           </div>
         </div>
 
@@ -374,6 +419,8 @@ function renderAppHtml(shop: string, apiKey: string): string {
           </div>
         </div>
       \`;
+      PLAN = data.plan || "free";
+      renderTemplates();
       loadArticles();
       loadAudit();
       loadVisibility();
@@ -582,6 +629,58 @@ function renderAppHtml(shop: string, apiKey: string): string {
       if (panel) panel.style.display = "block";
     }
 
+    // ── Templates ────────────────────────────────────────────────────
+    function renderTemplates() {
+      const grid = document.getElementById("tpl-grid");
+      if (!grid) return;
+      grid.innerHTML = TEMPLATES.map(function(t) {
+        const locked = t.premium && PLAN === "free";
+        return '<div class="tpl-card" onclick="selectTemplate(\\'' + t.id + '\\')">' +
+          '<span class="tpl-badge ' + (t.premium ? "pro" : "free") + '">' + (t.premium ? (locked ? "🔒 PRO" : "PRO") : "FREE") + '</span>' +
+          '<div class="tpl-icon">' + t.icon + '</div>' +
+          '<div class="tpl-name">' + t.name + '</div>' +
+          '<div class="tpl-desc">' + t.description + '</div>' +
+        '</div>';
+      }).join("");
+    }
+
+    function selectTemplate(id) {
+      const t = TEMPLATES.find(function(x) { return x.id === id; });
+      if (!t) return;
+      if (t.premium && PLAN === "free") { showPaywall(t); return; }
+      selectedTemplate = t;
+      const chip = document.getElementById("tpl-chip");
+      if (chip) chip.innerHTML =
+        '<span class="tpl-selected-chip">' + t.icon + ' Template: <strong>' + t.name + '</strong>' +
+        '<button onclick="clearTemplate()" title="Remove template">✕</button></span>';
+      const topic = document.getElementById("gen-topic");
+      if (topic && !topic.value) topic.placeholder = "e.g. " + t.exampleTopic;
+      switchTab("generate");
+      if (topic) topic.focus();
+    }
+
+    function clearTemplate() {
+      selectedTemplate = null;
+      const chip = document.getElementById("tpl-chip");
+      if (chip) chip.innerHTML = "";
+    }
+
+    function showPaywall(t) {
+      const root = document.getElementById("wiz-root");
+      root.innerHTML =
+        '<div class="pay-overlay" onclick="if(event.target===this)this.remove()">' +
+          '<div class="pay-modal">' +
+            '<div class="pay-lock">🔒</div>' +
+            '<h3>' + t.icon + ' ' + t.name + ' is a premium template</h3>' +
+            '<p>Unlock all 10 proven article templates — comparisons, buying guides, gift guides and more — with the Starter ($1/mo) or Pro ($5/mo) plan. 7-day free trial.</p>' +
+            '<div style="display:flex;gap:8px;justify-content:center;">' +
+              (wizState.upgradeUrl ? '<a class="btn btn-primary" href="' + wizState.upgradeUrl + '" target="_top">Start free trial</a>' : "") +
+              '<button class="btn btn-secondary" onclick="document.querySelector(\\'.pay-overlay\\').remove()">Maybe later</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+    }
+
     async function generate() {
       const topic = document.getElementById("gen-topic").value.trim();
       const keywords = document.getElementById("gen-keywords").value.trim();
@@ -593,10 +692,16 @@ function renderAppHtml(shop: string, apiKey: string): string {
       try {
         const res = await fetch("/api/shopify/embedded/generate", {
           method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ topic, keywords }),
+          body: JSON.stringify({ topic, keywords, template: selectedTemplate ? selectedTemplate.id : undefined }),
         });
         const data = await res.json();
+        if (data.premiumTemplate) {
+          const t = selectedTemplate; clearTemplate();
+          btn.disabled = false; btn.innerHTML = "Generate article";
+          showPaywall(t); return;
+        }
         if (!res.ok) throw new Error(data.error || "Generation failed");
+        clearTemplate();
         result.innerHTML = \`
           <div class="alert success">Generated "\${data.title}" — \${data.wordCount} words\${data.qualityScore != null ? ", quality " + data.qualityScore + "/100" : ""}\${data.usedProducts ? " · products woven in" : ""}.</div>
           <button class="btn btn-primary" onclick="publish('\${data.articleId}', this)">Publish to store blog</button>

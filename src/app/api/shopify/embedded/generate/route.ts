@@ -5,6 +5,7 @@ import { runBlogWriter, BLOG_WRITER_CREDITS, type BlogWriterConfig } from "@/lib
 import { getShopFromRequest, getRawSessionToken, resolveOfflineToken } from "@/lib/shopify-embedded";
 import { fetchStoreProducts } from "@/lib/shopify";
 import { getShopBillingState } from "@/lib/shopify-billing";
+import { getTemplate } from "@/lib/blog-templates";
 
 // POST /api/shopify/embedded/generate
 // Body: { topic: string, keywords?: string }
@@ -31,6 +32,19 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Template paywall — enforced here, not just hidden in the UI. Premium
+  // templates require a paid plan.
+  const template = typeof body.template === "string" ? getTemplate(body.template) : undefined;
+  if (body.template && !template) {
+    return NextResponse.json({ error: "Unknown template" }, { status: 400 });
+  }
+  if (template?.premium && plan === "free") {
+    return NextResponse.json(
+      { error: `"${template.name}" is a premium template. Upgrade to Starter or Pro to use it.`, premiumTemplate: true },
+      { status: 402 },
+    );
+  }
+
   // Best-effort: pull store products to weave in naturally.
   let productContext: string | undefined;
   const token = await resolveOfflineToken(claims.shop, getRawSessionToken(request));
@@ -43,7 +57,7 @@ export async function POST(request: NextRequest) {
   }
 
   const config: BlogWriterConfig = {
-    topic,
+    topic: template ? `${topic}\n\nARTICLE FORMAT: ${template.structure}` : topic,
     keywords: keywords.length ? keywords : [topic],
     tone: "professional",
     wordCount: 1500,
