@@ -56,13 +56,16 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  const { getShopSettings } = await import("@/app/api/shopify/embedded/settings/route");
+  const prefs = getShopSettings(domainId);
+
   const config: BlogWriterConfig = {
     topic: template ? `${topic}\n\nARTICLE FORMAT: ${template.structure}` : topic,
     keywords: keywords.length ? keywords : [topic],
-    tone: "professional",
+    tone: prefs.tone,
     wordCount: 1500,
     intent: "informational",
-    audience: "shoppers",
+    audience: prefs.audience,
     productContext,
     preferredModel: plan === "growth" ? "opus" : "sonnet",
   };

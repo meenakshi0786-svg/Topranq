@@ -148,6 +148,18 @@ if (!tables.find(t => t.name === "store_collections")) {
   )`);
   console.log("  + store_collections table");
 }
+if (!tables.find(t => t.name === "store_settings")) {
+  sqlite.exec(`CREATE TABLE store_settings (
+    id TEXT PRIMARY KEY NOT NULL,
+    domain_id TEXT NOT NULL,
+    tone TEXT DEFAULT 'professional',
+    language TEXT DEFAULT 'English',
+    audience TEXT DEFAULT 'shoppers',
+    author_name TEXT,
+    updated_at TEXT DEFAULT (datetime('now'))
+  )`);
+  console.log("  + store_settings table");
+}
 if (!tables.find(t => t.name === "visitor_logs")) {
   sqlite.exec(`CREATE TABLE visitor_logs (
     id TEXT PRIMARY KEY NOT NULL,

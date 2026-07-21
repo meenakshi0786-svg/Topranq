@@ -309,6 +309,17 @@ export const storeProducts = sqliteTable("store_products", {
   createdAt: text("created_at").default(sql`(datetime('now'))`),
 });
 
+// ── Store Settings (embedded app Preferences) ────────────────────────
+export const storeSettings = sqliteTable("store_settings", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  domainId: text("domain_id").notNull().references(() => domains.id, { onDelete: "cascade" }),
+  tone: text("tone").default("professional"),
+  language: text("language").default("English"),
+  audience: text("audience").default("shoppers"),
+  authorName: text("author_name"),
+  updatedAt: text("updated_at").default(sql`(datetime('now'))`),
+});
+
 // ── Store Collections (synced from Shopify on install) ───────────────
 export const storeCollections = sqliteTable("store_collections", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),

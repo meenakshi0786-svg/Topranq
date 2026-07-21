@@ -36,11 +36,14 @@ export async function POST(request: NextRequest) {
     .get();
 
   try {
+    const { getShopSettings } = await import("@/app/api/shopify/embedded/settings/route");
+    const prefs = getShopSettings(domainId);
     const result = await publishArticleToShopify(claims.shop, token, {
       title: article.h1 || article.metaTitle || "Untitled",
       bodyHtml: article.bodyHtml || (article.bodyMarkdown || "").replace(/\n/g, "<br>"),
       tags: article.targetKeyword || "",
       featuredImageUrl: article.featuredImageUrl,
+      author: prefs.authorName || null,
     });
 
     db.update(schema.articles)

@@ -419,7 +419,7 @@ function isPublicImageUrl(url?: string | null): boolean {
 export async function publishArticleToShopify(
   shop: string,
   accessToken: string,
-  article: { title: string; bodyHtml: string; tags?: string; featuredImageUrl?: string | null }
+  article: { title: string; bodyHtml: string; tags?: string; featuredImageUrl?: string | null; author?: string | null }
 ): Promise<{ url: string; id: number }> {
   // 1. Find or create a default blog
   const blogsRes = await fetch(`https://${shop}/admin/api/${SHOPIFY_API_VERSION}/blogs.json`, {
@@ -460,6 +460,7 @@ export async function publishArticleToShopify(
       tags: article.tags || "",
       published: true,
     };
+    if (article.author) articleBody.author = article.author;
     if (includeImage && article.featuredImageUrl) {
       articleBody.image = { src: article.featuredImageUrl };
     }

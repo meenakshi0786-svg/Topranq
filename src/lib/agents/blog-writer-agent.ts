@@ -77,7 +77,9 @@ async function askClaude(prompt: string, maxTokens = 4000, preferredModel?: "son
 export interface BlogWriterConfig {
   topic: string;
   keywords: string[];
-  tone: "professional" | "casual" | "technical";
+  // Free-form: interpolated into the writer prompt (e.g. "professional",
+  // "friendly", "playful" — merchant-configurable via Preferences).
+  tone: string;
   preferredModel?: "sonnet" | "opus";
   wordCount: number;
   language?: string;

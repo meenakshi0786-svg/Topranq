@@ -264,6 +264,9 @@ function renderAppHtml(shop: string, apiKey: string): string {
     <a href="/api/shopify/app?shop=${shop}&tab=keywords">Keywords</a>
     <a href="/api/shopify/app?shop=${shop}&tab=links">Internal Links</a>
     <a href="/api/shopify/app?shop=${shop}&tab=products">Product Links</a>
+    <a href="/api/shopify/app?shop=${shop}&tab=how">How It Works</a>
+    <a href="/api/shopify/app?shop=${shop}&tab=prefs">Preferences</a>
+    <a href="/api/shopify/app?shop=${shop}&tab=pricing">Pricing Plans</a>
   </ui-nav-menu>
 
   <div class="container">
@@ -451,6 +454,75 @@ function renderAppHtml(shop: string, apiKey: string): string {
             <div id="prod-result" style="margin-top:16px;"></div>
           </div>
         </div>
+
+        <div id="tab-prefs" class="tab-panel" style="display:none;">
+          <div class="card">
+            <h2>Preferences</h2>
+            <p style="margin:8px 0 16px;">Set your brand voice once — every article follows it.</p>
+            <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Tone of voice</label>
+            <select id="pref-tone" style="width:100%;padding:10px 12px;border:1px solid #c9cccf;border-radius:8px;font-size:14px;margin-bottom:12px;background:#fff;">
+              <option value="professional">Professional</option>
+              <option value="friendly">Friendly</option>
+              <option value="playful">Playful</option>
+              <option value="authoritative">Authoritative</option>
+              <option value="conversational">Conversational</option>
+            </select>
+            <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Language</label>
+            <input id="pref-language" placeholder="English" style="width:100%;padding:10px 12px;border:1px solid #c9cccf;border-radius:8px;font-size:14px;margin-bottom:12px;" />
+            <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Target audience</label>
+            <input id="pref-audience" placeholder="e.g. home baristas, gift shoppers" style="width:100%;padding:10px 12px;border:1px solid #c9cccf;border-radius:8px;font-size:14px;margin-bottom:12px;" />
+            <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Author name <span style="color:#8c9196;font-weight:400;">(shown on published posts)</span></label>
+            <input id="pref-author" placeholder="e.g. The Ranqapex Team" style="width:100%;padding:10px 12px;border:1px solid #c9cccf;border-radius:8px;font-size:14px;margin-bottom:16px;" />
+            <button id="pref-save" class="btn btn-primary" onclick="saveSettings()">Save preferences</button>
+            <span id="pref-status" style="font-size:12px;color:#166534;margin-left:10px;"></span>
+          </div>
+        </div>
+
+        <div id="tab-how" class="tab-panel" style="display:none;">
+          <div class="card">
+            <h2>How Ranqapex works</h2>
+            <div style="margin-top:12px;">
+              <div class="step done"><div class="step-icon">1</div><div><div class="step-label" style="color:#202223;">We learn your store</div><div style="font-size:12.5px;color:#6b7177;">Products and collections sync automatically, so every article is grounded in what you actually sell.</div></div></div>
+              <div class="step done"><div class="step-icon">2</div><div><div class="step-label" style="color:#202223;">We research your market</div><div style="font-size:12.5px;color:#6b7177;">Competitor analysis plus live keyword volume &amp; difficulty finds the topics you can win.</div></div></div>
+              <div class="step done"><div class="step-icon">3</div><div><div class="step-label" style="color:#202223;">AI writes, you approve</div><div style="font-size:12.5px;color:#6b7177;">SEO + GEO-optimized articles with your products woven in — structured by proven templates.</div></div></div>
+              <div class="step done"><div class="step-icon">4</div><div><div class="step-label" style="color:#202223;">One-click publish</div><div style="font-size:12.5px;color:#6b7177;">Straight to your store blog with meta tags, FAQ schema and internal links included.</div></div></div>
+            </div>
+            <p style="margin-top:16px;font-size:13px;color:#6b7177;">Missing something? <a href="mailto:ranqapexcontact@gmail.com?subject=Ranqapex%20feature%20request" style="color:#4F6EF7;font-weight:600;">Request a feature →</a></p>
+          </div>
+        </div>
+
+        <div id="tab-pricing" class="tab-panel" style="display:none;">
+          <div class="card">
+            <h2>Pricing plans</h2>
+            <p style="margin:8px 0 4px;">Simple monthly plans. Cancel anytime — billed securely by Shopify.</p>
+            <div class="tpl-grid" style="grid-template-columns:repeat(auto-fill,minmax(210px,1fr));">
+              <div class="tpl-card" style="cursor:default;">
+                <div class="tpl-name" style="font-size:16px;">Free</div>
+                <div style="font-size:24px;font-weight:800;margin:6px 0;">$0</div>
+                <div class="tpl-desc">5 credits/mo · trial article · SEO audit · 2 free templates</div>
+              </div>
+              <div class="tpl-card" style="cursor:default;border-color:#4F6EF7;">
+                <span class="tpl-badge pro">POPULAR</span>
+                <div class="tpl-name" style="font-size:16px;">Starter</div>
+                <div style="font-size:24px;font-weight:800;margin:6px 0;">$29<span style="font-size:13px;font-weight:600;color:#6b7177;">/mo</span></div>
+                <div class="tpl-desc">25 credits/mo (~8 articles) · all 10 templates · keyword research + live metrics · 100-page audits · 7-day free trial</div>
+              </div>
+              <div class="tpl-card" style="cursor:default;">
+                <div class="tpl-name" style="font-size:16px;">Growth</div>
+                <div style="font-size:24px;font-weight:800;margin:6px 0;">$99<span style="font-size:13px;font-weight:600;color:#6b7177;">/mo</span></div>
+                <div class="tpl-desc">75 credits/mo (~25 articles) · highest-quality AI model · AI Visibility scans · 500-page audits · 7-day free trial</div>
+              </div>
+            </div>
+            \${data.upgradeUrl ? '<div style="margin-top:16px;"><a class="btn btn-primary" href="' + data.upgradeUrl + '" target="_top">Choose a plan</a></div>' : ""}
+          </div>
+        </div>
+
+        <div style="text-align:center;padding:6px 0 18px;font-size:12.5px;color:#8c9196;">
+          <a href="#" onclick="switchTab('prefs');return false;" style="color:#6b7177;text-decoration:none;">Preferences</a> ·
+          <a href="#" onclick="switchTab('how');return false;" style="color:#6b7177;text-decoration:none;">How it works</a> ·
+          <a href="#" onclick="switchTab('pricing');return false;" style="color:#6b7177;text-decoration:none;">Pricing plans</a> ·
+          <a href="mailto:ranqapexcontact@gmail.com?subject=Ranqapex%20feature%20request" style="color:#6b7177;text-decoration:none;">Request a feature</a>
+        </div>
       \`;
       PLAN = data.plan || "free";
       renderTemplates();
@@ -458,6 +530,7 @@ function renderAppHtml(shop: string, apiKey: string): string {
       loadAudit();
       loadVisibility();
       loadKeywords();
+      loadSettings();
 
       // Honor ?tab= from the sidebar nav menu (and make tabs deep-linkable).
       try {
@@ -660,6 +733,38 @@ function renderAppHtml(shop: string, apiKey: string): string {
       document.querySelectorAll(".tab").forEach(function(t) { t.classList.toggle("active", t.dataset.tab === name); });
       const panel = document.getElementById("tab-" + name);
       if (panel) panel.style.display = "block";
+    }
+
+    // ── Preferences ──────────────────────────────────────────────────
+    async function loadSettings() {
+      try {
+        const res = await fetch("/api/shopify/embedded/settings");
+        if (!res.ok) return;
+        const s = await res.json();
+        const set = function(id, v) { const el = document.getElementById(id); if (el) el.value = v || ""; };
+        set("pref-tone", s.tone); set("pref-language", s.language);
+        set("pref-audience", s.audience); set("pref-author", s.authorName);
+      } catch (e) { /* ignore */ }
+    }
+
+    async function saveSettings() {
+      const btn = document.getElementById("pref-save");
+      const status = document.getElementById("pref-status");
+      btn.disabled = true; btn.innerHTML = '<span class="loading"></span> Saving…';
+      try {
+        const val = function(id) { const el = document.getElementById(id); return el ? el.value : ""; };
+        const res = await fetch("/api/shopify/embedded/settings", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tone: val("pref-tone"), language: val("pref-language"), audience: val("pref-audience"), authorName: val("pref-author") }),
+        });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.error || "Save failed");
+        status.textContent = "Saved ✓";
+        setTimeout(function() { status.textContent = ""; }, 2500);
+      } catch (e) {
+        status.style.color = "#991b1b"; status.textContent = e.message;
+      }
+      btn.disabled = false; btn.innerHTML = "Save preferences";
     }
 
     // ── Templates ────────────────────────────────────────────────────
