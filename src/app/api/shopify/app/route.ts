@@ -73,10 +73,11 @@ function renderAppHtml(shop: string, apiKey: string): string {
 
     .card {
       background: #fff;
-      border: 1px solid #e1e3e5;
-      border-radius: 12px;
+      border: 1px solid #e7e9ec;
+      border-radius: 14px;
       padding: 20px;
       margin-bottom: 16px;
+      box-shadow: 0 1px 2px rgba(31,33,36,.05);
     }
     .card h2 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
     .card p { color: #6b7177; font-size: 14px; }
@@ -122,14 +123,36 @@ function renderAppHtml(shop: string, apiKey: string): string {
     .stat-value { font-size: 22px; font-weight: 800; color: #202223; }
     .stat-label { font-size: 11px; color: #6b7177; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
 
-    .tabs { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 1px solid #e1e3e5; }
-    .tab {
-      padding: 10px 16px; font-size: 14px; font-weight: 600; cursor: pointer;
-      background: none; border: none; color: #6b7177;
-      border-bottom: 2px solid transparent; margin-bottom: -1px;
+    .tabs {
+      display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap;
+      background: #fff; border: 1px solid #e1e3e5; border-radius: 12px; padding: 5px;
+      box-shadow: 0 1px 2px rgba(31,33,36,.04);
     }
-    .tab:hover { color: #202223; }
-    .tab.active { color: #4F6EF7; border-bottom-color: #4F6EF7; }
+    .tab {
+      padding: 8px 14px; font-size: 13.5px; font-weight: 600; cursor: pointer;
+      background: none; border: none; color: #6b7177; border-radius: 8px;
+      transition: background .12s, color .12s;
+    }
+    .tab:hover { color: #202223; background: #f4f5f7; }
+    .tab.active { color: #4F6EF7; background: #eef1ff; }
+
+    /* ── Hero band ── */
+    .hero {
+      background: linear-gradient(135deg, #4F6EF7, #7C5CFC);
+      border-radius: 16px; padding: 22px 24px; margin-bottom: 16px; color: #fff;
+      box-shadow: 0 8px 24px rgba(79,110,247,.28);
+    }
+    .hero-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    .hero-hi { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
+    .hero-sub { font-size: 13.5px; opacity: .9; margin-top: 3px; }
+    .btn-hero { background: #fff; color: #4F6EF7; }
+    .btn-hero:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,.18); }
+    .btn-hero-sec { background: rgba(255,255,255,.16); color: #fff; border: 1px solid rgba(255,255,255,.35); }
+    .btn-hero-sec:hover { background: rgba(255,255,255,.24); }
+    .hero-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 12.5px; margin-top: 16px; opacity: .95; }
+    .chip { background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.3); padding: 3px 10px; border-radius: 999px; font-weight: 700; font-size: 11.5px; }
+    .meter-track { height: 8px; background: rgba(255,255,255,.25); border-radius: 999px; margin-top: 8px; overflow: hidden; }
+    .meter-fill { height: 100%; background: #fff; border-radius: 999px; transition: width .4s ease; }
 
     /* ── Templates gallery ── */
     .tpl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; margin-top: 16px; }
@@ -309,23 +332,33 @@ function renderAppHtml(shop: string, apiKey: string): string {
         ? data.creditsRemaining + " / " + data.creditsAllowance
         : "—";
       const trialNote = data.trialDaysRemaining > 0
-        ? '<span style="font-size:11px;font-weight:600;color:#166534;background:#dcfce7;padding:2px 8px;border-radius:4px;margin-left:8px;">' + data.trialDaysRemaining + '-day trial</span>'
+        ? '<span class="chip">🎁 ' + data.trialDaysRemaining + '-day trial</span>'
         : "";
       const upgradeLabel = data.plan === "growth" ? "Manage plan" : "Upgrade plan";
+      const storeName = data.shop.replace(".myshopify.com", "").replace(/-/g, " ");
+      const pct = data.creditsAllowance ? Math.max(0, Math.min(100, Math.round((data.creditsRemaining / data.creditsAllowance) * 100))) : 0;
+      let resetStr = "";
+      try { resetStr = new Date(data.periodEnd).toLocaleDateString(undefined, { month: "short", day: "numeric" }); } catch (e) {}
       content.innerHTML = \`
-        <div class="card">
-          <div class="stat-row">
-            <div class="stat"><div class="stat-value" id="stat-credits">\${credits}</div><div class="stat-label">Credits left</div></div>
-            <div class="stat"><div class="stat-value">\${planName}\${trialNote}</div><div class="stat-label">Plan</div></div>
-            <div class="stat"><div class="stat-value" id="stat-articles">\${data.articleCount}</div><div class="stat-label">Articles</div></div>
-          </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:8px;flex-wrap:wrap;">
-            <p style="color:#6b7177;font-size:13px;margin:0;">Each article uses 3 credits. Credits refresh every billing cycle.</p>
-            <div style="display:flex;gap:8px;align-items:center;">
-              <button class="btn btn-secondary" onclick="startOnboarding()">Build my SEO plan</button>
-              \${data.upgradeUrl ? '<a class="btn btn-primary" href="' + data.upgradeUrl + '" target="_top">' + upgradeLabel + '</a>' : ""}
+        <div class="hero">
+          <div class="hero-top">
+            <div>
+              <div class="hero-hi">Hey \${storeName} 👋</div>
+              <div class="hero-sub">Your AI SEO content team is on it — audits, keywords, articles, publishing. We've got it covered.</div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn btn-hero-sec" onclick="startOnboarding()">Build my SEO plan</button>
+              \${data.upgradeUrl ? '<a class="btn btn-hero" href="' + data.upgradeUrl + '" target="_top">' + upgradeLabel + '</a>' : ""}
             </div>
           </div>
+          <div class="hero-meta">
+            <span><strong id="stat-credits">\${credits}</strong> credits</span>
+            <span class="chip">\${planName} plan</span>
+            \${trialNote}
+            <span><strong id="stat-articles">\${data.articleCount}</strong> articles created</span>
+            \${resetStr ? '<span style="margin-left:auto;">Credits reset ' + resetStr + '</span>' : ""}
+          </div>
+          <div class="meter-track"><div class="meter-fill" id="credit-bar" style="width:\${pct}%"></div></div>
         </div>
 
         <div class="tabs">
@@ -740,6 +773,10 @@ function renderAppHtml(shop: string, apiKey: string): string {
         const data = await res.json();
         const el = document.getElementById("stat-credits");
         if (el && data.creditsRemaining != null) el.textContent = data.creditsRemaining + " / " + data.creditsAllowance;
+        const bar = document.getElementById("credit-bar");
+        if (bar && data.creditsAllowance) {
+          bar.style.width = Math.max(0, Math.min(100, Math.round((data.creditsRemaining / data.creditsAllowance) * 100))) + "%";
+        }
       } catch (e) { /* ignore */ }
     }
 

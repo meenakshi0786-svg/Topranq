@@ -33,5 +33,6 @@ export async function GET(request: NextRequest) {
     creditsAllowance: billing.creditsAllowance,
     trialDaysRemaining: billing.trialDaysRemaining,
     upgradeUrl: billing.upgradeUrl,
+    periodEnd: billing.periodEnd,
   });
 }

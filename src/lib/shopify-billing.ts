@@ -45,6 +45,7 @@ export interface ShopBillingState {
   trialDaysRemaining: number;
   subscriptionName: string | null;
   upgradeUrl: string;
+  periodEnd: string; // ISO — when the current credit period resets
 }
 
 interface ActiveSubscription {
@@ -191,5 +192,6 @@ export async function getShopBillingState(shop: string): Promise<ShopBillingStat
     trialDaysRemaining: trialDaysRemaining(sub, now),
     subscriptionName: sub?.name ?? null,
     upgradeUrl: pricingPlansUrl(normalized),
+    periodEnd: new Date(periodStart.getTime() + BILLING_PERIOD_MS).toISOString(),
   };
 }
