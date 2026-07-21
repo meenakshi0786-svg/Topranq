@@ -258,6 +258,7 @@ function renderAppHtml(shop: string, apiKey: string): string {
   <ui-nav-menu>
     <a href="/api/shopify/app?shop=${shop}" rel="home">Ranqapex</a>
     <a href="/api/shopify/app?shop=${shop}&tab=generate">Blog Generator</a>
+    <a href="/api/shopify/app?shop=${shop}&tab=autopilot">Autopilot</a>
     <a href="/api/shopify/app?shop=${shop}&tab=templates">Templates</a>
     <a href="/api/shopify/app?shop=${shop}&tab=audit">SEO Audit</a>
     <a href="/api/shopify/app?shop=${shop}&tab=visibility">AI Visibility</a>
@@ -359,6 +360,7 @@ function renderAppHtml(shop: string, apiKey: string): string {
             <span class="chip">\${planName} plan</span>
             \${trialNote}
             <span><strong id="stat-articles">\${data.articleCount}</strong> articles created</span>
+            <span id="hero-autopilot"></span>
             \${resetStr ? '<span style="margin-left:auto;">Credits reset ' + resetStr + '</span>' : ""}
           </div>
           <div class="meter-track"><div class="meter-fill" id="credit-bar" style="width:\${pct}%"></div></div>
@@ -366,6 +368,7 @@ function renderAppHtml(shop: string, apiKey: string): string {
 
         <div class="tabs">
           <button class="tab active" data-tab="generate" onclick="switchTab('generate')">✍️ Blog Generator</button>
+          <button class="tab" data-tab="autopilot" onclick="switchTab('autopilot')">🚀 Autopilot</button>
           <button class="tab" data-tab="templates" onclick="switchTab('templates')">📐 Templates</button>
           <button class="tab" data-tab="audit" onclick="switchTab('audit')">🔍 SEO Audit</button>
           <button class="tab" data-tab="visibility" onclick="switchTab('visibility')">🤖 AI Visibility</button>
@@ -392,6 +395,65 @@ function renderAppHtml(shop: string, apiKey: string): string {
           <div class="card">
             <h2>Your articles</h2>
             <div id="articles-list" style="margin-top:8px;"><p style="color:#6b7177;font-size:13px;">Loading…</p></div>
+          </div>
+        </div>
+
+        <div id="tab-autopilot" class="tab-panel" style="display:none;">
+          <div class="card">
+            <h2>🚀 Set once, get optimized SEO blogs forever</h2>
+            <p style="margin:8px 0 18px;">We've preselected best-practice settings for you. Your Autopilot Agent researches, writes and publishes on schedule — you can customize anytime.</p>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div>
+                <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Blog frequency</label>
+                <select id="ap-frequency" onchange="apDayOptions()" style="width:100%;padding:10px 12px;border:1px solid #c9cccf;border-radius:8px;font-size:14px;background:#fff;">
+                  <option value="weekly">Every week</option>
+                  <option value="biweekly">Every 2 weeks</option>
+                  <option value="monthly">Every month</option>
+                </select>
+              </div>
+              <div>
+                <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;" id="ap-day-label">Day of the week</label>
+                <select id="ap-day" style="width:100%;padding:10px 12px;border:1px solid #c9cccf;border-radius:8px;font-size:14px;background:#fff;"></select>
+              </div>
+              <div>
+                <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Time (UTC)</label>
+                <select id="ap-hour" style="width:100%;padding:10px 12px;border:1px solid #c9cccf;border-radius:8px;font-size:14px;background:#fff;"></select>
+              </div>
+              <div>
+                <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Publishing</label>
+                <select id="ap-publish" style="width:100%;padding:10px 12px;border:1px solid #c9cccf;border-radius:8px;font-size:14px;background:#fff;">
+                  <option value="publish">Publish automatically</option>
+                  <option value="draft">Save as drafts for my review</option>
+                </select>
+              </div>
+            </div>
+
+            <label style="display:flex;align-items:center;gap:8px;margin-top:14px;font-size:13.5px;font-weight:600;cursor:pointer;">
+              <input type="checkbox" id="ap-products" checked style="width:16px;height:16px;" />
+              Promote my products <span class="badge" style="margin-left:2px;">Recommended</span>
+            </label>
+            <p style="font-size:12.5px;color:#6b7177;margin:6px 0 0 24px;">Creates blogs based on your store and best-selling products — our recommended setup for maximum results.</p>
+          </div>
+
+          <div class="card">
+            <h2>🧠 Knowledge base</h2>
+            <p style="margin:8px 0 14px;">Tell the AI about your brand and what to avoid.</p>
+            <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Useful information for AI <span style="color:#8c9196;font-weight:400;">(max 300 chars)</span></label>
+            <textarea id="ap-brand" maxlength="300" rows="3" placeholder="e.g. Focus on natural wellness, 30+ years of experience, sustainability…" style="width:100%;padding:10px 12px;border:1px solid #c9cccf;border-radius:8px;font-size:14px;margin-bottom:12px;font-family:inherit;"></textarea>
+            <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">What to avoid <span style="color:#8c9196;font-weight:400;">(max 150 chars)</span></label>
+            <input id="ap-avoid" maxlength="150" placeholder="e.g. medical claims, exaggerated promises, political topics…" style="width:100%;padding:10px 12px;border:1px solid #c9cccf;border-radius:8px;font-size:14px;margin-bottom:12px;" />
+            <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Custom keywords <span style="color:#8c9196;font-weight:400;">(comma-separated, 3–5 recommended)</span></label>
+            <input id="ap-keywords" placeholder="e.g. organic coffee beans, pour over guide, coffee gifts" style="width:100%;padding:10px 12px;border:1px solid #c9cccf;border-radius:8px;font-size:14px;margin-bottom:12px;" />
+            <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Competitor domains <span style="color:#8c9196;font-weight:400;">(up to 3 — we study their content)</span></label>
+            <input id="ap-competitors" placeholder="e.g. competitor1.com, competitor2.com" style="width:100%;padding:10px 12px;border:1px solid #c9cccf;border-radius:8px;font-size:14px;" />
+          </div>
+
+          <div class="card" style="text-align:center;">
+            <div id="ap-status" style="font-size:13px;margin-bottom:12px;color:#6b7177;"></div>
+            <button id="ap-cta" class="btn btn-primary" style="font-size:15px;padding:12px 26px;" onclick="saveAutopilot(true)">Turn On Your Autopilot Agent</button>
+            <button id="ap-off" class="btn btn-secondary" style="display:none;margin-left:8px;" onclick="saveAutopilot(false)">Turn Off</button>
+            <p style="font-size:12px;color:#8c9196;margin-top:10px;">You can always come back and edit it later.</p>
           </div>
         </div>
 
@@ -735,16 +797,105 @@ function renderAppHtml(shop: string, apiKey: string): string {
       if (panel) panel.style.display = "block";
     }
 
-    // ── Preferences ──────────────────────────────────────────────────
+    // ── Preferences + Autopilot ──────────────────────────────────────
+    function apDayOptions() {
+      const freq = document.getElementById("ap-frequency").value;
+      const daySel = document.getElementById("ap-day");
+      const label = document.getElementById("ap-day-label");
+      const cur = daySel.value;
+      if (freq === "monthly") {
+        label.textContent = "Day of the month";
+        daySel.innerHTML = "";
+        for (let i = 1; i <= 28; i++) daySel.innerHTML += '<option value="' + i + '">' + i + '</option>';
+      } else {
+        label.textContent = "Day of the week";
+        const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+        daySel.innerHTML = days.map(function(d, i) { return '<option value="' + i + '">' + d + '</option>'; }).join("");
+      }
+      if (cur) daySel.value = cur;
+      if (!daySel.value) daySel.value = freq === "monthly" ? "1" : "1";
+    }
+
+    function apHourOptions() {
+      const sel = document.getElementById("ap-hour");
+      if (!sel || sel.options.length) return;
+      for (let h = 0; h < 24; h++) {
+        const label = (h < 10 ? "0" + h : h) + ":00";
+        sel.innerHTML += '<option value="' + h + '">' + label + '</option>';
+      }
+      sel.value = "9";
+    }
+
+    function renderAutopilotState(s) {
+      const status = document.getElementById("ap-status");
+      const cta = document.getElementById("ap-cta");
+      const off = document.getElementById("ap-off");
+      const hero = document.getElementById("hero-autopilot");
+      if (s.autopilotEnabled) {
+        let nextStr = "";
+        try { nextStr = new Date(s.nextRunAt).toLocaleDateString(undefined, { month: "short", day: "numeric" }); } catch (e) {}
+        if (status) status.innerHTML = '<span style="color:#166534;font-weight:700;">🟢 Your Autopilot Agent is running.</span>' + (nextStr ? " Next blog: " + nextStr + "." : "");
+        if (cta) cta.textContent = "Update Autopilot Settings";
+        if (off) off.style.display = "inline-block";
+        if (hero) hero.innerHTML = '<span class="chip">🟢 Autopilot on' + (nextStr ? " · next " + nextStr : "") + '</span>';
+      } else {
+        if (status) status.textContent = "Autopilot is off — your store isn't getting automatic SEO content yet.";
+        if (cta) cta.textContent = "Turn On Your Autopilot Agent";
+        if (off) off.style.display = "none";
+        if (hero) hero.innerHTML = '<a href="#" onclick="switchTab(\\'autopilot\\');return false;" class="chip" style="text-decoration:none;color:#fff;">🚀 Turn on Autopilot</a>';
+      }
+    }
+
     async function loadSettings() {
       try {
+        apHourOptions();
         const res = await fetch("/api/shopify/embedded/settings");
         if (!res.ok) return;
         const s = await res.json();
-        const set = function(id, v) { const el = document.getElementById(id); if (el) el.value = v || ""; };
+        const set = function(id, v) { const el = document.getElementById(id); if (el) el.value = v == null ? "" : String(v); };
         set("pref-tone", s.tone); set("pref-language", s.language);
         set("pref-audience", s.audience); set("pref-author", s.authorName);
+        set("ap-frequency", s.autopilotFrequency); apDayOptions();
+        set("ap-day", s.autopilotDay); set("ap-hour", s.autopilotHour);
+        set("ap-publish", s.autoPublish ? "publish" : "draft");
+        const prod = document.getElementById("ap-products"); if (prod) prod.checked = !!s.promoteProducts;
+        set("ap-brand", s.brandInfo); set("ap-avoid", s.avoidInfo);
+        set("ap-keywords", (s.customKeywords || []).join(", "));
+        set("ap-competitors", (s.competitorDomains || []).join(", "));
+        renderAutopilotState(s);
       } catch (e) { /* ignore */ }
+    }
+
+    async function saveAutopilot(enable) {
+      const cta = document.getElementById("ap-cta");
+      cta.disabled = true; cta.innerHTML = '<span class="loading"></span> Saving…';
+      try {
+        const val = function(id) { const el = document.getElementById(id); return el ? el.value : ""; };
+        const list = function(id) { return val(id).split(",").map(function(x) { return x.trim(); }).filter(Boolean); };
+        const res = await fetch("/api/shopify/embedded/settings", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            autopilotEnabled: enable,
+            autopilotFrequency: val("ap-frequency"),
+            autopilotDay: parseInt(val("ap-day"), 10),
+            autopilotHour: parseInt(val("ap-hour"), 10),
+            autoPublish: val("ap-publish") === "publish",
+            promoteProducts: !!document.getElementById("ap-products").checked,
+            brandInfo: val("ap-brand"), avoidInfo: val("ap-avoid"),
+            customKeywords: list("ap-keywords"), competitorDomains: list("ap-competitors"),
+            authorName: val("pref-author") || undefined,
+          }),
+        });
+        const s = await res.json();
+        if (!res.ok) throw new Error(s.error || "Save failed");
+        renderAutopilotState(s);
+      } catch (e) {
+        const status = document.getElementById("ap-status");
+        if (status) { status.style.color = "#991b1b"; status.textContent = e.message; }
+      }
+      cta.disabled = false;
+      const en = document.getElementById("ap-off").style.display !== "none";
+      cta.textContent = en ? "Update Autopilot Settings" : "Turn On Your Autopilot Agent";
     }
 
     async function saveSettings() {

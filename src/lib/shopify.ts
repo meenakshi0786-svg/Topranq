@@ -123,10 +123,16 @@ export async function exchangeCodeForToken(
  * exchange lets the embedded app mint an offline token on demand from the
  * session token it already has on every request — the reliable modern pattern.
  */
+export interface TokenPair {
+  accessToken: string;
+  refreshToken: string | null;
+  expiresIn: number | null; // seconds
+}
+
 export async function exchangeSessionTokenForOfflineToken(
   shop: string,
   sessionToken: string,
-): Promise<string> {
+): Promise<TokenPair> {
   // Shopify's token-exchange endpoint expects form-encoded params — sending JSON
   // causes requested_token_type to be ignored and an ONLINE token issued instead.
   const body = new URLSearchParams({
@@ -156,41 +162,103 @@ export async function exchangeSessionTokenForOfflineToken(
   }
   const data = await res.json();
   if (!data.access_token) throw new Error("Token exchange returned no access_token");
-  // Note: this app's install grant yields online-prefixed tokens (shpua_) even when
-  // we request offline — both classic OAuth and token exchange behave this way here.
-  // That's fine: callers re-mint on every Admin API operation (the session token is
-  // always present on embedded requests), so the token is always fresh and never goes
-  // stale. We deliberately do NOT reject by prefix — doing so forced a fallback to the
-  // stale stored token, which was the original cause of daily publish failures.
-  return data.access_token as string;
+  return {
+    accessToken: data.access_token as string,
+    refreshToken: typeof data.refresh_token === "string" ? data.refresh_token : null,
+    expiresIn: typeof data.expires_in === "number" ? data.expires_in : null,
+  };
 }
 
 /**
  * Mint a fresh offline token via token exchange and persist it on the shop's
  * connector (overwriting any stale/online token). Returns the offline token.
  */
-export async function refreshAndStoreOfflineToken(
-  shop: string,
-  sessionToken: string,
-): Promise<string> {
-  const normalized = normalizeShop(shop);
-  const token = await exchangeSessionTokenForOfflineToken(normalized, sessionToken);
-
+async function storeTokenPair(shop: string, pair: TokenPair): Promise<void> {
   const { db, schema } = await import("@/lib/db");
   const { eq, and } = await import("drizzle-orm");
-  const siteUrl = `https://${normalized}`;
+  const siteUrl = `https://${shop}`;
   const connector = db
     .select()
     .from(schema.connectors)
     .where(and(eq(schema.connectors.platform, "shopify"), eq(schema.connectors.siteUrl, siteUrl)))
     .get();
-  if (connector) {
-    db.update(schema.connectors)
-      .set({ authCredentialsEncrypted: token, status: "connected", connectedAt: new Date().toISOString() })
-      .where(eq(schema.connectors.id, connector.id))
-      .run();
+  if (!connector) return;
+  db.update(schema.connectors)
+    .set({
+      authCredentialsEncrypted: pair.accessToken,
+      // Refresh tokens rotate: only overwrite when we actually got a new one.
+      ...(pair.refreshToken ? { authRefreshToken: pair.refreshToken } : {}),
+      tokenExpiresAt: pair.expiresIn ? new Date(Date.now() + pair.expiresIn * 1000).toISOString() : null,
+      status: "connected",
+      connectedAt: new Date().toISOString(),
+    })
+    .where(eq(schema.connectors.id, connector.id))
+    .run();
+}
+
+export async function refreshAndStoreOfflineToken(
+  shop: string,
+  sessionToken: string,
+): Promise<string> {
+  const normalized = normalizeShop(shop);
+  const pair = await exchangeSessionTokenForOfflineToken(normalized, sessionToken);
+  await storeTokenPair(normalized, pair);
+  return pair.accessToken;
+}
+
+/**
+ * Get a working Admin token WITHOUT a session token (cron/background use).
+ * Uses the stored access token while fresh; otherwise refreshes with the stored
+ * refresh token (rotating pair persisted immediately). Returns null if the shop
+ * has no usable auth — merchant must open the app once to re-establish it.
+ */
+export async function getFreshAdminToken(shop: string): Promise<string | null> {
+  const { db, schema } = await import("@/lib/db");
+  const { eq, and } = await import("drizzle-orm");
+  const normalized = normalizeShop(shop);
+  const connector = db
+    .select()
+    .from(schema.connectors)
+    .where(and(eq(schema.connectors.platform, "shopify"), eq(schema.connectors.siteUrl, `https://${normalized}`)))
+    .get();
+  if (!connector) return null;
+
+  // Still fresh (5-minute safety buffer)?
+  if (
+    connector.authCredentialsEncrypted &&
+    connector.tokenExpiresAt &&
+    Date.parse(connector.tokenExpiresAt) > Date.now() + 5 * 60 * 1000
+  ) {
+    return connector.authCredentialsEncrypted;
   }
-  return token;
+
+  if (!connector.authRefreshToken) return null;
+
+  const body = new URLSearchParams({
+    client_id: SHOPIFY_CLIENT_ID,
+    client_secret: SHOPIFY_CLIENT_SECRET,
+    grant_type: "refresh_token",
+    refresh_token: connector.authRefreshToken,
+  });
+  const res = await fetch(`https://${normalized}/admin/oauth/access_token`, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
+    body: body.toString(),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    console.error("[getFreshAdminToken] refresh failed", res.status, text.slice(0, 200));
+    return null;
+  }
+  const data = await res.json();
+  if (!data.access_token) return null;
+  const pair: TokenPair = {
+    accessToken: data.access_token as string,
+    refreshToken: typeof data.refresh_token === "string" ? data.refresh_token : null,
+    expiresIn: typeof data.expires_in === "number" ? data.expires_in : null,
+  };
+  await storeTokenPair(normalized, pair);
+  return pair.accessToken;
 }
 
 // ── App Store install flow (no pre-existing Ranqapex domainId required) ──

@@ -281,6 +281,10 @@ export const connectors = sqliteTable("connectors", {
   domainId: text("domain_id").notNull().references(() => domains.id, { onDelete: "cascade" }),
   platform: text("platform", { enum: ["wordpress", "shopify", "webflow", "webhook"] }).notNull(),
   authCredentialsEncrypted: text("auth_credentials_encrypted"),
+  // Shopify expiring-token pair: refresh token rotates on every refresh (90-day
+  // life); token_expires_at tracks the access token (~1h) so cron can renew.
+  authRefreshToken: text("auth_refresh_token"),
+  tokenExpiresAt: text("token_expires_at"),
   siteUrl: text("site_url"),
   status: text("status", { enum: ["connected", "disconnected", "error"] }).notNull().default("disconnected"),
   connectedAt: text("connected_at"),
@@ -317,6 +321,20 @@ export const storeSettings = sqliteTable("store_settings", {
   language: text("language").default("English"),
   audience: text("audience").default("shoppers"),
   authorName: text("author_name"),
+  // ── Autopilot Agent ──
+  autopilotEnabled: integer("autopilot_enabled", { mode: "boolean" }).default(false),
+  autopilotFrequency: text("autopilot_frequency").default("weekly"), // weekly | biweekly | monthly
+  autopilotDay: integer("autopilot_day").default(1), // weekday 0-6 (weekly/biweekly) or day-of-month 1-28
+  autopilotHour: integer("autopilot_hour").default(9), // UTC hour 0-23
+  autoPublish: integer("auto_publish", { mode: "boolean" }).default(true), // false = leave as draft
+  promoteProducts: integer("promote_products", { mode: "boolean" }).default(true),
+  nextRunAt: text("next_run_at"),
+  lastRunAt: text("last_run_at"),
+  // ── Knowledge base ──
+  brandInfo: text("brand_info"), // max 300 chars: extra context for the AI
+  avoidInfo: text("avoid_info"), // max 150 chars: what to avoid
+  customKeywords: text("custom_keywords"), // JSON array
+  competitorDomains: text("competitor_domains"), // JSON array (max 3)
   updatedAt: text("updated_at").default(sql`(datetime('now'))`),
 });
 

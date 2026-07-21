@@ -160,6 +160,37 @@ if (!tables.find(t => t.name === "store_settings")) {
   )`);
   console.log("  + store_settings table");
 }
+
+// ── Add-column migrations (idempotent) ───────────────────────────────
+function ensureColumns(table: string, cols: Array<[string, string]>) {
+  const existing = new Set(
+    (sqlite.prepare(`PRAGMA table_info(${table})`).all() as Array<{ name: string }>).map(c => c.name),
+  );
+  for (const [name, ddl] of cols) {
+    if (!existing.has(name)) {
+      sqlite.exec(`ALTER TABLE ${table} ADD COLUMN ${name} ${ddl}`);
+      console.log(`  + ${table}.${name} column`);
+    }
+  }
+}
+ensureColumns("connectors", [
+  ["auth_refresh_token", "TEXT"],
+  ["token_expires_at", "TEXT"],
+]);
+ensureColumns("store_settings", [
+  ["autopilot_enabled", "INTEGER DEFAULT 0"],
+  ["autopilot_frequency", "TEXT DEFAULT 'weekly'"],
+  ["autopilot_day", "INTEGER DEFAULT 1"],
+  ["autopilot_hour", "INTEGER DEFAULT 9"],
+  ["auto_publish", "INTEGER DEFAULT 1"],
+  ["promote_products", "INTEGER DEFAULT 1"],
+  ["next_run_at", "TEXT"],
+  ["last_run_at", "TEXT"],
+  ["brand_info", "TEXT"],
+  ["avoid_info", "TEXT"],
+  ["custom_keywords", "TEXT"],
+  ["competitor_domains", "TEXT"],
+]);
 if (!tables.find(t => t.name === "visitor_logs")) {
   sqlite.exec(`CREATE TABLE visitor_logs (
     id TEXT PRIMARY KEY NOT NULL,
