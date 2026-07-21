@@ -340,6 +340,21 @@ export async function fetchStoreProducts(
   }
 }
 
+/** Fetch the store's display name via the Admin API. Best-effort: null on failure. */
+export async function fetchShopName(shop: string, accessToken: string): Promise<string | null> {
+  try {
+    const res = await fetch(`https://${shop}/admin/api/${SHOPIFY_API_VERSION}/shop.json?fields=name`, {
+      headers: { "X-Shopify-Access-Token": accessToken },
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const name = data?.shop?.name;
+    return typeof name === "string" && name.trim() ? name.trim() : null;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Fetch the store's collections (custom + smart) via the Admin API (needs the
  * read_products scope). Best-effort: returns [] on any failure.

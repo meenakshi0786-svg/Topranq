@@ -335,7 +335,7 @@ function renderAppHtml(shop: string, apiKey: string): string {
         ? '<span class="chip">🎁 ' + data.trialDaysRemaining + '-day trial</span>'
         : "";
       const upgradeLabel = data.plan === "growth" ? "Manage plan" : "Upgrade plan";
-      const storeName = data.shop.replace(".myshopify.com", "").replace(/-/g, " ");
+      const storeName = data.storeName || data.shop.replace(".myshopify.com", "").split("-").map(function(w) { return w.charAt(0).toUpperCase() + w.slice(1); }).join(" ");
       const pct = data.creditsAllowance ? Math.max(0, Math.min(100, Math.round((data.creditsRemaining / data.creditsAllowance) * 100))) : 0;
       let resetStr = "";
       try { resetStr = new Date(data.periodEnd).toLocaleDateString(undefined, { month: "short", day: "numeric" }); } catch (e) {}
