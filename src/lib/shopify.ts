@@ -136,6 +136,10 @@ export async function exchangeSessionTokenForOfflineToken(
     subject_token: sessionToken,
     subject_token_type: "urn:ietf:params:oauth:token-type:id_token",
     requested_token_type: "urn:shopify:params:oauth:token-type:offline-access-token",
+    // Mandatory for apps created after Apr 2026: Shopify rejects non-expiring
+    // tokens outright ("Non-expiring access tokens are no longer accepted").
+    // We re-mint per call, so expiry costs us nothing.
+    expiring: "1",
   });
   const res = await fetch(`https://${shop}/admin/oauth/access_token`, {
     method: "POST",
