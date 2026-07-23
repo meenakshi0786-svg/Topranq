@@ -110,7 +110,7 @@ export async function resolveOfflineToken(
   shop: string,
   sessionToken: string | null,
 ): Promise<string | null> {
-  const { refreshAndStoreOfflineToken, getShopAccessToken } = await import("./shopify");
+  const { refreshAndStoreOfflineToken, getFreshAdminToken } = await import("./shopify");
   if (sessionToken) {
     try {
       return await refreshAndStoreOfflineToken(shop, sessionToken);
@@ -118,8 +118,9 @@ export async function resolveOfflineToken(
       console.error("[resolveOfflineToken] exchange failed, falling back:", e instanceof Error ? e.message : String(e));
     }
   }
-  const stored = await getShopAccessToken(shop);
-  return stored?.token ?? null;
+  // Fallback is refresh-aware: uses the stored token while fresh, else renews
+  // with the stored refresh token (same path the Autopilot cron uses).
+  return await getFreshAdminToken(shop);
 }
 
 /**
