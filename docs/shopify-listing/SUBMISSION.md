@@ -96,18 +96,13 @@ must **not** include a desktop background, browser window chrome, or just the lo
 **each must be distinct** (different feature/state). Capture inside your dev store admin,
 then crop to the app panel and export at **1600×900 (16:9)**.
 
-Capture these distinct states (open the app in `ranqapex-exyfzgqk.myshopify.com`):
+Four ready-made screenshots are in this folder (faithful renders of the real app
+UI with a demo coffee-store dataset, 1600×900, no browser chrome):
 
-1. **Home / generator** — the topic + keywords inputs, with the credits badge, plan, and
-   "Generate article" button visible. (The main thing merchants do.)
-2. **Generated result** — after generating, the green success banner with the article
-   title, word count, quality score, and the "Publish to store blog" button.
-3. **Your articles list** — the list of generated articles with status badges
-   (draft / published) and "View / Publish" actions.
-4. *(optional)* **Plan + trial** — the plan card showing the 7-day trial chip and the
-   "Upgrade plan" button.
-5. *(optional)* **A published post** — the article live on the store blog (shows the
-   real output quality).
+1. `screenshot-1-home.png` — hero + credit meter + AI Blog Post Generator + articles
+2. `screenshot-2-autopilot.png` — Autopilot Agent setup + knowledge base
+3. `screenshot-3-templates.png` — the 10-template gallery with FREE/PRO badges
+4. `screenshot-4-plan.png` — the page-1 ranking plan with live keyword metrics
 
 Tip: macOS `⇧⌘4` then space to capture a window, or capture and crop. Keep text legible.
 Add a short caption to each in the Partner Dashboard.
