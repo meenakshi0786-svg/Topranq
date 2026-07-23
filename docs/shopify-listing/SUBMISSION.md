@@ -36,19 +36,19 @@ Ranqapex Blog Publisher
 ```
 > Alternatives if you want "SEO" in the name: `Ranqapex AI SEO Blog` (20) or `Ranqapex: SEO Blog Writer` (25). Keep it brand-first; don't keyword-stuff or it gets rejected.
 
-**App subtitle / tagline** (short line, keep ≤62) — 60 chars:
+**App subtitle / tagline** (short line, keep ≤62) — 58 chars:
 ```
-AI SEO blog posts with your products, published in one click
-```
-
-**App introduction** (max 100) — ~97 chars:
-```
-Generate SEO and AI-optimized blog posts featuring your products, then publish to your store.
+AI SEO blogs on autopilot - researched, written, published
 ```
 
-**App details** (max 500) — ~490 chars:
+**App introduction** (max 100) — 99 chars:
 ```
-Ranqapex is your AI SEO content team inside Shopify. Give it a topic and it writes a complete, structured blog article optimized for both Google and AI answer engines like ChatGPT, Perplexity and Google AI Overviews. It automatically weaves in your real products with links, adds meta title, description and FAQ schema, then publishes straight to your store blog in one click. No writing or SEO skills needed. Start free; paid plans from $29/month with a 7-day free trial.
+Your AI SEO content team on autopilot: keyword research, articles with your products, auto-publish.
+```
+
+**App details** (max 500) — 490 chars:
+```
+Ranqapex is your AI SEO content team inside Shopify. The Autopilot Agent researches your catalog and competitors, finds keywords with real search volume, then writes and publishes optimized articles on your schedule - set it once and get SEO blogs forever. Content is built for Google AND AI engines like ChatGPT and Perplexity, weaves in your real products, and uses 10 proven templates. Includes SEO audits, AI visibility tracking and live keyword metrics. Free plan; paid from $29/month.
 ```
 
 **Key benefits** (exactly 3 — title max 40, description max 100):
@@ -59,8 +59,8 @@ Ranqapex is your AI SEO content team inside Shopify. Give it a topic and it writ
 2. Title: `Your products, woven in`
    Desc: `Every article naturally features your real products with links, turning readers into buyers.`
 
-3. Title: `Publish in one click`
-   Desc: `Finished, formatted articles go straight to your Shopify blog — no copy-paste, no formatting.`
+3. Title: `Set it and forget it`
+   Desc: `The Autopilot Agent writes and publishes on your schedule - wake up to new SEO articles.`
 
 **Search terms** (up to 5):
 ```
