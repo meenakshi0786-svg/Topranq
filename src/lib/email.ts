@@ -271,3 +271,37 @@ Need help? Contact ranqapexcontact@gmail.com`;
 function escapeHtml(str: string): string {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
+
+// ── Autopilot notification ───────────────────────────────────────────
+export async function sendAutopilotEmail(data: {
+  to: string;
+  shopName: string;
+  articleTitle: string;
+  publishedUrl?: string | null; // null = saved as draft
+}): Promise<boolean> {
+  const transport = getTransport();
+  const subject = data.publishedUrl
+    ? `🚀 Autopilot published: ${data.articleTitle}`
+    : `📝 Autopilot draft ready: ${data.articleTitle}`;
+  const body = data.publishedUrl
+    ? `<p>Your Autopilot Agent just published a new SEO article on <strong>${escapeHtml(data.shopName)}</strong>:</p>
+       <h2 style="font-size:18px;color:#1a1a2e;">${escapeHtml(data.articleTitle)}</h2>
+       <p><a href="${data.publishedUrl}" style="display:inline-block;background:linear-gradient(135deg,#4F6EF7,#7C5CFC);color:#fff;padding:10px 22px;border-radius:8px;text-decoration:none;font-weight:600;">View the live post →</a></p>`
+    : `<p>Your Autopilot Agent wrote a new SEO article for <strong>${escapeHtml(data.shopName)}</strong> and saved it as a draft for your review:</p>
+       <h2 style="font-size:18px;color:#1a1a2e;">${escapeHtml(data.articleTitle)}</h2>
+       <p>Open the Ranqapex app in your Shopify admin to review and publish it.</p>`;
+  const html = `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#f5f5f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+    <div style="max-width:600px;margin:40px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+      <div style="background:linear-gradient(135deg,#4F6EF7,#7C5CFC);padding:28px 32px;"><h1 style="margin:0;color:#fff;font-size:20px;font-weight:700;">Ranqapex Autopilot</h1></div>
+      <div style="padding:24px 32px;font-size:14px;color:#333;line-height:1.6;">${body}
+      <p style="color:#999;font-size:12px;margin-top:24px;">You're getting this because Autopilot notifications are on. Turn them off in the Ranqapex app → Autopilot.</p></div>
+    </div></body></html>`;
+  if (!transport) { console.log("[email] (dev) autopilot notification:", subject, "→", data.to); return false; }
+  try {
+    await transport.sendMail({ from: `Ranqapex <${FROM_EMAIL}>`, to: data.to, subject, html });
+    return true;
+  } catch (err) {
+    console.error("[email] autopilot notification failed:", err);
+    return false;
+  }
+}

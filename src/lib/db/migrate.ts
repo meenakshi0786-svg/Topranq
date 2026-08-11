@@ -190,6 +190,7 @@ ensureColumns("store_settings", [
   ["avoid_info", "TEXT"],
   ["custom_keywords", "TEXT"],
   ["competitor_domains", "TEXT"],
+  ["notify_email", "TEXT"],
 ]);
 if (!tables.find(t => t.name === "visitor_logs")) {
   sqlite.exec(`CREATE TABLE visitor_logs (

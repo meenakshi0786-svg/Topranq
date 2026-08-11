@@ -393,7 +393,13 @@ function renderAppHtml(shop: string, apiKey: string): string {
           </div>
 
           <div class="card">
-            <h2>Your articles</h2>
+            <h2>Blog performance</h2>
+            <div class="stat-row" id="blog-perf" style="margin-top:12px;">
+              <div class="stat"><div class="stat-value" id="perf-total">—</div><div class="stat-label">Posts created</div></div>
+              <div class="stat"><div class="stat-value" style="color:#166534;" id="perf-published">—</div><div class="stat-label">Published</div></div>
+              <div class="stat"><div class="stat-value" style="color:#92400e;" id="perf-drafts">—</div><div class="stat-label">Drafts</div></div>
+            </div>
+            <h2 style="margin-top:8px;">Your articles</h2>
             <div id="articles-list" style="margin-top:8px;"><p style="color:#6b7177;font-size:13px;">Loading…</p></div>
           </div>
         </div>
@@ -434,6 +440,8 @@ function renderAppHtml(shop: string, apiKey: string): string {
               Promote my products <span class="badge" style="margin-left:2px;">Recommended</span>
             </label>
             <p style="font-size:12.5px;color:#6b7177;margin:6px 0 0 24px;">Creates blogs based on your store and best-selling products — our recommended setup for maximum results.</p>
+            <label style="display:block;font-size:12px;font-weight:600;margin:14px 0 4px;">Email notifications <span style="color:#8c9196;font-weight:400;">(get an email when Autopilot writes — leave empty to disable)</span></label>
+            <input id="ap-email" type="email" placeholder="you@yourstore.com" style="width:100%;padding:10px 12px;border:1px solid #c9cccf;border-radius:8px;font-size:14px;" />
           </div>
 
           <div class="card">
@@ -859,6 +867,7 @@ function renderAppHtml(shop: string, apiKey: string): string {
         set("ap-day", s.autopilotDay); set("ap-hour", s.autopilotHour);
         set("ap-publish", s.autoPublish ? "publish" : "draft");
         const prod = document.getElementById("ap-products"); if (prod) prod.checked = !!s.promoteProducts;
+        set("ap-email", s.notifyEmail);
         set("ap-brand", s.brandInfo); set("ap-avoid", s.avoidInfo);
         set("ap-keywords", (s.customKeywords || []).join(", "));
         set("ap-competitors", (s.competitorDomains || []).join(", "));
@@ -881,6 +890,7 @@ function renderAppHtml(shop: string, apiKey: string): string {
             autopilotHour: parseInt(val("ap-hour"), 10),
             autoPublish: val("ap-publish") === "publish",
             promoteProducts: !!document.getElementById("ap-products").checked,
+            notifyEmail: val("ap-email"),
             brandInfo: val("ap-brand"), avoidInfo: val("ap-avoid"),
             customKeywords: list("ap-keywords"), competitorDomains: list("ap-competitors"),
             authorName: val("pref-author") || undefined,
@@ -1277,6 +1287,10 @@ function renderAppHtml(shop: string, apiKey: string): string {
         if (!el) return;
         const statEl = document.getElementById("stat-articles");
         if (statEl) statEl.textContent = rows.length;
+        const pub = rows.filter(function(a){ return a.status === "published"; }).length;
+        const pt = document.getElementById("perf-total"); if (pt) pt.textContent = rows.length;
+        const pp = document.getElementById("perf-published"); if (pp) pp.textContent = pub;
+        const pd = document.getElementById("perf-drafts"); if (pd) pd.textContent = rows.length - pub;
         if (!rows.length) { el.innerHTML = '<p style="color:#6b7177;font-size:13px;">No articles yet. Generate your first one above.</p>'; return; }
         el.innerHTML = rows.map(function(a) {
           const badgeClass = a.status === "published" ? "" : (a.status === "rejected" ? "failed" : "pending");

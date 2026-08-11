@@ -128,10 +128,12 @@ export async function POST(request: NextRequest) {
         })
         .run();
 
+      let publishedUrl: string | null = null;
+      const article = db.select().from(schema.articles).where(eq(schema.articles.id, output.articleId)).get();
+      const articleTitle = article?.h1 || article?.metaTitle || topic;
       if (settings.autoPublish && token) {
-        const article = db.select().from(schema.articles).where(eq(schema.articles.id, output.articleId)).get();
         const result = await publishArticleToShopify(shop, token, {
-          title: article?.h1 || article?.metaTitle || topic,
+          title: articleTitle,
           bodyHtml: article?.bodyHtml || (article?.bodyMarkdown || "").replace(/\n/g, "<br>"),
           tags: article?.targetKeyword || "",
           featuredImageUrl: article?.featuredImageUrl,
@@ -142,10 +144,23 @@ export async function POST(request: NextRequest) {
           .where(eq(schema.articles.id, output.articleId))
           .run();
         outcome.published = result.url;
+        publishedUrl = result.url;
       } else {
         db.update(schema.articles).set({ status: "draft" }).where(eq(schema.articles.id, output.articleId)).run();
         outcome.draft = true;
         if (settings.autoPublish && !token) outcome.note = "no background token — saved as draft; opens app to re-auth";
+      }
+
+      // Email notification (best-effort, never blocks the run).
+      if (settings.notifyEmail) {
+        const { sendAutopilotEmail } = await import("@/lib/email");
+        sendAutopilotEmail({
+          to: settings.notifyEmail,
+          shopName: user.name || shop,
+          articleTitle,
+          publishedUrl,
+        }).catch(() => {});
+        outcome.notified = settings.notifyEmail;
       }
 
       advanceSchedule(row.id, settings);

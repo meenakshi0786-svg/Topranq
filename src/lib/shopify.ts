@@ -530,7 +530,8 @@ export async function publishArticleToShopify(
     };
     if (article.author) articleBody.author = article.author;
     if (includeImage && article.featuredImageUrl) {
-      articleBody.image = { src: article.featuredImageUrl };
+      // SEO alt text: keyword-bearing description improves image search visibility.
+      articleBody.image = { src: article.featuredImageUrl, alt: (article.tags || article.title).split(",")[0].trim() + " — " + article.title };
     }
     return fetch(articleUrl, {
       method: "POST",

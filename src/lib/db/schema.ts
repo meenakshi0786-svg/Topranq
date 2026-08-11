@@ -330,6 +330,7 @@ export const storeSettings = sqliteTable("store_settings", {
   promoteProducts: integer("promote_products", { mode: "boolean" }).default(true),
   nextRunAt: text("next_run_at"),
   lastRunAt: text("last_run_at"),
+  notifyEmail: text("notify_email"), // Autopilot email notifications (empty = off)
   // ── Knowledge base ──
   brandInfo: text("brand_info"), // max 300 chars: extra context for the AI
   avoidInfo: text("avoid_info"), // max 150 chars: what to avoid

@@ -25,6 +25,7 @@ export function getShopSettings(domainId: string) {
     promoteProducts: row?.promoteProducts ?? true,
     nextRunAt: row?.nextRunAt || null,
     lastRunAt: row?.lastRunAt || null,
+    notifyEmail: row?.notifyEmail || "",
     brandInfo: row?.brandInfo || "",
     avoidInfo: row?.avoidInfo || "",
     customKeywords: parseList(row?.customKeywords),
@@ -75,6 +76,7 @@ export async function POST(request: NextRequest) {
   const autoPublish = typeof body.autoPublish === "boolean" ? body.autoPublish : cur.autoPublish;
   const promoteProducts = typeof body.promoteProducts === "boolean" ? body.promoteProducts : cur.promoteProducts;
 
+  const notifyEmail = typeof body.notifyEmail === "string" ? body.notifyEmail.trim().slice(0, 120) : cur.notifyEmail;
   const brandInfo = typeof body.brandInfo === "string" ? body.brandInfo.trim().slice(0, 300) : cur.brandInfo;
   const avoidInfo = typeof body.avoidInfo === "string" ? body.avoidInfo.trim().slice(0, 150) : cur.avoidInfo;
   const cleanList = (v: unknown, max: number, itemLen: number): string[] =>
@@ -92,6 +94,7 @@ export async function POST(request: NextRequest) {
     tone, language, audience, authorName: authorName || null,
     autopilotEnabled, autopilotFrequency, autopilotDay, autopilotHour, autoPublish, promoteProducts,
     nextRunAt,
+    notifyEmail: notifyEmail || null,
     brandInfo: brandInfo || null, avoidInfo: avoidInfo || null,
     customKeywords: JSON.stringify(customKeywords), competitorDomains: JSON.stringify(competitorDomains),
     updatedAt: new Date().toISOString(),
