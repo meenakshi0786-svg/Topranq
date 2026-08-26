@@ -283,6 +283,17 @@ function renderAppHtml(shop: string, apiKey: string): string {
     <!-- Onboarding wizard (shown on first run) -->
     <div id="wiz-root"></div>
 
+    <!-- Focused Autopilot editor (Edit Agent) -->
+    <div id="agent-editor" style="display:none;position:fixed;inset:0;background:#f6f6f7;z-index:900;overflow-y:auto;">
+      <div style="max-width:1100px;margin:0 auto;padding:28px 24px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+          <a href="#" onclick="closeAgentEditor();return false;" style="display:inline-flex;align-items:center;gap:8px;color:#303030;font-size:14.5px;font-weight:600;text-decoration:none;">← Return to dashboard</a>
+          <span class="chip" id="agent-editor-status"></span>
+        </div>
+        <div id="agent-editor-body"></div>
+      </div>
+    </div>
+
     <!-- Status -->
     <div id="alert-area"></div>
 
@@ -350,7 +361,7 @@ function renderAppHtml(shop: string, apiKey: string): string {
           </div>
           <div class="status-line">
             <span id="hero-autopilot"></span>
-            <button class="btn btn-secondary" onclick="switchTab('autopilot')">Edit Agent</button>
+            <button class="btn btn-secondary" onclick="openAgentEditor()">Edit Agent</button>
             \${data.upgradeUrl ? '<a class="btn btn-primary" href="' + data.upgradeUrl + '" target="_top">' + upgradeLabel + '</a>' : ""}
           </div>
         </div>
@@ -822,6 +833,24 @@ function renderAppHtml(shop: string, apiKey: string): string {
       else closeWizard();
     }
 
+    function openAgentEditor() {
+      const body = document.getElementById("agent-editor-body");
+      const panel = document.getElementById("tab-autopilot");
+      if (!body || !panel) return;
+      while (panel.firstChild) body.appendChild(panel.firstChild);
+      document.getElementById("agent-editor").style.display = "block";
+      const st = document.getElementById("agent-editor-status");
+      if (st) st.innerHTML = '<span class="status-dot' + (document.getElementById("ap-off") && document.getElementById("ap-off").style.display !== "none" ? "" : " off") + '"></span>Autopilot Agent';
+      window.scrollTo(0, 0);
+    }
+
+    function closeAgentEditor() {
+      const body = document.getElementById("agent-editor-body");
+      const panel = document.getElementById("tab-autopilot");
+      if (body && panel) { while (body.firstChild) panel.appendChild(body.firstChild); }
+      document.getElementById("agent-editor").style.display = "none";
+    }
+
     function switchTab(name) {
       document.querySelectorAll(".tab-panel").forEach(function(p) { p.style.display = "none"; });
       document.querySelectorAll(".tab").forEach(function(t) { t.classList.toggle("active", t.dataset.tab === name); });
@@ -895,7 +924,7 @@ function renderAppHtml(shop: string, apiKey: string): string {
         if (status) { status.style.color = "#6b7177"; status.textContent = "Autopilot is off — your store isn't getting automatic SEO content yet."; }
         if (cta) cta.textContent = "Turn On Your Autopilot Agent";
         if (off) off.style.display = "none";
-        if (hero) hero.innerHTML = '<span class="chip"><span class="status-dot off"></span>Autopilot is off</span>';
+        if (hero) hero.innerHTML = '<a href="#" onclick="openAgentEditor();return false;" class="chip" style="text-decoration:none;cursor:pointer;"><span class="status-dot off"></span>Autopilot is off — turn it on</a>';
       }
     }
 
