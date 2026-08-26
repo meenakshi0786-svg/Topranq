@@ -305,3 +305,27 @@ export async function sendAutopilotEmail(data: {
     return false;
   }
 }
+
+// ── Feature request (from the embedded app) ──────────────────────────
+export async function sendFeatureRequestEmail(data: {
+  shop: string; name: string; email: string; feature: string; message: string;
+}): Promise<boolean> {
+  const transport = getTransport();
+  const subject = `💡 Ranqapex feature request: ${data.feature || "(untitled)"}`;
+  const html = `<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;font-size:14px;color:#333;line-height:1.6;">
+    <h2 style="font-size:16px;">New feature request</h2>
+    <p><strong>Store:</strong> ${escapeHtml(data.shop)}<br/>
+    <strong>Name:</strong> ${escapeHtml(data.name || "—")}<br/>
+    <strong>Email:</strong> ${escapeHtml(data.email || "—")}<br/>
+    <strong>Feature:</strong> ${escapeHtml(data.feature || "—")}</p>
+    <p style="white-space:pre-wrap;border-left:3px solid #ddd;padding-left:12px;">${escapeHtml(data.message || "—")}</p>
+  </div>`;
+  if (!transport) { console.log("[email] (dev) feature request from", data.shop); return false; }
+  try {
+    await transport.sendMail({ from: `Ranqapex <${FROM_EMAIL}>`, to: "ranqapexcontact@gmail.com", subject, html, replyTo: data.email || undefined });
+    return true;
+  } catch (err) {
+    console.error("[email] feature request failed:", err);
+    return false;
+  }
+}

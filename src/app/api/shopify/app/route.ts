@@ -93,11 +93,8 @@ function renderAppHtml(shop: string, apiKey: string): string {
       border: none; text-decoration: none;
       transition: transform 0.15s, box-shadow 0.15s;
     }
-    .btn-primary {
-      background: linear-gradient(135deg, #4F6EF7, #7C5CFC);
-      color: #fff;
-    }
-    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(79,110,247,0.3); }
+    .btn-primary { background: #1a1a1a; color: #fff; }
+    .btn-primary:hover { background: #2c2c2c; transform: translateY(-1px); }
     .btn-secondary {
       background: #fff; color: #202223; border: 1px solid #babfc3;
     }
@@ -134,25 +131,26 @@ function renderAppHtml(shop: string, apiKey: string): string {
       transition: background .12s, color .12s;
     }
     .tab:hover { color: #202223; background: #f4f5f7; }
-    .tab.active { color: #4F6EF7; background: #eef1ff; }
+    .tab.active { color: #fff; background: #303030; }
 
-    /* ── Hero band ── */
-    .hero {
-      background: linear-gradient(135deg, #4F6EF7, #7C5CFC);
-      border-radius: 16px; padding: 22px 24px; margin-bottom: 16px; color: #fff;
-      box-shadow: 0 8px 24px rgba(79,110,247,.28);
+    /* ── Polaris-style status + usage ── */
+    .hello { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
+    .hello-sub { font-size: 13px; color: #6b7177; margin-top: 2px; }
+    .status-line { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 13px; color: #303030; }
+    .status-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #29845a; margin-right: 5px; }
+    .status-dot.off { background: #b5b5b5; }
+    .chip { background: #f1f1f1; border: 1px solid #e3e3e3; color: #303030; padding: 3px 10px; border-radius: 999px; font-weight: 600; font-size: 11.5px; white-space: nowrap; }
+    .usage-track { height: 7px; background: #e3e3e3; border-radius: 999px; margin-top: 10px; overflow: hidden; }
+    .usage-fill { height: 100%; background: #1a1a1a; border-radius: 999px; transition: width .4s ease; }
+    .cta-bar {
+      display: block; width: 100%; background: #1a1a1a; color: #fff; border: none; cursor: pointer;
+      padding: 14px; border-radius: 10px; font-size: 15px; font-weight: 600; text-align: center;
+      transition: background .15s;
     }
-    .hero-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-    .hero-hi { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
-    .hero-sub { font-size: 13.5px; opacity: .9; margin-top: 3px; }
-    .btn-hero { background: #fff; color: #4F6EF7; }
-    .btn-hero:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,.18); }
-    .btn-hero-sec { background: rgba(255,255,255,.16); color: #fff; border: 1px solid rgba(255,255,255,.35); }
-    .btn-hero-sec:hover { background: rgba(255,255,255,.24); }
-    .hero-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 12.5px; margin-top: 16px; opacity: .95; }
-    .chip { background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.3); padding: 3px 10px; border-radius: 999px; font-weight: 700; font-size: 11.5px; }
-    .meter-track { height: 8px; background: rgba(255,255,255,.25); border-radius: 999px; margin-top: 8px; overflow: hidden; }
-    .meter-fill { height: 100%; background: #fff; border-radius: 999px; transition: width .4s ease; }
+    .cta-bar:hover { background: #2c2c2c; }
+    .dow { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 600; color: #303030;
+      border: 1px solid #c9cccf; border-radius: 8px; padding: 6px 9px; cursor: pointer; user-select: none; }
+    .dow input { width: 14px; height: 14px; }
 
     /* ── Templates gallery ── */
     .tpl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; margin-top: 16px; }
@@ -169,7 +167,7 @@ function renderAppHtml(shop: string, apiKey: string): string {
       letter-spacing: .06em; padding: 3px 8px; border-radius: 5px;
     }
     .tpl-badge.free { background: #dcfce7; color: #166534; }
-    .tpl-badge.pro { background: linear-gradient(135deg, #4F6EF7, #7C5CFC); color: #fff; }
+    .tpl-badge.pro { background: #1a1a1a; color: #fff; }
     .tpl-selected-chip {
       display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600;
       background: #f0f5ff; color: #4F6EF7; border: 1px solid #c7d7fe;
@@ -180,7 +178,7 @@ function renderAppHtml(shop: string, apiKey: string): string {
     /* ── Paywall modal ── */
     .pay-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; padding: 24px; z-index: 1000; }
     .pay-modal { background: #fff; border-radius: 14px; max-width: 440px; width: 100%; padding: 28px; text-align: center; box-shadow: 0 18px 50px rgba(0,0,0,.25); }
-    .pay-lock { width: 54px; height: 54px; margin: 0 auto 14px; border-radius: 14px; background: linear-gradient(135deg, #4F6EF7, #7C5CFC); display: flex; align-items: center; justify-content: center; font-size: 24px; }
+    .pay-lock { width: 54px; height: 54px; margin: 0 auto 14px; border-radius: 14px; background: #1a1a1a; display: flex; align-items: center; justify-content: center; font-size: 24px; }
     .pay-modal h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
     .pay-modal p { font-size: 13.5px; color: #6b7177; margin-bottom: 18px; }
 
@@ -268,6 +266,7 @@ function renderAppHtml(shop: string, apiKey: string): string {
     <a href="/api/shopify/app?shop=${shop}&tab=how">How It Works</a>
     <a href="/api/shopify/app?shop=${shop}&tab=prefs">Preferences</a>
     <a href="/api/shopify/app?shop=${shop}&tab=pricing">Pricing Plans</a>
+    <a href="/api/shopify/app?shop=${shop}&tab=feedback">Feature Request</a>
   </ui-nav-menu>
 
   <div class="container">
@@ -336,7 +335,7 @@ function renderAppHtml(shop: string, apiKey: string): string {
         ? data.creditsRemaining + " / " + data.creditsAllowance
         : "—";
       const trialNote = data.trialDaysRemaining > 0
-        ? '<span class="chip">🎁 ' + data.trialDaysRemaining + '-day trial</span>'
+        ? '<span class="chip">' + data.trialDaysRemaining + '-day trial</span>'
         : "";
       const upgradeLabel = data.plan === "growth" ? "Manage plan" : "Upgrade plan";
       const storeName = data.storeName || data.shop.replace(".myshopify.com", "").split("-").map(function(w) { return w.charAt(0).toUpperCase() + w.slice(1); }).join(" ");
@@ -344,26 +343,24 @@ function renderAppHtml(shop: string, apiKey: string): string {
       let resetStr = "";
       try { resetStr = new Date(data.periodEnd).toLocaleDateString(undefined, { month: "short", day: "numeric" }); } catch (e) {}
       content.innerHTML = \`
-        <div class="hero">
-          <div class="hero-top">
-            <div>
-              <div class="hero-hi">Hey \${storeName} 👋</div>
-              <div class="hero-sub">Your AI SEO content team is on it — audits, keywords, articles, publishing. We've got it covered.</div>
-            </div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;">
-              <button class="btn btn-hero-sec" onclick="startOnboarding()">Build my SEO plan</button>
-              \${data.upgradeUrl ? '<a class="btn btn-hero" href="' + data.upgradeUrl + '" target="_top">' + upgradeLabel + '</a>' : ""}
-            </div>
+        <div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;">
+          <div>
+            <div class="hello">Hey \${storeName} 👋</div>
+            <div class="hello-sub">Your AI SEO content team — audits, keywords, articles, publishing.</div>
           </div>
-          <div class="hero-meta">
-            <span><strong id="stat-credits">\${credits}</strong> credits</span>
-            <span class="chip">\${planName} plan</span>
-            \${trialNote}
-            <span><strong id="stat-articles">\${data.articleCount}</strong> articles created</span>
+          <div class="status-line">
             <span id="hero-autopilot"></span>
-            \${resetStr ? '<span style="margin-left:auto;">Credits reset ' + resetStr + '</span>' : ""}
+            <button class="btn btn-secondary" onclick="switchTab('autopilot')">Edit Agent</button>
+            \${data.upgradeUrl ? '<a class="btn btn-primary" href="' + data.upgradeUrl + '" target="_top">' + upgradeLabel + '</a>' : ""}
           </div>
-          <div class="meter-track"><div class="meter-fill" id="credit-bar" style="width:\${pct}%"></div></div>
+        </div>
+
+        <div class="card" style="padding:14px 20px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-size:13.5px;color:#303030;">
+            <span>You're on the <strong>\${planName} plan</strong> (<strong id="stat-credits">\${credits}</strong> credits)\${trialNote ? " " + trialNote : ""} · <strong id="stat-articles">\${data.articleCount}</strong> articles\${resetStr ? " · Resets " + resetStr : ""}</span>
+            <a href="#" onclick="startOnboarding();return false;" style="color:#1a1a1a;font-weight:600;text-decoration:underline;white-space:nowrap;">Build my SEO plan</a>
+          </div>
+          <div class="usage-track"><div class="usage-fill" id="credit-bar" style="width:\${100 - pct}%"></div></div>
         </div>
 
         <div class="tabs">
@@ -394,10 +391,11 @@ function renderAppHtml(shop: string, apiKey: string): string {
 
           <div class="card">
             <h2>Blog performance</h2>
-            <div class="stat-row" id="blog-perf" style="margin-top:12px;">
+            <div class="stat-row" id="blog-perf" style="margin-top:12px;grid-template-columns:repeat(4,1fr);">
               <div class="stat"><div class="stat-value" id="perf-total">—</div><div class="stat-label">Posts created</div></div>
               <div class="stat"><div class="stat-value" style="color:#166534;" id="perf-published">—</div><div class="stat-label">Published</div></div>
               <div class="stat"><div class="stat-value" style="color:#92400e;" id="perf-drafts">—</div><div class="stat-label">Drafts</div></div>
+              <div class="stat"><div class="stat-value" style="color:#29845a;" id="perf-time">—</div><div class="stat-label">Hours saved (est.)</div></div>
             </div>
             <h2 style="margin-top:8px;">Your articles</h2>
             <div id="articles-list" style="margin-top:8px;"><p style="color:#6b7177;font-size:13px;">Loading…</p></div>
@@ -413,17 +411,18 @@ function renderAppHtml(shop: string, apiKey: string): string {
               <div>
                 <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Blog frequency</label>
                 <select id="ap-frequency" onchange="apDayOptions()" style="width:100%;padding:10px 12px;border:1px solid #c9cccf;border-radius:8px;font-size:14px;background:#fff;">
-                  <option value="weekly">Every week</option>
+                  <option value="daily">Every day — recommended</option>
+                  <option value="weekly">Specific days of the week</option>
                   <option value="biweekly">Every 2 weeks</option>
                   <option value="monthly">Every month</option>
                 </select>
               </div>
               <div>
-                <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;" id="ap-day-label">Day of the week</label>
-                <select id="ap-day" style="width:100%;padding:10px 12px;border:1px solid #c9cccf;border-radius:8px;font-size:14px;background:#fff;"></select>
+                <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;" id="ap-day-label">Days of the week</label>
+                <div id="ap-day-wrap" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
               </div>
               <div>
-                <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Time (UTC)</label>
+                <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Time <span id="ap-tz-label" style="color:#8c9196;font-weight:400;">(store local time)</span></label>
                 <select id="ap-hour" style="width:100%;padding:10px 12px;border:1px solid #c9cccf;border-radius:8px;font-size:14px;background:#fff;"></select>
               </div>
               <div>
@@ -431,6 +430,12 @@ function renderAppHtml(shop: string, apiKey: string): string {
                 <select id="ap-publish" style="width:100%;padding:10px 12px;border:1px solid #c9cccf;border-radius:8px;font-size:14px;background:#fff;">
                   <option value="publish">Publish automatically</option>
                   <option value="draft">Save as drafts for my review</option>
+                </select>
+              </div>
+              <div>
+                <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Shopify blog</label>
+                <select id="ap-blog" style="width:100%;padding:10px 12px;border:1px solid #c9cccf;border-radius:8px;font-size:14px;background:#fff;">
+                  <option value="">Default blog</option>
                 </select>
               </div>
             </div>
@@ -459,8 +464,8 @@ function renderAppHtml(shop: string, apiKey: string): string {
 
           <div class="card" style="text-align:center;">
             <div id="ap-status" style="font-size:13px;margin-bottom:12px;color:#6b7177;"></div>
-            <button id="ap-cta" class="btn btn-primary" style="font-size:15px;padding:12px 26px;" onclick="saveAutopilot(true)">Turn On Your Autopilot Agent</button>
-            <button id="ap-off" class="btn btn-secondary" style="display:none;margin-left:8px;" onclick="saveAutopilot(false)">Turn Off</button>
+            <button id="ap-cta" class="cta-bar" onclick="saveAutopilot(true)">Turn On Your Autopilot Agent</button>
+            <button id="ap-off" class="btn btn-secondary" style="display:none;margin-top:10px;" onclick="saveAutopilot(false)">Turn Off Autopilot</button>
             <p style="font-size:12px;color:#8c9196;margin-top:10px;">You can always come back and edit it later.</p>
           </div>
         </div>
@@ -557,7 +562,7 @@ function renderAppHtml(shop: string, apiKey: string): string {
               <div class="step done"><div class="step-icon">3</div><div><div class="step-label" style="color:#202223;">AI writes, you approve</div><div style="font-size:12.5px;color:#6b7177;">SEO + GEO-optimized articles with your products woven in — structured by proven templates.</div></div></div>
               <div class="step done"><div class="step-icon">4</div><div><div class="step-label" style="color:#202223;">One-click publish</div><div style="font-size:12.5px;color:#6b7177;">Straight to your store blog with meta tags, FAQ schema and internal links included.</div></div></div>
             </div>
-            <p style="margin-top:16px;font-size:13px;color:#6b7177;">Missing something? <a href="mailto:ranqapexcontact@gmail.com?subject=Ranqapex%20feature%20request" style="color:#4F6EF7;font-weight:600;">Request a feature →</a></p>
+            <p style="margin-top:16px;font-size:13px;color:#6b7177;">Missing something? <a href="#" onclick="switchTab('feedback');return false;" style="color:#1a1a1a;font-weight:600;">Request a feature →</a></p>
           </div>
         </div>
 
@@ -587,11 +592,30 @@ function renderAppHtml(shop: string, apiKey: string): string {
           </div>
         </div>
 
+        <div id="tab-feedback" class="tab-panel" style="display:none;">
+          <div class="card">
+            <h2>Got something in mind?</h2>
+            <p style="margin:8px 0 16px;">Whether it's a small tweak or a wild idea — we're all ears. Drop your request below and help us make Ranqapex even better 🚀</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div><label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Name</label>
+              <input id="fb-name" style="width:100%;padding:10px 12px;border:1px solid #c9cccf;border-radius:8px;font-size:14px;" /></div>
+              <div><label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Email</label>
+              <input id="fb-email" type="email" style="width:100%;padding:10px 12px;border:1px solid #c9cccf;border-radius:8px;font-size:14px;" /></div>
+            </div>
+            <label style="display:block;font-size:12px;font-weight:600;margin:12px 0 4px;">Feature name</label>
+            <input id="fb-feature" style="width:100%;padding:10px 12px;border:1px solid #c9cccf;border-radius:8px;font-size:14px;" />
+            <label style="display:block;font-size:12px;font-weight:600;margin:12px 0 4px;">Message</label>
+            <textarea id="fb-message" rows="4" style="width:100%;padding:10px 12px;border:1px solid #c9cccf;border-radius:8px;font-size:14px;font-family:inherit;"></textarea>
+            <button id="fb-send" class="cta-bar" style="margin-top:14px;" onclick="submitFeedback()">Submit your idea</button>
+            <p id="fb-status" style="font-size:13px;margin-top:8px;text-align:center;"></p>
+          </div>
+        </div>
+
         <div style="text-align:center;padding:6px 0 18px;font-size:12.5px;color:#8c9196;">
           <a href="#" onclick="switchTab('prefs');return false;" style="color:#6b7177;text-decoration:none;">Preferences</a> ·
           <a href="#" onclick="switchTab('how');return false;" style="color:#6b7177;text-decoration:none;">How it works</a> ·
           <a href="#" onclick="switchTab('pricing');return false;" style="color:#6b7177;text-decoration:none;">Pricing plans</a> ·
-          <a href="mailto:ranqapexcontact@gmail.com?subject=Ranqapex%20feature%20request" style="color:#6b7177;text-decoration:none;">Request a feature</a>
+          <a href="#" onclick="switchTab('feedback');return false;" style="color:#6b7177;text-decoration:none;">Feature request</a>
         </div>
       \`;
       PLAN = data.plan || "free";
@@ -808,20 +832,25 @@ function renderAppHtml(shop: string, apiKey: string): string {
     // ── Preferences + Autopilot ──────────────────────────────────────
     function apDayOptions() {
       const freq = document.getElementById("ap-frequency").value;
-      const daySel = document.getElementById("ap-day");
+      const wrap = document.getElementById("ap-day-wrap");
       const label = document.getElementById("ap-day-label");
-      const cur = daySel.value;
+      if (freq === "daily") {
+        label.textContent = "Runs every day";
+        wrap.innerHTML = '<span style="font-size:12.5px;color:#8c9196;padding:8px 0;display:inline-block;">A fresh article every day at your chosen time.</span>';
+        return;
+      }
       if (freq === "monthly") {
         label.textContent = "Day of the month";
-        daySel.innerHTML = "";
-        for (let i = 1; i <= 28; i++) daySel.innerHTML += '<option value="' + i + '">' + i + '</option>';
-      } else {
-        label.textContent = "Day of the week";
-        const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-        daySel.innerHTML = days.map(function(d, i) { return '<option value="' + i + '">' + d + '</option>'; }).join("");
+        let opts = "";
+        for (let i = 1; i <= 28; i++) opts += '<option value="' + i + '">' + i + '</option>';
+        wrap.innerHTML = '<select id="ap-day" style="width:100%;padding:10px 12px;border:1px solid #c9cccf;border-radius:8px;font-size:14px;background:#fff;">' + opts + '</select>';
+        return;
       }
-      if (cur) daySel.value = cur;
-      if (!daySel.value) daySel.value = freq === "monthly" ? "1" : "1";
+      label.textContent = "Days of the week";
+      const days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+      wrap.innerHTML = days.map(function(d, i) {
+        return '<label class="dow"><input type="checkbox" id="ap-dow-' + i + '" />' + d + '</label>';
+      }).join("");
     }
 
     function apHourOptions() {
@@ -834,43 +863,76 @@ function renderAppHtml(shop: string, apiKey: string): string {
       sel.value = "9";
     }
 
+    function relFuture(iso) {
+      try {
+        const days = Math.round((Date.parse(iso) - Date.now()) / 86400000);
+        if (days <= 0) return "today"; if (days === 1) return "1 day";
+        if (days < 14) return days + " days"; return Math.round(days / 7) + " weeks";
+      } catch (e) { return ""; }
+    }
+    function relPast(iso) {
+      try {
+        const days = Math.round((Date.now() - Date.parse(iso)) / 86400000);
+        if (days <= 0) return "today"; if (days === 1) return "1d ago"; return days + "d ago";
+      } catch (e) { return "—"; }
+    }
+
     function renderAutopilotState(s) {
       const status = document.getElementById("ap-status");
       const cta = document.getElementById("ap-cta");
       const off = document.getElementById("ap-off");
       const hero = document.getElementById("hero-autopilot");
       if (s.autopilotEnabled) {
-        let nextStr = "";
-        try { nextStr = new Date(s.nextRunAt).toLocaleDateString(undefined, { month: "short", day: "numeric" }); } catch (e) {}
-        if (status) status.innerHTML = '<span style="color:#166534;font-weight:700;">🟢 Your Autopilot Agent is running.</span>' + (nextStr ? " Next blog: " + nextStr + "." : "");
+        const nextIn = s.nextRunAt ? relFuture(s.nextRunAt) : "";
+        if (status) { status.style.color = "#6b7177"; status.innerHTML = '<span style="color:#29845a;font-weight:700;"><span class="status-dot"></span>Your Autopilot Agent is running.</span>' + (nextIn ? " Next blog in: " + nextIn + "." : ""); }
         if (cta) cta.textContent = "Update Autopilot Settings";
         if (off) off.style.display = "inline-block";
-        if (hero) hero.innerHTML = '<span class="chip">🟢 Autopilot on' + (nextStr ? " · next " + nextStr : "") + '</span>';
+        if (hero) hero.innerHTML =
+          (s.lastRunAt ? '<span>Last blog: ' + relPast(s.lastRunAt) + '</span><span style="color:#c9cccf;">·</span>' : "") +
+          (nextIn ? '<span>Next blog in: ' + nextIn + '</span>' : "") +
+          '<span class="chip"><span class="status-dot"></span>Autopilot is Running</span>';
       } else {
-        if (status) status.textContent = "Autopilot is off — your store isn't getting automatic SEO content yet.";
+        if (status) { status.style.color = "#6b7177"; status.textContent = "Autopilot is off — your store isn't getting automatic SEO content yet."; }
         if (cta) cta.textContent = "Turn On Your Autopilot Agent";
         if (off) off.style.display = "none";
-        if (hero) hero.innerHTML = '<a href="#" onclick="switchTab(\\'autopilot\\');return false;" class="chip" style="text-decoration:none;color:#fff;">🚀 Turn on Autopilot</a>';
+        if (hero) hero.innerHTML = '<span class="chip"><span class="status-dot off"></span>Autopilot is off</span>';
       }
     }
 
     async function loadSettings() {
       try {
         apHourOptions();
-        const res = await fetch("/api/shopify/embedded/settings");
+        const [res, blogsRes] = await Promise.all([
+          fetch("/api/shopify/embedded/settings"),
+          fetch("/api/shopify/embedded/blogs"),
+        ]);
         if (!res.ok) return;
         const s = await res.json();
         const set = function(id, v) { const el = document.getElementById(id); if (el) el.value = v == null ? "" : String(v); };
         set("pref-tone", s.tone); set("pref-language", s.language);
         set("pref-audience", s.audience); set("pref-author", s.authorName);
         set("ap-frequency", s.autopilotFrequency); apDayOptions();
-        set("ap-day", s.autopilotDay); set("ap-hour", s.autopilotHour);
+        if (s.autopilotFrequency === "monthly") { set("ap-day", s.autopilotDay); }
+        else { (s.autopilotDays || [1]).forEach(function(d) { const cb = document.getElementById("ap-dow-" + d); if (cb) cb.checked = true; }); }
+        set("ap-hour", s.autopilotHour);
         set("ap-publish", s.autoPublish ? "publish" : "draft");
+        const tzl = document.getElementById("ap-tz-label");
+        if (tzl) tzl.textContent = "(" + (s.timezone && s.timezone !== "UTC" ? s.timezone.replace(/_/g, " ") + " — store local" : "UTC") + ")";
         const prod = document.getElementById("ap-products"); if (prod) prod.checked = !!s.promoteProducts;
         set("ap-email", s.notifyEmail);
         set("ap-brand", s.brandInfo); set("ap-avoid", s.avoidInfo);
         set("ap-keywords", (s.customKeywords || []).join(", "));
         set("ap-competitors", (s.competitorDomains || []).join(", "));
+        try {
+          const bl = blogsRes.ok ? await blogsRes.json() : { blogs: [] };
+          const sel = document.getElementById("ap-blog");
+          if (sel && bl.blogs && bl.blogs.length) {
+            sel.innerHTML = '<option value="">Default blog</option>' + bl.blogs.map(function(b) {
+              return '<option value="' + b.id + '" data-handle="' + b.handle + '" data-title="' + b.title.replace(/"/g, "&quot;") + '">' + b.title + '</option>';
+            }).join("");
+            if (s.targetBlogId) sel.value = s.targetBlogId;
+          }
+        } catch (e) { /* ignore */ }
         renderAutopilotState(s);
       } catch (e) { /* ignore */ }
     }
@@ -881,20 +943,29 @@ function renderAppHtml(shop: string, apiKey: string): string {
       try {
         const val = function(id) { const el = document.getElementById(id); return el ? el.value : ""; };
         const list = function(id) { return val(id).split(",").map(function(x) { return x.trim(); }).filter(Boolean); };
+        const freq = val("ap-frequency");
+        let days = [];
+        for (let i = 0; i < 7; i++) { const cb = document.getElementById("ap-dow-" + i); if (cb && cb.checked) days.push(i); }
+        if (!days.length) days = [1];
+        const blogSel = document.getElementById("ap-blog");
+        const blogOpt = blogSel && blogSel.selectedIndex >= 0 ? blogSel.options[blogSel.selectedIndex] : null;
+        const body = {
+          autopilotEnabled: enable,
+          autopilotFrequency: freq,
+          autopilotDays: days,
+          autopilotHour: parseInt(val("ap-hour"), 10),
+          autoPublish: val("ap-publish") === "publish",
+          promoteProducts: !!document.getElementById("ap-products").checked,
+          notifyEmail: val("ap-email"),
+          brandInfo: val("ap-brand"), avoidInfo: val("ap-avoid"),
+          customKeywords: list("ap-keywords"), competitorDomains: list("ap-competitors"),
+          authorName: val("pref-author") || undefined,
+          targetBlog: blogSel ? { id: blogSel.value, handle: blogOpt ? (blogOpt.getAttribute("data-handle") || "") : "", title: blogOpt ? (blogOpt.getAttribute("data-title") || "") : "" } : undefined,
+        };
+        if (freq === "monthly") body.autopilotDay = parseInt(val("ap-day") || "1", 10);
         const res = await fetch("/api/shopify/embedded/settings", {
           method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            autopilotEnabled: enable,
-            autopilotFrequency: val("ap-frequency"),
-            autopilotDay: parseInt(val("ap-day"), 10),
-            autopilotHour: parseInt(val("ap-hour"), 10),
-            autoPublish: val("ap-publish") === "publish",
-            promoteProducts: !!document.getElementById("ap-products").checked,
-            notifyEmail: val("ap-email"),
-            brandInfo: val("ap-brand"), avoidInfo: val("ap-avoid"),
-            customKeywords: list("ap-keywords"), competitorDomains: list("ap-competitors"),
-            authorName: val("pref-author") || undefined,
-          }),
+          body: JSON.stringify(body),
         });
         const s = await res.json();
         if (!res.ok) throw new Error(s.error || "Save failed");
@@ -906,6 +977,26 @@ function renderAppHtml(shop: string, apiKey: string): string {
       cta.disabled = false;
       const en = document.getElementById("ap-off").style.display !== "none";
       cta.textContent = en ? "Update Autopilot Settings" : "Turn On Your Autopilot Agent";
+    }
+
+    async function submitFeedback() {
+      const btn = document.getElementById("fb-send");
+      const status = document.getElementById("fb-status");
+      const val = function(id) { const el = document.getElementById(id); return el ? el.value : ""; };
+      btn.disabled = true; btn.innerHTML = '<span class="loading"></span> Sending…';
+      try {
+        const res = await fetch("/api/shopify/embedded/feedback", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: val("fb-name"), email: val("fb-email"), feature: val("fb-feature"), message: val("fb-message") }),
+        });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.error || "Couldn't send");
+        status.style.color = "#166534"; status.textContent = "Thanks! We read every request. 🙌";
+        ["fb-feature", "fb-message"].forEach(function(id) { const el = document.getElementById(id); if (el) el.value = ""; });
+      } catch (e) {
+        status.style.color = "#991b1b"; status.textContent = e.message;
+      }
+      btn.disabled = false; btn.textContent = "Submit your idea";
     }
 
     async function saveSettings() {
@@ -1041,7 +1132,8 @@ function renderAppHtml(shop: string, apiKey: string): string {
         if (el && data.creditsRemaining != null) el.textContent = data.creditsRemaining + " / " + data.creditsAllowance;
         const bar = document.getElementById("credit-bar");
         if (bar && data.creditsAllowance) {
-          bar.style.width = Math.max(0, Math.min(100, Math.round((data.creditsRemaining / data.creditsAllowance) * 100))) + "%";
+          const used = data.creditsAllowance - data.creditsRemaining;
+          bar.style.width = Math.max(0, Math.min(100, Math.round((used / data.creditsAllowance) * 100))) + "%";
         }
       } catch (e) { /* ignore */ }
     }
@@ -1291,6 +1383,7 @@ function renderAppHtml(shop: string, apiKey: string): string {
         const pt = document.getElementById("perf-total"); if (pt) pt.textContent = rows.length;
         const pp = document.getElementById("perf-published"); if (pp) pp.textContent = pub;
         const pd = document.getElementById("perf-drafts"); if (pd) pd.textContent = rows.length - pub;
+        const ptm = document.getElementById("perf-time"); if (ptm) ptm.textContent = (rows.length * 0.62).toFixed(1);
         if (!rows.length) { el.innerHTML = '<p style="color:#6b7177;font-size:13px;">No articles yet. Generate your first one above.</p>'; return; }
         el.innerHTML = rows.map(function(a) {
           const badgeClass = a.status === "published" ? "" : (a.status === "rejected" ? "failed" : "pending");

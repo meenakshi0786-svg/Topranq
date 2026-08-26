@@ -3,7 +3,7 @@ import { db, schema } from "@/lib/db";
 import { eq } from "drizzle-orm";
 import { getShopFromRequest, getRawSessionToken, resolveOfflineToken } from "@/lib/shopify-embedded";
 import { getShopBillingState } from "@/lib/shopify-billing";
-import { fetchShopName } from "@/lib/shopify";
+import { fetchShopInfo } from "@/lib/shopify";
 
 // GET /api/shopify/embedded/me
 // Authenticated by the App Bridge session token (Authorization: Bearer <jwt>).
@@ -23,12 +23,21 @@ export async function GET(request: NextRequest) {
   // means we haven't fetched the real name yet.
   const user = db.select().from(schema.users).where(eq(schema.users.id, billing.userId)).get();
   let storeName = user?.name || null;
-  if (!storeName || storeName.includes(".myshopify.com")) {
+  const settingsRow = db.select().from(schema.storeSettings).where(eq(schema.storeSettings.domainId, billing.domainId)).get();
+  if (!storeName || storeName.includes(".myshopify.com") || !settingsRow?.timezone) {
     const token = await resolveOfflineToken(claims.shop, getRawSessionToken(request));
-    const real = token ? await fetchShopName(claims.shop, token) : null;
-    if (real) {
-      db.update(schema.users).set({ name: real }).where(eq(schema.users.id, billing.userId)).run();
-      storeName = real;
+    const info = token ? await fetchShopInfo(claims.shop, token) : { name: null, timezone: null };
+    if (info.name) {
+      db.update(schema.users).set({ name: info.name }).where(eq(schema.users.id, billing.userId)).run();
+      storeName = info.name;
+    }
+    // Cache the store timezone so Autopilot schedules in store-local time.
+    if (info.timezone) {
+      if (settingsRow) {
+        db.update(schema.storeSettings).set({ timezone: info.timezone }).where(eq(schema.storeSettings.id, settingsRow.id)).run();
+      } else {
+        db.insert(schema.storeSettings).values({ domainId: billing.domainId, timezone: info.timezone }).run();
+      }
     }
   }
   if (!storeName || storeName.includes(".myshopify.com")) {

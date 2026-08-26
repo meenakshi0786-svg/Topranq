@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       tags: article.targetKeyword || "",
       featuredImageUrl: article.featuredImageUrl,
       author: prefs.authorName || null,
-    });
+    }, prefs.targetBlogId ? { id: prefs.targetBlogId, handle: prefs.targetBlogHandle } : null);
 
     db.update(schema.articles)
       .set({ status: "published", publishedUrl: result.url, publishedAt: new Date().toISOString() })

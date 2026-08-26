@@ -324,13 +324,18 @@ export const storeSettings = sqliteTable("store_settings", {
   // ── Autopilot Agent ──
   autopilotEnabled: integer("autopilot_enabled", { mode: "boolean" }).default(false),
   autopilotFrequency: text("autopilot_frequency").default("weekly"), // weekly | biweekly | monthly
-  autopilotDay: integer("autopilot_day").default(1), // weekday 0-6 (weekly/biweekly) or day-of-month 1-28
+  autopilotDay: integer("autopilot_day").default(1), // day-of-month 1-28 (monthly)
+  autopilotDays: text("autopilot_days"), // JSON array of weekdays 0-6 (weekly/biweekly)
   autopilotHour: integer("autopilot_hour").default(9), // UTC hour 0-23
   autoPublish: integer("auto_publish", { mode: "boolean" }).default(true), // false = leave as draft
   promoteProducts: integer("promote_products", { mode: "boolean" }).default(true),
   nextRunAt: text("next_run_at"),
   lastRunAt: text("last_run_at"),
   notifyEmail: text("notify_email"), // Autopilot email notifications (empty = off)
+  timezone: text("timezone"), // store's IANA timezone (schedule runs in store-local time)
+  targetBlogId: text("target_blog_id"), // which Shopify blog to publish into
+  targetBlogHandle: text("target_blog_handle"),
+  targetBlogTitle: text("target_blog_title"),
   // ── Knowledge base ──
   brandInfo: text("brand_info"), // max 300 chars: extra context for the AI
   avoidInfo: text("avoid_info"), // max 150 chars: what to avoid

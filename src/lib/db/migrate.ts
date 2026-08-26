@@ -191,6 +191,11 @@ ensureColumns("store_settings", [
   ["custom_keywords", "TEXT"],
   ["competitor_domains", "TEXT"],
   ["notify_email", "TEXT"],
+  ["autopilot_days", "TEXT"],
+  ["timezone", "TEXT"],
+  ["target_blog_id", "TEXT"],
+  ["target_blog_handle", "TEXT"],
+  ["target_blog_title", "TEXT"],
 ]);
 if (!tables.find(t => t.name === "visitor_logs")) {
   sqlite.exec(`CREATE TABLE visitor_logs (

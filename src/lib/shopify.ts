@@ -412,18 +412,41 @@ export async function fetchStoreProducts(
   }
 }
 
-/** Fetch the store's display name via the Admin API. Best-effort: null on failure. */
-export async function fetchShopName(shop: string, accessToken: string): Promise<string | null> {
+/** Fetch the store's display name + IANA timezone. Best-effort: nulls on failure. */
+export async function fetchShopInfo(
+  shop: string,
+  accessToken: string,
+): Promise<{ name: string | null; timezone: string | null }> {
   try {
-    const res = await fetch(`https://${shop}/admin/api/${SHOPIFY_API_VERSION}/shop.json?fields=name`, {
+    const res = await fetch(`https://${shop}/admin/api/${SHOPIFY_API_VERSION}/shop.json?fields=name,iana_timezone`, {
       headers: { "X-Shopify-Access-Token": accessToken },
     });
-    if (!res.ok) return null;
+    if (!res.ok) return { name: null, timezone: null };
     const data = await res.json();
-    const name = data?.shop?.name;
-    return typeof name === "string" && name.trim() ? name.trim() : null;
+    const name = typeof data?.shop?.name === "string" && data.shop.name.trim() ? data.shop.name.trim() : null;
+    const timezone = typeof data?.shop?.iana_timezone === "string" && data.shop.iana_timezone ? data.shop.iana_timezone : null;
+    return { name, timezone };
   } catch {
-    return null;
+    return { name: null, timezone: null };
+  }
+}
+
+/** List the store's blogs (id/handle/title). Best-effort: [] on failure. */
+export async function fetchStoreBlogs(
+  shop: string,
+  accessToken: string,
+): Promise<Array<{ id: string; handle: string; title: string }>> {
+  try {
+    const res = await fetch(`https://${shop}/admin/api/${SHOPIFY_API_VERSION}/blogs.json?fields=id,handle,title`, {
+      headers: { "X-Shopify-Access-Token": accessToken },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data.blogs || []).map((b: Record<string, unknown>) => ({
+      id: String(b.id), handle: String(b.handle || ""), title: String(b.title || ""),
+    }));
+  } catch {
+    return [];
   }
 }
 
@@ -487,9 +510,14 @@ function isPublicImageUrl(url?: string | null): boolean {
 export async function publishArticleToShopify(
   shop: string,
   accessToken: string,
-  article: { title: string; bodyHtml: string; tags?: string; featuredImageUrl?: string | null; author?: string | null }
+  article: { title: string; bodyHtml: string; tags?: string; featuredImageUrl?: string | null; author?: string | null },
+  targetBlog?: { id: string | number; handle?: string | null } | null
 ): Promise<{ url: string; id: number }> {
-  // 1. Find or create a default blog
+  // 1. Use the merchant-selected blog when provided; otherwise find/create default.
+  let blogId: number | string | null = targetBlog?.id || null;
+  let blogHandle: string = targetBlog?.handle || "";
+  const blogsData: { blogs?: Array<{ id: number; handle?: string }> } = {};
+  if (!blogId) {
   const blogsRes = await fetch(`https://${shop}/admin/api/${SHOPIFY_API_VERSION}/blogs.json`, {
     headers: { "X-Shopify-Access-Token": accessToken },
   });
@@ -497,8 +525,9 @@ export async function publishArticleToShopify(
     const errText = await blogsRes.text().catch(() => "");
     throw new Error(`Failed to list blogs: ${blogsRes.status} ${errText.slice(0, 300)}`);
   }
-  const blogsData = await blogsRes.json();
-  let blogId: number | null = blogsData.blogs?.[0]?.id || null;
+  Object.assign(blogsData, await blogsRes.json());
+  blogId = blogsData.blogs?.[0]?.id || null;
+  blogHandle = blogsData.blogs?.[0]?.handle || "";
 
   // Create default blog if none exists
   if (!blogId) {
@@ -513,6 +542,8 @@ export async function publishArticleToShopify(
     }
     const newBlog = await createBlogRes.json();
     blogId = newBlog.blog.id;
+    blogHandle = newBlog.blog.handle || "news";
+  }
   }
 
   // 2. Publish article. Only attach the featured image if it's a public http(s)
@@ -561,6 +592,6 @@ export async function publishArticleToShopify(
   // Use the full shop domain — stripping ".myshopify.com" produces an invalid host.
   return {
     id: articleId,
-    url: `https://${shop}/blogs/${blogsData.blogs?.[0]?.handle || "news"}/${handle}`,
+    url: `https://${shop}/blogs/${blogHandle || "news"}/${handle}`,
   };
 }

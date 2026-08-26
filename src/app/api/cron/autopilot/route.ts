@@ -138,7 +138,7 @@ export async function POST(request: NextRequest) {
           tags: article?.targetKeyword || "",
           featuredImageUrl: article?.featuredImageUrl,
           author: settings.authorName || null,
-        });
+        }, settings.targetBlogId ? { id: settings.targetBlogId, handle: settings.targetBlogHandle } : null);
         db.update(schema.articles)
           .set({ status: "published", publishedUrl: result.url, publishedAt: new Date().toISOString() })
           .where(eq(schema.articles.id, output.articleId))
@@ -176,7 +176,7 @@ export async function POST(request: NextRequest) {
 }
 
 function advanceSchedule(settingsId: string, s: ReturnType<typeof getShopSettings>) {
-  let next = computeNextRunAt(s.autopilotFrequency, s.autopilotDay, s.autopilotHour);
+  let next = computeNextRunAt(s.autopilotFrequency, s.autopilotDays, s.autopilotDay, s.autopilotHour, s.timezone);
   if (s.autopilotFrequency === "biweekly") {
     next = new Date(Date.parse(next) + 7 * 24 * 3600 * 1000).toISOString();
   }

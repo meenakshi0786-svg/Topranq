@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm";
 import { getShopFromRequest, getOrCreateShopAccount } from "@/lib/shopify-embedded";
 
 const TONES = ["professional", "friendly", "playful", "authoritative", "conversational"];
-const FREQUENCIES = ["weekly", "biweekly", "monthly"];
+const FREQUENCIES = ["daily", "weekly", "biweekly", "monthly"];
 
 export function getShopSettings(domainId: string) {
   const row = db.select().from(schema.storeSettings).where(eq(schema.storeSettings.domainId, domainId)).get();
@@ -20,6 +20,14 @@ export function getShopSettings(domainId: string) {
     autopilotEnabled: !!row?.autopilotEnabled,
     autopilotFrequency: row?.autopilotFrequency || "weekly",
     autopilotDay: row?.autopilotDay ?? 1,
+    autopilotDays: (() => {
+      try { const v = JSON.parse(row?.autopilotDays || "[]"); return Array.isArray(v) && v.length ? v.map(Number).filter((n) => n >= 0 && n <= 6) : [1]; }
+      catch { return [1]; }
+    })(),
+    timezone: row?.timezone || "UTC",
+    targetBlogId: row?.targetBlogId || "",
+    targetBlogHandle: row?.targetBlogHandle || "",
+    targetBlogTitle: row?.targetBlogTitle || "",
     autopilotHour: row?.autopilotHour ?? 9,
     autoPublish: row?.autoPublish ?? true,
     promoteProducts: row?.promoteProducts ?? true,
@@ -33,18 +41,50 @@ export function getShopSettings(domainId: string) {
   };
 }
 
-/** Next occurrence (UTC) of the configured slot, strictly in the future. */
-export function computeNextRunAt(frequency: string, day: number, hour: number, from = new Date()): string {
-  const d = new Date(Date.UTC(from.getUTCFullYear(), from.getUTCMonth(), from.getUTCDate(), hour, 0, 0));
-  if (frequency === "monthly") {
-    d.setUTCDate(Math.min(Math.max(1, day), 28));
-    while (d <= from) d.setUTCMonth(d.getUTCMonth() + 1);
-  } else {
-    const targetDow = ((day % 7) + 7) % 7;
-    while (d.getUTCDay() !== targetDow || d <= from) d.setUTCDate(d.getUTCDate() + 1);
-    // biweekly just means the NEXT slot is normal; subsequent runs advance 14d in the cron.
+/** Offset of a timezone (ms to ADD to UTC to get local wall time) at a given instant. */
+function tzOffsetMs(utcMs: number, tz: string): number {
+  try {
+    const f = new Intl.DateTimeFormat("en-US", {
+      timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false,
+    });
+    const p: Record<string, string> = {};
+    for (const part of f.formatToParts(new Date(utcMs))) p[part.type] = part.value;
+    const asUtc = Date.UTC(+p.year, +p.month - 1, +p.day, +(p.hour === "24" ? "0" : p.hour), +p.minute, +p.second);
+    return asUtc - utcMs;
+  } catch { return 0; }
+}
+
+/**
+ * Next occurrence (UTC ISO) of the configured slot, strictly in the future,
+ * interpreted in the store's timezone ("Every day at 9am" means 9am local).
+ * daily: any day; weekly/biweekly: any of `days` (weekdays 0-6); monthly: `dayOfMonth`.
+ */
+export function computeNextRunAt(
+  frequency: string,
+  days: number[],
+  dayOfMonth: number,
+  hour: number,
+  tz = "UTC",
+  from = new Date(),
+): string {
+  const wanted = new Set((days || []).filter((n) => n >= 0 && n <= 6));
+  if (!wanted.size) wanted.add(1);
+  const dom = Math.min(Math.max(1, dayOfMonth || 1), 28);
+
+  for (let i = 0; i < 62; i++) {
+    // Candidate calendar day: "now + i days" as seen in the store's timezone.
+    const probe = from.getTime() + i * 86400000;
+    const local = new Date(probe + tzOffsetMs(probe, tz));
+    const y = local.getUTCFullYear(), m = local.getUTCMonth(), d = local.getUTCDate();
+    if (frequency === "monthly" && d !== dom) continue;
+    if ((frequency === "weekly" || frequency === "biweekly") && !wanted.has(local.getUTCDay())) continue;
+    // Convert local y-m-d hour:00 back to UTC (two-pass for DST edges).
+    let utc = Date.UTC(y, m, d, hour, 0, 0) - tzOffsetMs(Date.UTC(y, m, d, hour, 0, 0), tz);
+    utc = Date.UTC(y, m, d, hour, 0, 0) - tzOffsetMs(utc, tz);
+    if (utc > from.getTime()) return new Date(utc).toISOString();
   }
-  return d.toISOString();
+  return new Date(from.getTime() + 7 * 86400000).toISOString(); // safety fallback
 }
 
 // GET /api/shopify/embedded/settings — full preferences + autopilot state.
@@ -72,6 +112,12 @@ export async function POST(request: NextRequest) {
   const autopilotEnabled = typeof body.autopilotEnabled === "boolean" ? body.autopilotEnabled : cur.autopilotEnabled;
   const autopilotFrequency = FREQUENCIES.includes(body.autopilotFrequency) ? body.autopilotFrequency : cur.autopilotFrequency;
   const autopilotDay = Number.isInteger(body.autopilotDay) ? Math.min(Math.max(0, body.autopilotDay), 28) : cur.autopilotDay;
+  const autopilotDays = Array.isArray(body.autopilotDays)
+    ? body.autopilotDays.map(Number).filter((n: number) => Number.isInteger(n) && n >= 0 && n <= 6)
+    : cur.autopilotDays;
+  const targetBlog = body.targetBlog && typeof body.targetBlog === "object"
+    ? { id: String(body.targetBlog.id || ""), handle: String(body.targetBlog.handle || ""), title: String(body.targetBlog.title || "") }
+    : null;
   const autopilotHour = Number.isInteger(body.autopilotHour) ? Math.min(Math.max(0, body.autopilotHour), 23) : cur.autopilotHour;
   const autoPublish = typeof body.autoPublish === "boolean" ? body.autoPublish : cur.autoPublish;
   const promoteProducts = typeof body.promoteProducts === "boolean" ? body.promoteProducts : cur.promoteProducts;
@@ -88,11 +134,15 @@ export async function POST(request: NextRequest) {
     ? cleanList(body.competitorDomains, 3, 100).map((d) => d.toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0])
     : cur.competitorDomains;
 
-  const nextRunAt = autopilotEnabled ? computeNextRunAt(autopilotFrequency, autopilotDay, autopilotHour) : null;
+  const nextRunAt = autopilotEnabled
+    ? computeNextRunAt(autopilotFrequency, autopilotDays, autopilotDay, autopilotHour, cur.timezone)
+    : null;
 
   const values = {
     tone, language, audience, authorName: authorName || null,
     autopilotEnabled, autopilotFrequency, autopilotDay, autopilotHour, autoPublish, promoteProducts,
+    autopilotDays: JSON.stringify(autopilotDays.length ? autopilotDays : [1]),
+    ...(targetBlog !== null ? { targetBlogId: targetBlog.id || null, targetBlogHandle: targetBlog.handle || null, targetBlogTitle: targetBlog.title || null } : {}),
     nextRunAt,
     notifyEmail: notifyEmail || null,
     brandInfo: brandInfo || null, avoidInfo: avoidInfo || null,
