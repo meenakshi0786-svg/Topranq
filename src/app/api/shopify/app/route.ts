@@ -374,17 +374,6 @@ function renderAppHtml(shop: string, apiKey: string): string {
           <div class="usage-track"><div class="usage-fill" id="credit-bar" style="width:\${100 - pct}%"></div></div>
         </div>
 
-        <div class="tabs">
-          <button class="tab active" data-tab="generate" onclick="switchTab('generate')">✍️ Blog Generator</button>
-          <button class="tab" data-tab="autopilot" onclick="switchTab('autopilot')">🚀 Autopilot</button>
-          <button class="tab" data-tab="templates" onclick="switchTab('templates')">📐 Templates</button>
-          <button class="tab" data-tab="audit" onclick="switchTab('audit')">🔍 SEO Audit</button>
-          <button class="tab" data-tab="visibility" onclick="switchTab('visibility')">🤖 AI Visibility</button>
-          <button class="tab" data-tab="keywords" onclick="switchTab('keywords')">🎯 Keywords</button>
-          <button class="tab" data-tab="links" onclick="switchTab('links')">🔗 Internal Links</button>
-          <button class="tab" data-tab="products" onclick="switchTab('products')">🛍️ Product Links</button>
-        </div>
-
         <div id="tab-generate" class="tab-panel">
           <div class="card">
             <h2>AI Blog Post Generator</h2>
