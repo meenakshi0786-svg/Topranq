@@ -40,7 +40,8 @@ export async function POST(request: NextRequest) {
     const prefs = getShopSettings(domainId);
     const result = await publishArticleToShopify(claims.shop, token, {
       title: article.h1 || article.metaTitle || "Untitled",
-      bodyHtml: article.bodyHtml || (article.bodyMarkdown || "").replace(/\n/g, "<br>"),
+      bodyHtml: (article.bodyHtml || (article.bodyMarkdown || "").replace(/\n/g, "<br>")) +
+        (prefs.legalDisclaimer ? '<hr><p style="font-size:12px;color:#6b7177;"><em>' + prefs.legalDisclaimer + "</em></p>" : ""),
       tags: article.targetKeyword || "",
       featuredImageUrl: article.featuredImageUrl,
       author: prefs.authorName || null,

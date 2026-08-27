@@ -438,6 +438,10 @@ function renderAppHtml(shop: string, apiKey: string): string {
                   <option value="">Default blog</option>
                 </select>
               </div>
+              <div>
+                <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Author <span style="color:#8c9196;font-weight:400;">(shown on posts)</span></label>
+                <input id="ap-author" placeholder="e.g. Sarah Johnson" style="width:100%;padding:10px 12px;border:1px solid #c9cccf;border-radius:8px;font-size:14px;" />
+              </div>
             </div>
 
             <label style="display:flex;align-items:center;gap:8px;margin-top:14px;font-size:13.5px;font-weight:600;cursor:pointer;">
@@ -445,8 +449,21 @@ function renderAppHtml(shop: string, apiKey: string): string {
               Promote my products <span class="badge" style="margin-left:2px;">Recommended</span>
             </label>
             <p style="font-size:12.5px;color:#6b7177;margin:6px 0 0 24px;">Creates blogs based on your store and best-selling products — our recommended setup for maximum results.</p>
-            <label style="display:block;font-size:12px;font-weight:600;margin:14px 0 4px;">Email notifications <span style="color:#8c9196;font-weight:400;">(get an email when Autopilot writes — leave empty to disable)</span></label>
-            <input id="ap-email" type="email" placeholder="you@yourstore.com" style="width:100%;padding:10px 12px;border:1px solid #c9cccf;border-radius:8px;font-size:14px;" />
+            <div style="display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-top:14px;">
+              <div>
+                <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Email notifications <span style="color:#8c9196;font-weight:400;">(leave empty to disable)</span></label>
+                <input id="ap-email" type="email" placeholder="you@yourstore.com" style="width:100%;padding:10px 12px;border:1px solid #c9cccf;border-radius:8px;font-size:14px;" />
+              </div>
+              <div>
+                <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;">Notify me</label>
+                <select id="ap-timing" style="width:100%;padding:10px 12px;border:1px solid #c9cccf;border-radius:8px;font-size:14px;background:#fff;">
+                  <option value="on_publish">Immediately upon publish</option>
+                  <option value="before_publish">1 hour before publish</option>
+                </select>
+              </div>
+            </div>
+            <label style="display:block;font-size:12px;font-weight:600;margin:14px 0 4px;">Legal disclaimer <span style="color:#8c9196;font-weight:400;">(optional — appended to every published post)</span></label>
+            <input id="ap-disclaimer" maxlength="500" placeholder="e.g. These statements are for informational purposes only…" style="width:100%;padding:10px 12px;border:1px solid #c9cccf;border-radius:8px;font-size:14px;" />
           </div>
 
           <div class="card">
@@ -538,6 +555,7 @@ function renderAppHtml(shop: string, apiKey: string): string {
             <select id="pref-tone" style="width:100%;padding:10px 12px;border:1px solid #c9cccf;border-radius:8px;font-size:14px;margin-bottom:12px;background:#fff;">
               <option value="professional">Professional</option>
               <option value="friendly">Friendly</option>
+              <option value="polite">Polite</option>
               <option value="playful">Playful</option>
               <option value="authoritative">Authoritative</option>
               <option value="conversational">Conversational</option>
@@ -938,6 +956,9 @@ function renderAppHtml(shop: string, apiKey: string): string {
         if (tzl) tzl.textContent = "(" + (s.timezone && s.timezone !== "UTC" ? s.timezone.replace(/_/g, " ") + " — store local" : "UTC") + ")";
         const prod = document.getElementById("ap-products"); if (prod) prod.checked = !!s.promoteProducts;
         set("ap-email", s.notifyEmail);
+        set("ap-timing", s.notifyTiming);
+        set("ap-disclaimer", s.legalDisclaimer);
+        set("ap-author", s.authorName);
         set("ap-brand", s.brandInfo); set("ap-avoid", s.avoidInfo);
         set("ap-keywords", (s.customKeywords || []).join(", "));
         set("ap-competitors", (s.competitorDomains || []).join(", "));
@@ -975,9 +996,11 @@ function renderAppHtml(shop: string, apiKey: string): string {
           autoPublish: val("ap-publish") === "publish",
           promoteProducts: !!document.getElementById("ap-products").checked,
           notifyEmail: val("ap-email"),
+          notifyTiming: val("ap-timing"),
+          legalDisclaimer: val("ap-disclaimer"),
           brandInfo: val("ap-brand"), avoidInfo: val("ap-avoid"),
           customKeywords: list("ap-keywords"), competitorDomains: list("ap-competitors"),
-          authorName: val("pref-author") || undefined,
+          authorName: val("ap-author") || val("pref-author") || undefined,
           targetBlog: blogSel ? { id: blogSel.value, handle: blogOpt ? (blogOpt.getAttribute("data-handle") || "") : "", title: blogOpt ? (blogOpt.getAttribute("data-title") || "") : "" } : undefined,
         };
         if (freq === "monthly") body.autopilotDay = parseInt(val("ap-day") || "1", 10);

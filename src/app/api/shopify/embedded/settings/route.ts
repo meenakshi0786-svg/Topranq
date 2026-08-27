@@ -3,7 +3,7 @@ import { db, schema } from "@/lib/db";
 import { eq } from "drizzle-orm";
 import { getShopFromRequest, getOrCreateShopAccount } from "@/lib/shopify-embedded";
 
-const TONES = ["professional", "friendly", "playful", "authoritative", "conversational"];
+const TONES = ["professional", "friendly", "polite", "playful", "authoritative", "conversational"];
 const FREQUENCIES = ["daily", "weekly", "biweekly", "monthly"];
 
 export function getShopSettings(domainId: string) {
@@ -34,6 +34,8 @@ export function getShopSettings(domainId: string) {
     nextRunAt: row?.nextRunAt || null,
     lastRunAt: row?.lastRunAt || null,
     notifyEmail: row?.notifyEmail || "",
+    notifyTiming: row?.notifyTiming === "before_publish" ? "before_publish" : "on_publish",
+    legalDisclaimer: row?.legalDisclaimer || "",
     brandInfo: row?.brandInfo || "",
     avoidInfo: row?.avoidInfo || "",
     customKeywords: parseList(row?.customKeywords),
@@ -123,6 +125,8 @@ export async function POST(request: NextRequest) {
   const promoteProducts = typeof body.promoteProducts === "boolean" ? body.promoteProducts : cur.promoteProducts;
 
   const notifyEmail = typeof body.notifyEmail === "string" ? body.notifyEmail.trim().slice(0, 120) : cur.notifyEmail;
+  const notifyTiming = body.notifyTiming === "before_publish" || body.notifyTiming === "on_publish" ? body.notifyTiming : cur.notifyTiming;
+  const legalDisclaimer = typeof body.legalDisclaimer === "string" ? body.legalDisclaimer.trim().slice(0, 500) : cur.legalDisclaimer;
   const brandInfo = typeof body.brandInfo === "string" ? body.brandInfo.trim().slice(0, 300) : cur.brandInfo;
   const avoidInfo = typeof body.avoidInfo === "string" ? body.avoidInfo.trim().slice(0, 150) : cur.avoidInfo;
   const cleanList = (v: unknown, max: number, itemLen: number): string[] =>
@@ -145,6 +149,8 @@ export async function POST(request: NextRequest) {
     ...(targetBlog !== null ? { targetBlogId: targetBlog.id || null, targetBlogHandle: targetBlog.handle || null, targetBlogTitle: targetBlog.title || null } : {}),
     nextRunAt,
     notifyEmail: notifyEmail || null,
+    notifyTiming,
+    legalDisclaimer: legalDisclaimer || null,
     brandInfo: brandInfo || null, avoidInfo: avoidInfo || null,
     customKeywords: JSON.stringify(customKeywords), competitorDomains: JSON.stringify(competitorDomains),
     updatedAt: new Date().toISOString(),

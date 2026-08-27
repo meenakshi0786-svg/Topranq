@@ -8,6 +8,11 @@ import { getShopSettings, computeNextRunAt } from "@/app/api/shopify/embedded/se
 
 export const maxDuration = 300;
 
+function withDisclaimer(html: string, disclaimer: string | null | undefined): string {
+  if (!disclaimer) return html;
+  return html + '<hr><p style="font-size:12px;color:#6b7177;"><em>' + disclaimer + "</em></p>";
+}
+
 // POST /api/cron/autopilot?secret=xxx
 // The Autopilot Agent: for every shop whose schedule is due, pick a topic from
 // its knowledge base, generate an article, and publish it (or leave a draft).
@@ -18,13 +23,50 @@ export async function POST(request: NextRequest) {
   if (provided !== process.env.CRON_SECRET) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const nowIso = new Date().toISOString();
+  const results: Array<Record<string, unknown>> = [];
+
+  // ── Sweep: publish articles scheduled by the "notify 1 hour before" flow ──
+  const scheduled = db
+    .select()
+    .from(schema.articles)
+    .where(and(eq(schema.articles.status, "scheduled"), lte(schema.articles.scheduledFor, nowIso)))
+    .all();
+  for (const art of scheduled) {
+    const outcome: Record<string, unknown> = { sweep: art.id };
+    try {
+      const connector = db
+        .select()
+        .from(schema.connectors)
+        .where(and(eq(schema.connectors.platform, "shopify"), eq(schema.connectors.domainId, art.domainId)))
+        .get();
+      if (!connector?.siteUrl) continue; // not a shopify-managed article
+      const shop = new URL(connector.siteUrl).hostname;
+      const token = await getFreshAdminToken(shop);
+      if (!token) { outcome.skipped = "no token"; results.push(outcome); continue; }
+      const st = getShopSettings(art.domainId);
+      const result = await publishArticleToShopify(shop, token, {
+        title: art.h1 || art.metaTitle || "Untitled",
+        bodyHtml: withDisclaimer(art.bodyHtml || (art.bodyMarkdown || "").replace(/\n/g, "<br>"), st.legalDisclaimer),
+        tags: art.targetKeyword || "",
+        featuredImageUrl: art.featuredImageUrl,
+        author: st.authorName || null,
+      }, st.targetBlogId ? { id: st.targetBlogId, handle: st.targetBlogHandle } : null);
+      db.update(schema.articles)
+        .set({ status: "published", publishedUrl: result.url, publishedAt: new Date().toISOString() })
+        .where(eq(schema.articles.id, art.id))
+        .run();
+      outcome.published = result.url;
+    } catch (error) {
+      outcome.error = error instanceof Error ? error.message : String(error);
+    }
+    results.push(outcome);
+  }
+
   const due = db
     .select()
     .from(schema.storeSettings)
     .where(and(eq(schema.storeSettings.autopilotEnabled, true), lte(schema.storeSettings.nextRunAt, nowIso)))
     .all();
-
-  const results: Array<Record<string, unknown>> = [];
 
   for (const row of due) {
     const domainId = row.domainId;
@@ -78,6 +120,28 @@ export async function POST(request: NextRequest) {
           .find((k) => !usedKw.has(k.keyword.toLowerCase()));
         if (discovered) topic = discovered.keyword;
       }
+      // Competitor mining: "insert your competitor's domain and Autopilot will
+      // generate keywords according to this domain" — refill the keyword pool.
+      if (!topic && settings.competitorDomains.length) {
+        try {
+          const { discoverCompetitorKeywords } = await import("@/lib/keyword-discovery");
+          const mined = await discoverCompetitorKeywords(domainId, settings.competitorDomains[0]);
+          const runId = `autopilot_${crypto.randomUUID()}`;
+          for (const kw of mined) {
+            db.insert(schema.discoveredKeywords)
+              .values({
+                domainId, keyword: kw.keyword, difficulty: kw.difficulty, intent: kw.intent,
+                relevancyScore: kw.relevancyScore, source: kw.source,
+                sourceDetail: kw.sourceDetail || null, competitorUrl: kw.competitorUrl || null, runId,
+              })
+              .run();
+          }
+          topic = mined.find((k) => !usedKw.has(k.keyword.toLowerCase()))?.keyword || null;
+          if (topic) outcome.topicSource = "competitor:" + settings.competitorDomains[0];
+        } catch (e) {
+          outcome.competitorMiningError = e instanceof Error ? e.message : String(e);
+        }
+      }
       if (!topic) {
         const product = db.select().from(schema.storeProducts).where(eq(schema.storeProducts.domainId, domainId)).all()[0];
         if (product) topic = `The complete guide to ${product.name}`;
@@ -129,12 +193,21 @@ export async function POST(request: NextRequest) {
         .run();
 
       let publishedUrl: string | null = null;
+      let scheduledNotice = false;
       const article = db.select().from(schema.articles).where(eq(schema.articles.id, output.articleId)).get();
       const articleTitle = article?.h1 || article?.metaTitle || topic;
-      if (settings.autoPublish && token) {
+      if (settings.autoPublish && token && settings.notifyTiming === "before_publish" && settings.notifyEmail) {
+        // "1 hour before publish": hold the article; the next cron sweep publishes it.
+        db.update(schema.articles)
+          .set({ status: "scheduled", scheduledFor: new Date(Date.now() + 3600 * 1000).toISOString() })
+          .where(eq(schema.articles.id, output.articleId))
+          .run();
+        outcome.scheduled = "publishes in ~1 hour";
+        scheduledNotice = true;
+      } else if (settings.autoPublish && token) {
         const result = await publishArticleToShopify(shop, token, {
           title: articleTitle,
-          bodyHtml: article?.bodyHtml || (article?.bodyMarkdown || "").replace(/\n/g, "<br>"),
+          bodyHtml: withDisclaimer(article?.bodyHtml || (article?.bodyMarkdown || "").replace(/\n/g, "<br>"), settings.legalDisclaimer),
           tags: article?.targetKeyword || "",
           featuredImageUrl: article?.featuredImageUrl,
           author: settings.authorName || null,
@@ -159,6 +232,7 @@ export async function POST(request: NextRequest) {
           shopName: user.name || shop,
           articleTitle,
           publishedUrl,
+          scheduled: scheduledNotice,
         }).catch(() => {});
         outcome.notified = settings.notifyEmail;
       }

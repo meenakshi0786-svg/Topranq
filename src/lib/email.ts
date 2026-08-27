@@ -277,16 +277,23 @@ export async function sendAutopilotEmail(data: {
   to: string;
   shopName: string;
   articleTitle: string;
-  publishedUrl?: string | null; // null = saved as draft
+  publishedUrl?: string | null; // null = saved as draft (or scheduled)
+  scheduled?: boolean; // true = "publishing in about an hour" notice
 }): Promise<boolean> {
   const transport = getTransport();
-  const subject = data.publishedUrl
+  const subject = data.scheduled
+    ? `⏰ Publishing in ~1 hour: ${data.articleTitle}`
+    : data.publishedUrl
     ? `🚀 Autopilot published: ${data.articleTitle}`
     : `📝 Autopilot draft ready: ${data.articleTitle}`;
-  const body = data.publishedUrl
+  const body = data.scheduled
+    ? `<p>Your Autopilot Agent finished a new SEO article for <strong>${escapeHtml(data.shopName)}</strong>. It will go live on your store blog in about an hour:</p>
+       <h2 style="font-size:18px;color:#1a1a2e;">${escapeHtml(data.articleTitle)}</h2>
+       <p>Want to review or stop it? Open the Ranqapex app in your Shopify admin.</p>`
+    : data.publishedUrl
     ? `<p>Your Autopilot Agent just published a new SEO article on <strong>${escapeHtml(data.shopName)}</strong>:</p>
        <h2 style="font-size:18px;color:#1a1a2e;">${escapeHtml(data.articleTitle)}</h2>
-       <p><a href="${data.publishedUrl}" style="display:inline-block;background:linear-gradient(135deg,#4F6EF7,#7C5CFC);color:#fff;padding:10px 22px;border-radius:8px;text-decoration:none;font-weight:600;">View the live post →</a></p>`
+       <p><a href="${data.publishedUrl}" style="display:inline-block;background:#1a1a1a;color:#fff;padding:10px 22px;border-radius:8px;text-decoration:none;font-weight:600;">View the live post →</a></p>`
     : `<p>Your Autopilot Agent wrote a new SEO article for <strong>${escapeHtml(data.shopName)}</strong> and saved it as a draft for your review:</p>
        <h2 style="font-size:18px;color:#1a1a2e;">${escapeHtml(data.articleTitle)}</h2>
        <p>Open the Ranqapex app in your Shopify admin to review and publish it.</p>`;

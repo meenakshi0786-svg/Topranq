@@ -332,6 +332,8 @@ export const storeSettings = sqliteTable("store_settings", {
   nextRunAt: text("next_run_at"),
   lastRunAt: text("last_run_at"),
   notifyEmail: text("notify_email"), // Autopilot email notifications (empty = off)
+  notifyTiming: text("notify_timing").default("on_publish"), // on_publish | before_publish
+  legalDisclaimer: text("legal_disclaimer"), // appended to every published post (optional)
   timezone: text("timezone"), // store's IANA timezone (schedule runs in store-local time)
   targetBlogId: text("target_blog_id"), // which Shopify blog to publish into
   targetBlogHandle: text("target_blog_handle"),

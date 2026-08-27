@@ -196,6 +196,8 @@ ensureColumns("store_settings", [
   ["target_blog_id", "TEXT"],
   ["target_blog_handle", "TEXT"],
   ["target_blog_title", "TEXT"],
+  ["notify_timing", "TEXT DEFAULT 'on_publish'"],
+  ["legal_disclaimer", "TEXT"],
 ]);
 if (!tables.find(t => t.name === "visitor_logs")) {
   sqlite.exec(`CREATE TABLE visitor_logs (
