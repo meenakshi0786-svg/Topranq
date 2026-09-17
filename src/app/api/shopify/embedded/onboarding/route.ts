@@ -159,6 +159,7 @@ RULES:
   ].filter(Boolean) as string[];
 
   let content = "";
+  let lastErr = "";
   for (const model of models) {
     try {
       const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -166,13 +167,29 @@ RULES:
         headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
         body: JSON.stringify({ model, max_tokens: 8000, messages: [{ role: "user", content: prompt }] }),
       });
-      if (!res.ok) continue;
+      if (!res.ok) {
+        const detail = await res.text().catch(() => "");
+        let msg = "";
+        try { msg = JSON.parse(detail)?.error?.message || ""; } catch { /* keep raw */ }
+        lastErr = `${res.status} ${msg || detail.slice(0, 120)}`;
+        console.error(`[onboarding] keyword model ${model} failed: ${lastErr}`);
+        continue;
+      }
       const data = await res.json();
       const text = data.choices?.[0]?.message?.content || "";
       if (text.length > 100) { content = text; break; }
-    } catch { /* try next model */ }
+      lastErr = "empty completion";
+    } catch (e) {
+      lastErr = e instanceof Error ? e.message : String(e);
+      console.error(`[onboarding] keyword model ${model} threw: ${lastErr}`);
+    }
   }
-  if (!content) return NextResponse.json({ error: "Keyword research failed — AI unavailable" }, { status: 500 });
+  if (!content) {
+    return NextResponse.json(
+      { error: `Keyword research failed — AI unavailable${lastErr ? ` (${lastErr})` : ""}` },
+      { status: 500 },
+    );
+  }
 
   // Tolerant JSON extraction (models sometimes wrap in fences/prose).
   let parsed: Array<{ keyword?: string; intent?: string; rationale?: string }> = [];
