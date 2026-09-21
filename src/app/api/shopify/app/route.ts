@@ -1182,7 +1182,7 @@ function renderAppHtml(shop: string, apiKey: string): string {
             if (res.status === 402) { note.textContent = "out of credits"; for (let k = i + 1; k < topics.length; k++) { document.getElementById("bulk-dot-" + k).textContent = "⛔"; document.getElementById("bulk-note-" + k).textContent = "skipped — no credits"; } break; }
             continue;
           }
-          dot.textContent = "✅"; note.innerHTML = (data.wordCount || "?") + ' words · <a href="#" onclick="publish(\'' + data.articleId + '\', this);return false;">Publish</a>';
+          dot.textContent = "✅"; note.innerHTML = (data.wordCount || "?") + ' words · <a href="#" onclick="publish(\\'' + data.articleId + '\\', this);return false;">Publish</a>';
           done++;
         } catch (e) { dot.textContent = "❌"; note.textContent = e.message; }
       }
