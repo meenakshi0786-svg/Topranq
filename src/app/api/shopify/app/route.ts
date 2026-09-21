@@ -387,6 +387,12 @@ function renderAppHtml(shop: string, apiKey: string): string {
               style="width:100%;padding:10px 12px;border:1px solid #c9cccf;border-radius:8px;font-size:14px;margin-bottom:16px;" />
             <button id="gen-btn" class="btn btn-primary" onclick="generate()">Generate article</button>
             <div id="gen-result" style="margin-top:16px;"></div>
+            <hr style="border:none;border-top:1px solid #e3e3e3;margin:22px 0;">
+            <h3 style="font-size:14px;margin:0 0 4px;">⚡ Bulk generate</h3>
+            <p style="color:#6d7175;font-size:13px;margin:0 0 10px;">One topic per line (up to 10). Articles are written one after another — 1 credit each. Keep this page open while it runs.</p>
+            <textarea id="bulk-topics" rows="4" placeholder="best pour over coffee makers&#10;how to store coffee beans&#10;french press brewing guide" style="width:100%;padding:10px 12px;border:1px solid #c9cccf;border-radius:8px;font-size:14px;font-family:inherit;"></textarea>
+            <button id="bulk-btn" class="btn btn-secondary" style="margin-top:10px;" onclick="bulkGenerate()">Generate all</button>
+            <div id="bulk-progress" style="margin-top:12px;"></div>
           </div>
 
           <div class="card">
@@ -1145,6 +1151,44 @@ function renderAppHtml(shop: string, apiKey: string): string {
         result.innerHTML = '<div class="alert error">' + e.message + '</div>';
       }
       btn.disabled = false; btn.innerHTML = "Generate article";
+    }
+
+    let bulkRunning = false;
+    async function bulkGenerate() {
+      if (bulkRunning) return;
+      const box = document.getElementById("bulk-progress");
+      const btn = document.getElementById("bulk-btn");
+      const topics = document.getElementById("bulk-topics").value
+        .split("\n").map(function (t) { return t.trim(); }).filter(Boolean).slice(0, 10);
+      if (!topics.length) { box.innerHTML = '<div class="alert error">Enter at least one topic (one per line).</div>'; return; }
+      bulkRunning = true; btn.disabled = true;
+      box.innerHTML = topics.map(function (t, i) {
+        return '<div id="bulk-row-' + i + '" style="display:flex;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid #f1f1f1;font-size:13.5px;">' +
+          '<span id="bulk-dot-' + i + '">⏳</span><span style="flex:1;">' + t.replace(/</g, "&lt;") + '</span>' +
+          '<span id="bulk-note-' + i + '" style="color:#6d7175;">queued</span></div>';
+      }).join("");
+      let done = 0;
+      for (let i = 0; i < topics.length; i++) {
+        const dot = document.getElementById("bulk-dot-" + i), note = document.getElementById("bulk-note-" + i);
+        dot.textContent = "✍️"; note.textContent = "writing… (~1 min)"; btn.innerHTML = '<span class="loading"></span> ' + (i + 1) + " / " + topics.length;
+        try {
+          const res = await fetch("/api/shopify/embedded/generate", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ topic: topics[i] }),
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            dot.textContent = "❌"; note.textContent = data.error || "failed";
+            if (res.status === 402) { note.textContent = "out of credits"; for (let k = i + 1; k < topics.length; k++) { document.getElementById("bulk-dot-" + k).textContent = "⛔"; document.getElementById("bulk-note-" + k).textContent = "skipped — no credits"; } break; }
+            continue;
+          }
+          dot.textContent = "✅"; note.innerHTML = (data.wordCount || "?") + ' words · <a href="#" onclick="publish(\'' + data.articleId + '\', this);return false;">Publish</a>';
+          done++;
+        } catch (e) { dot.textContent = "❌"; note.textContent = e.message; }
+      }
+      box.insertAdjacentHTML("beforeend", '<div class="alert ' + (done ? "success" : "error") + '" style="margin-top:10px;">' + done + " of " + topics.length + " articles generated.</div>");
+      bulkRunning = false; btn.disabled = false; btn.innerHTML = "Generate all";
+      loadArticles(); refreshCredits();
     }
 
     async function publish(articleId, btn) {

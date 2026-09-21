@@ -298,11 +298,13 @@ export async function runBlogWriter(
   const imageSuggestions = generateImageSuggestions(outline, topic, primaryKeyword);
   const estimatedWordCount = linkedMarkdown.split(/\s+/).length;
 
-  // Build HTML from markdown
-  const bodyHtml = markdownToHtml(linkedMarkdown);
-
   // Build JSON-LD schema
   const schemaJsonLd = buildSchemaJsonLd(title, metaDescription, slug, faqItems);
+
+  // Build HTML from markdown, with an interactive table of contents and the
+  // schema embedded so both survive into the published Shopify article.
+  const bodyHtml = injectToc(markdownToHtml(linkedMarkdown)) +
+    '\n<script type="application/ld+json">' + JSON.stringify(schemaJsonLd) + "</script>";
 
   // Build front matter
   const frontMatter = buildFrontMatter(title, metaDescription, slug, primaryKeyword, keywords, intent, audience);
@@ -588,6 +590,7 @@ EMPHASIS:
 LINKS & IMAGES:
 - [Natural keyword-rich anchor text](url) — never "click here" or "read more"
 - Minimum 3 words per anchor
+- Include 2-3 EXTERNAL links to authoritative sources (research studies, standards bodies, major publications like Healthline/WireCutter/industry journals) that back up factual claims — real URLs you are confident exist, NEVER to competing online stores
 - Product images: ![Descriptive alt](url) — blank line before and after
 - Product images should appear right after the product recommendation
 
@@ -791,6 +794,33 @@ date: "${new Date().toISOString().split("T")[0]}"
 }
 
 // ── Markdown to HTML ──────────────────────────────────────────────────
+
+/**
+ * Prepend a collapsible table of contents built from the article's H2s
+ * (anchor ids added in place). Skipped for short articles (<3 sections).
+ */
+export function injectToc(html: string): string {
+  const headings: Array<{ id: string; text: string }> = [];
+  const seen = new Set<string>();
+  const withIds = html.replace(/<h2([^>]*)>([\s\S]*?)<\/h2>/gi, (m, attrs: string, inner: string) => {
+    if (/id=/.test(attrs)) return m;
+    const text = inner.replace(/<[^>]+>/g, "").trim();
+    let id = "rq-" + (text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "section");
+    while (seen.has(id)) id += "-2";
+    seen.add(id);
+    headings.push({ id, text });
+    return `<h2 id="${id}"${attrs}>${inner}</h2>`;
+  });
+  if (headings.length < 3) return html;
+  const items = headings
+    .map((h) => `<li style="margin:6px 0;"><a href="#${h.id}">${h.text}</a></li>`)
+    .join("");
+  const toc =
+    '<details class="rq-toc" open style="border:1px solid #e3e3e3;border-radius:10px;padding:14px 18px;margin:0 0 24px;">' +
+    '<summary style="cursor:pointer;font-weight:700;">📑 Table of Contents</summary>' +
+    `<ol style="margin:10px 0 4px;padding-left:20px;">${items}</ol></details>\n`;
+  return toc + withIds;
+}
 
 function markdownToHtml(md: string): string {
   const { marked } = require("marked");
