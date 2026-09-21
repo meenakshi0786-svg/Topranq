@@ -1159,7 +1159,7 @@ function renderAppHtml(shop: string, apiKey: string): string {
       const box = document.getElementById("bulk-progress");
       const btn = document.getElementById("bulk-btn");
       const topics = document.getElementById("bulk-topics").value
-        .split("\n").map(function (t) { return t.trim(); }).filter(Boolean).slice(0, 10);
+        .split("\\n").map(function (t) { return t.trim(); }).filter(Boolean).slice(0, 10);
       if (!topics.length) { box.innerHTML = '<div class="alert error">Enter at least one topic (one per line).</div>'; return; }
       bulkRunning = true; btn.disabled = true;
       box.innerHTML = topics.map(function (t, i) {
